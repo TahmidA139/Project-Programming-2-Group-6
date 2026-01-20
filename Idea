@@ -1,10 +1,11 @@
-* Github repo link: https://github.com/TahmidA139/Project-Programming-2-Group-6.git
-* Gene Structure and Boundary Prediction 
-- The code will identify start codons, stop codons, exons, introns in a DNA sequence.
-- We will use NCBI to download DNA sequences in FASTA format. 
-- Can determine certain genes that keep repeating between start and stop codons
-* Project determines:  
-- How gene boundaries were inferred.
-- We will use NCBI to download DNA sequences in FASTA format.
+- Github repo link: https://github.com/TahmidA139/Project-Programming-2-Group-6.git
+- Gene Structure and Boundary Prediction 
+  - The code will identify start codons, stop codons, exons, introns in a DNA sequence.
+  - We will use NCBI to download DNA sequences in FASTA format. 
+  - Can determine certain genes that keep repeating between start and stop codons
+- Project determines:  
+  - How gene boundaries were inferred from raw DNA sequences
+  - Automatic identification of gene boundaries will reduce the need for time consuming manual annotation by researchers.
+
 
 
