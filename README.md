@@ -17,7 +17,7 @@
 # Student ID:801442694
 # Email: edecocke@CHARLOTTE.EDU
 
-## License
+# License
 
 This project is licensed under the MIT License.
 
