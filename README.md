@@ -19,7 +19,6 @@
 
 # License
 
-This project is licensed under the MIT License.
+This project is licensed under the GNU GPL v2.
 
-We chose this license because it allows others to freely use, modify, and share the project while giving proper credit to the original authors.
-
+We chose this license because it is the best for open collaboration and would be easier to edit changes and share feedback with the public and also easier for anyone to use our code since its an open source.
