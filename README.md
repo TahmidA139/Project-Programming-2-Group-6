@@ -16,3 +16,10 @@
 # Name:ERIN NICOLE DECOCKER
 # Student ID:801442694
 # Email: edecocke@CHARLOTTE.EDU
+
+## License
+
+This project is licensed under the MIT License.
+
+We chose this license because it allows others to freely use, modify, and share the project while giving proper credit to the original authors.
+
