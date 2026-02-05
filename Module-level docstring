@@ -1,0 +1,7 @@
+At the very top of the file, include a docstring explaining:
+
+What this file/module is responsible for
+
+How it fits into the overall project
+
+What kind of data it receives and/or produces (conceptually)
