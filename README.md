@@ -1,4 +1,4 @@
-# ORF Analysis Pipeline – Detect and Analyze Open Reading Frames
+# ORF Analysis Pipeline
 A Python program that detects Open Reading Frames (ORFs) in DNA sequences, analyzes repeated or similar ORFs, and produces summary statistics.
 
 ## Objective 
