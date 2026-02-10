@@ -4,18 +4,15 @@ A Python program that detects Open Reading Frames (ORFs) in DNA sequences, analy
 ## Objective 
 This project exists to automate ORF detection and analysis in DNA sequences. It helps researchers identify potential protein-coding regions, repeated genes, and conserved sequences efficiently, while generating other ORF statistics for further study.
 
-# Project Overview
-This project analyzes DNA sequences to detect Open Reading Frames (ORFs) and generate insights about their properties. 
-The workflow:
+### The workflow
+1. Fetch DNA sequences from NCBI in FASTA format.
+2. Scan sequences to detect all ORFs across reading frames (start codon → stop codon).
+3. Analyze ORFs to identify repeated or similar sequences, revealing potential gene duplications or conserved regions.
+4. Generate summary statistics, including total ORFs, repeated ORFs, and the longest ORF.
 
-* Fetch DNA sequences from NCBI in FASTA format.
-* Scan sequences to detect all ORFs across reading frames (start codon → stop codon).
-* Analyze ORFs to identify repeated or similar sequences, revealing potential gene duplications or conserved regions.
-* Generate summary statistics, including total ORFs, repeated ORFs, and the longest ORF.
-
-## Files and Descriptions
+### Files and Descriptions
 * main.py
- – Main driver for the ORF analysis pipeline. Holds main function which calls other modules and displays results.
+ – Holds main function which calls other modules and displays results.
 * input_validate.py
 – Fetches DNA sequences from NCBI, validates, and writes cleaned FASTA files.
 * orf_finder.py
