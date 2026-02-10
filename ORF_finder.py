@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+ORF_finder.py
 Purpose:
     This module analyzes detected ORFs to identify repeated sequences and similarity scores.
 Role in Project:
@@ -22,7 +23,6 @@ def find_repeated_orfs(orfs):
         - Compare ORF sequences and group matches
     """
     pass
-
 
 def calculate_similarity_scores(orfs):
     """
