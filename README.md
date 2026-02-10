@@ -3,16 +3,16 @@ Github Repo Link: https://github.com/TahmidA139/Project-Programming-2-Group-6.gi
 
 # Group Members:
 1.  Tahmid Anwar
-    - Email: tanwar@charlotte.edu
-    - Student ID: 801501080
+- Email: tanwar@charlotte.edu
+- Student ID: 801501080
 
-2. Amanda Yaworsky
- - Student ID:801489950 
- - Email: ayaworsk@charlotte.edu
+3. Amanda Yaworsky
+- Student ID:801489950 
+- Email: ayaworsk@charlotte.edu
 
 3. Erin Nicole Decocker
- - Student ID:801442694
- - Email: edecocke@charlotte.edu
+- Student ID:801442694
+- Email: edecocke@charlotte.edu
 
 # License
 This project is licensed under the GNU GPL v2.1.
