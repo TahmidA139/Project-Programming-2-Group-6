@@ -14,9 +14,17 @@ Github Repo Link: https://github.com/TahmidA139/Project-Programming-2-Group-6.gi
 - Student ID:801442694
 - Email: edecocke@charlotte.edu
 
-# License
-This project is licensed under the GNU GPL v2.1.
+# Project Overview
+This project identifies Open Reading Frames (ORFs) in DNA sequences, analyzes repeats and similarity scores, and generates statistics for reporting.
 
-We chose this license because it is the best for open collaboration and would be easier to edit changes and share feedback with the public and also easier for anyone to use our code since its an open source.
+# Files and Descriptions
+* main.py – Main driver for the ORF analysis pipeline. Holds main function which calls other modules and displays results.
+* input_validate.py – Fetches DNA sequences from NCBI, validates, and writes cleaned FASTA files.
+* orf_finder.py – Detects ORFs across reading frames and parses sequences.
+* orf_analysis.py – Finds repeated ORFs and calculates pairwise similarity scores.
+* Statistics_summary.py – Generates summary statistics (total ORFs, repeated, longest) and writes to a file.
+
+# License
+This project is licensed under the GNU GPL v2.1. Chosen for open collaboration, ease of edits, and public use.
 
 
