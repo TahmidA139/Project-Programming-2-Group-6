@@ -3,7 +3,7 @@ Github Repo Link: https://github.com/TahmidA139/Project-Programming-2-Group-6.gi
 
 # Group Members:
 1.  Tahmid Anwar
-- Email: tanwar@charlotte.edu
+-- Email: tanwar@charlotte.edu
 - Student ID: 801501080
 
 3. Amanda Yaworsky
