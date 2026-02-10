@@ -4,9 +4,6 @@ A Python program that detects Open Reading Frames (ORFs) in DNA sequences, analy
 ## Objective 
 This project exists to automate ORF detection and analysis in DNA sequences. It helps researchers identify potential protein-coding regions, repeated genes, and conserved sequences efficiently, while generating other ORF statistics for further study.
 
-## Project-Programming-2-Group-6
-Github Repo Link: https://github.com/TahmidA139/Project-Programming-2-Group-6.git
-
 # Project Overview
 This project analyzes DNA sequences to detect Open Reading Frames (ORFs) and generate insights about their properties. 
 The workflow:
@@ -45,3 +42,6 @@ Amanda Yaworsky
 Erin Nicole Decocker
 - Student ID:801442694
 - Email: edecocke@charlotte.edu
+
+## Project-Programming-2-Group-6
+Github Repo Link: https://github.com/TahmidA139/Project-Programming-2-Group-6.git
