@@ -43,17 +43,3 @@ def validate_dna_sequence(sequence):
     pass
     
 
-def write_clean_fasta(sequence, output_path):
-    """
-    Objective:
-        Write a cleaned DNA sequence to a FASTA file.
-    Input:
-        sequence (str): Validated DNA sequence.
-        output_path (str): Path to output FASTA file.
-    Output:
-        FASTA file containing the cleaned DNA sequence.
-    High-Level Steps:
-        - Format sequence as FASTA
-        - Write to output file
-    """
-    pass
