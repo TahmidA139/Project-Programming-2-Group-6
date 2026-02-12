@@ -35,13 +35,13 @@ def validate_dna_sequence(sequence):
     Input:
         sequence (str): DNA sequence string.
     Output:
-        is_valid (bool): Indicates whether the sequence is valid.
+        is_valid (bool): Uppercase DNA strings with invalid characters removed.
     High-Level Steps:
         - Check characters against valid bases
-        - Flag invalid characters if present
+        - Flag and remove invalid characters if present
     """
     pass
-
+    
 
 def write_clean_fasta(sequence, output_path):
     """
