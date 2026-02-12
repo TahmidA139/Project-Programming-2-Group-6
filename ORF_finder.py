@@ -6,28 +6,38 @@ Purpose:
 Role in Project:
     It performs downstream ORF comparison after ORFs are identified.
 Input:
-    A list of ORFs produced by the ORF detection module.
+    DNA sequence strings.
 Output:
-    Grouped repeated ORFs and similarity scores.
+    Collection of ORFs and their metadata.
 """
 
-def find_repeated_orfs(orfs):
+def find_orfs(dna sequence):
     """
     Objective:
         Identify ORFs with identical sequences.
     Input:
-        orfs (list): Detected ORFs.
+        Cleaned DNA sequence from input_validate.py
     Output:
-        repeated_orfs (dict): Groups of matching ORFs.
+        A list of dictionaries where each dictionary contains:
+            - frame: reading frame numer (0,1,2)
+            - start: starting index of the ORF
+            - end: ending index of the ORF
+            
     High-Level Steps:
-        - Compare ORF sequences and group matches
+        - Define start and stop codons
+        - Iterate through all three reading frames
+        - Scan the sequence codon by codon
+        - Detect start codon
+        - Continue iterating for the whole sequence and find ORFs
+        - Return all detected ORFs list
+        
     """
     pass
 
-def calculate_similarity_scores(orfs):
+def orfs_metadata(dna_sequence):
     """
     Objective:
-        Compute similarity scores between ORF sequences.
+         Identify the genomic positions and associated metadata for each detected ORF in the DNA sequence.
     Input:
         orfs (list): Detected ORFs.
     Output:
