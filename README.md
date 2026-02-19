@@ -17,7 +17,10 @@ The project will develop a program that automate ORF detection and analysis in D
 – Generates summary statistics (total ORFs, repeated, longest) and writes to a output file.
 
 # Task distribution among members:
-  - Libraries: 
+  - Libraries:
+      * Input_validate.py
+           * fetch_fasta_from_ncbi.py
+           * validate_DNA_sequence.py
       * ORF_finder_libarry:
            - _ _init_ _.py 
            - Find_orfs.py 
