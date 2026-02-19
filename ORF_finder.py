@@ -2,13 +2,13 @@
 """
 ORF_finder.py
 Purpose:
-    This module analyzes detected ORFs to identify repeated sequences and similarity scores.
+    Detect all open reading frames (ORFs) within a DNA sequences across multiple reading frames and their corresponding metadata.
 Role in Project:
-    It performs downstream ORF comparison after ORFs are identified.
+    Converts raw DNA sequences into candidate protein-coding regions.
 Input:
     DNA sequence strings.
 Output:
-    Collection of ORFs and their metadata.
+    Collection of ORFs with positions and sequences
 """
 
 def find_orfs(dna sequence):
@@ -39,10 +39,11 @@ def orfs_metadata(dna_sequence):
     Objective:
          Identify the genomic positions and associated metadata for each detected ORF in the DNA sequence.
     Input:
-        orfs (list): Detected ORFs.
+       Cleaned DNA sequence from input_validate.py.
     Output:
-        similarity_scores (dict): Pairwise similarity values.
+        ORF list with their corresponding metadata
     High-Level Steps:
-        - Compare ORF sequences to compute similarity
+        - For each ORF in the ORF list, find ORF sequence and location
+        - Output ORF sequence and location for each corresponding ORF.
     """
     pass
