@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+(Amanda portion)
 ORF_analysis.py
 Purpose:
     This module analyzes detected ORFs to identify repeated sequences and similarity scores.
