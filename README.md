@@ -16,6 +16,13 @@ The project will develop a program that automate ORF detection and analysis in D
 * statistics_summary.py
 – Generates summary statistics (total ORFs, repeated, longest) and writes to a output file.
 
+# Task distribution among members:
+  - Libraries: 
+      * ORF_finder_libarry:
+            _ _init_ _.py 
+            Find_orfs.py 
+            Orfs_metadata.py 
+
 # Installation Instructions
 1. Clone the repository:
 ```bash
