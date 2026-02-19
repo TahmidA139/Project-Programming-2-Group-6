@@ -1,6 +1,0 @@
-# Task distribution among members:
-  - Libraries: 
-      - Biopython 
-            - Reading FASTA files directly
-            - Find reverse complement 
-      - NCBI Entrez
