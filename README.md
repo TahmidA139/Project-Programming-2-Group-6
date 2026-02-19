@@ -29,7 +29,7 @@ Right now we have 4 python files (not including main.py), that are place holders
            - init.py 
            - Find_orfs.py 
            - Orfs_metadata.py
-           - 
+    
       * Orf_analysis_library/ (Amanda Yaworsky)
            - init.py 
            - find_repeated_orfs.py
