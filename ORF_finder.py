@@ -1,7 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#!/usr/bin/env python3
+# Nicole's portion 
+# this was made before Tahmid worked on the input file (so there could be naming inconsistencies)
+# also thinking about adding a funciton that would support looking at reverse complement ORFs
+# right now I have ORF1, ORF2, ORF3 ect. and Incomplete_ORF1, Incomplete_ORF2, ect. 
+# Stored in dictionaries separately.
+# but I think I want to have it like this. I would love to know your idea on if this is a reasonable set up? 
+# {
+#   "complete": {
+#       "canonical": {  # ATG
+#           "ORF1": {...},
+#           "ORF2": {...}
+#       },
+#       "noncanonical": {
+#           "GTG": {
+#               "GTG_ORF1": {...}
+#           },
+#           "TTG": {
+#               "TTG_ORF1": {...}
+#           }
+#       }
+#   },
+#   "incomplete": {
+#       "canonical": {...},
+#       "noncanonical": {
+#           "GTG": {...},
+#           "TTG": {...}
+#       }
+#   }
+# }
 """
 ORF_finder.py
 
