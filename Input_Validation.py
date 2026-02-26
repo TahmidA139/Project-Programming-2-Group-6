@@ -72,7 +72,4 @@ def fetch_fasta_from_ncbi(accession: str, db: str = "nucleotide") -> str | None:
     # 'Exception as e' catches any type of error and stores its message in 'e'. We print the error message so the user knows what went wrong,
     # then return None to signal that no sequence was retrieved.
 
-# ─────────────────────────────────────────────────────────────────────────────
-# FUNCTION 2 — Validate (and clean) the DNA sequence
-# ─────────────────────────────────────────────────────────────────────────────
 
