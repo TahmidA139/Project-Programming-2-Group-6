@@ -37,6 +37,10 @@ from Bio.Seq import Seq
   which will be used by the function "ORF_finder.py".
 
 ## Example:
-Using the accession number: 'NM_001301717' in the function
+Using the accession number: 'NM_001301717' in the function 
+
+
+##Output 
+#When the user input the asscion number should give the DNA structure
 
 
