@@ -1,14 +1,14 @@
 Tract- Github repo link: https://github.com/TahmidA139/Project-Programming-2-Group-6.git
 
-- Title: Identify repeating genes in a DNA sequence using Open Reading Frames (ORFs)
+# Title: Identify repeating genes in a DNA sequence using Open Reading Frames (ORFs)
 
-- Description:
+# Description:
   - An ORF is a continuous stretch of DNA that begins with a start codon (ATG) and ends with a stop codon (TAA, TAG, or TGA) and represents a potential protein-coding region.
   - We will use NCBI to download DNA sequences in FASTA format. 
   - The code will scan the sequence and identify start and stop codons and thus all possible ORFs in reading frames
   - Once ORFs are identified, the program will compare them to detect repeated or similar ORF sequences, which may indicate repeating genes, gene duplications, or conserved functional regions.
   - The code may also produce a general summary statistics including total number of ORFs, Repeated ORFs, Longest ORF.
 
-- Outcomes:
+# Outcomes:
   - Genome annotation: Researchers can use ORF detection to locate possible protein-coding regions when analyzing newly sequenced genomes.
   - Gene duplication studies: Through repeating genes identification, researchers can study about gene family, disease related mutations, genetic disorders. 
