@@ -1,0 +1,32 @@
+# ============================================================
+# dependencies.txt
+# Project: Identifying Repeating Genes in a DNA Sequence
+#          Using Open Reading Frames (ORFs)
+# ============================================================
+# This file lists all Python packages required to run this
+# project. Use the Anaconda environment setup instructions in
+# README.md to install these automatically.
+# ============================================================
+
+# --- Core Language ---
+python=3.10
+
+# --- Bioinformatics ---
+biopython=1.83          # NCBI sequence fetching, FASTA parsing (input_validate.py)
+
+# --- String & Sequence Analysis ---
+# (used across ORF_finder.py and ORF_analysis.py)
+regex=2023.12.25        # Advanced pattern matching for ORF detection
+
+# --- Numerical & Statistical Computing ---
+numpy=1.26.4            # Numerical operations for similarity score calculations (ORF_analysis.py)
+
+# --- Data Handling & Output ---
+pandas=2.2.1            # Tabular storage of ORF results and statistics (statistics_summary.py)
+
+# --- Reporting & Output ---
+matplotlib=3.8.3        # Plotting ORF distribution charts (statistics_summary.py)
+
+# --- Standard Library (no install needed, ships with Python) ---
+# re                    # Regex for sequence validation (input_validate.py)
+# os                    # File and directory handling (all modules)

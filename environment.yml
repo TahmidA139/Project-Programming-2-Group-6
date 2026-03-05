@@ -1,0 +1,40 @@
+# ============================================================
+# environment.yml
+# Anaconda environment configuration for the ORF project.
+#
+# To create the environment from this file, run:
+#   conda env create -f environment.yml
+#
+# To activate it, run:
+#   conda activate orf_project_env
+# ============================================================
+
+name: orf_project_env
+
+channels:
+  - defaults
+  - bioconda          # specialist channel for bioinformatics packages
+  - conda-forge       # community channel with up-to-date builds
+
+dependencies:
+  - python=3.10
+
+  # --- Bioinformatics ---
+  - biopython=1.83        # NCBI fetching, FASTA parsing       (input_validate.py)
+
+  # --- String & Sequence Analysis ---
+  - regex=2023.12.25      # Advanced ORF pattern matching       (ORF_finder.py)
+
+  # --- Numerical & Statistical Computing ---
+  - numpy=1.26.4          # Similarity score calculations       (ORF_analysis.py)
+
+  # --- Data Handling ---
+  - pandas=2.2.1          # ORF results tables                  (statistics_summary.py)
+
+  # --- Plotting ---
+  - matplotlib=3.8.3      # ORF distribution charts             (statistics_summary.py)
+
+  # --- pip-only packages (not available on conda channels) ---
+  - pip
+  - pip:
+    - biopython==1.83     # fallback in case bioconda build fails
