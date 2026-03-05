@@ -23,7 +23,7 @@ numpy=1.26.4            # Numerical operations for similarity score calculations
 pandas=2.2.1            # Tabular storage of ORF results and statistics (statistics_summary.py)
 
 # --- Reporting & Output ---
-matplotlib=3.8.3        # Plotting ORF distribution charts (statistics_summary.py)
+matplotlib=3.8.3        # Plotting ORF distribution charts (statistics_summary.py) (For visual representation better for users)
 
 # --- Standard Library (no install needed, ships with Python) ---
 # re                    # Regex for sequence validation (input_validate.py)
