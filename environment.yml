@@ -81,13 +81,10 @@ dependencies:
 
   # --- String & Sequence Analysis ---
   - regex=2023.12.25      # Advanced ORF pattern matching       (ORF_finder.py)
-
-  # --- Numerical & Statistical Computing ---
-  - numpy=1.26.4          # Similarity score calculations       (ORF_analysis.py)
-
-  # --- Data Handling ---
+  
+  # --- Data Handling/ Statistical Computing ---
   - pandas=2.2.1          # ORF results tables                  (statistics_summary.py)
-
+                          # Similarity score calculations       (ORF_analysis.py)
   # --- Plotting ---
   - matplotlib=3.8.3      # ORF distribution charts             (statistics_summary.py)
 
