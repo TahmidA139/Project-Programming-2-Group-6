@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/orca_banner.png" alt="ORCA Banner" width="600"/>
+  <img src="images/orca_banner.png" alt="ORCA Banner" width="600"/>
 </p>
 
 # ORCA (ORF Recognition and Classification Analyzer)
