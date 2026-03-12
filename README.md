@@ -1,4 +1,4 @@
-# Identifying Repeating Genes in a DNA Sequence Using Open Reading Frames (ORFs).
+# ORCA (ORF Recognition and Classification Analyzer)
 **GitHub:** https://github.com/TahmidA139/Project-Programming-2-Group-6
 
 ## Objective 
