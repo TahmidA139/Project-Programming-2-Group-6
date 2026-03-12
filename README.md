@@ -1,5 +1,6 @@
 # ORCA (ORF Recognition and Classification Analyzer)
 **GitHub:** https://github.com/TahmidA139/Project-Programming-2-Group-6
+Also open to other names for the project like ORCA (ORF recognigtion and Comparative Annotator). let me know what you think. 
 
 ## Objective 
 The project will develop a program that automate ORF detection and analysis in DNA sequences. It helps researchers identify potential protein-coding regions, repeated genes, and conserved sequences efficiently, while generating other ORF statistics for further study.
