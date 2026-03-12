@@ -1,3 +1,5 @@
+![ORCA Banner](images/orca_banner.png)
+
 # ORCA (ORF Recognition and Classification Analyzer)
 **GitHub:** https://github.com/TahmidA139/Project-Programming-2-Group-6
 Also open to other names for the project like ORCA (ORF recognigtion and Comparative Annotator). let me know what you think. 
