@@ -27,6 +27,12 @@ The project will develop a program that automate ORF detection and analysis in D
 * statistics_summary.py
 – Generates summary statistics (total ORFs, repeated, longest) and writes to a output file.
 
+## Usage 
+### Dependency Requirements:
+  - python=3.10
+  - numpy
+  - Biopython
+  - 
 # Task distribution among members:
 ```bash
 Project-Programming-2-Group-6/
@@ -63,13 +69,36 @@ Project-Programming-2-Group-6/
     ├── example_output.fasta
     └── example_run.txt
 ```
-
-# Installation Instructions
+## Installation
+### Setup
 1. Clone the repository:
 ```bash
 git clone https://github.com/TahmidA139/Project-Programming-2-Group-6.git
 ```
-2. Ensure Python 3 is installed (≥3 recommended).
+2. Go into your project folder:
+```bash
+cd Project-Programming-2-Group-6
+```
+
+4. Create the Environment: 
+```bash
+conda env create -f environment.yml
+```
+5. Activate the Environment
+```bash
+conda activate Project-Programming-2-Group-6
+
+### Usage Examples:
+
+### Command-Line Arguments:
+
+### Output Format
+
+## Algorithm Description:
+
+### Metadata:
+
+## References:
 
 # License
 This project is licensed under the GNU GPL v2.1. Chosen for open collaboration, ease of edits, and public use.
