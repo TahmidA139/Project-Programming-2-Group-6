@@ -71,11 +71,11 @@ Project-Programming-2-Group-6/
 ### Setup
 1. Clone the repository:
 ```bash
-git clone https://github.com/TahmidA139/Project-Programming-2-Group-6.git
+git clone https://github.com/TahmidA139/ORCA.git
 ```
 2. Go into your project folder:
 ```bash
-cd Project-Programming-2-Group-6
+cd ORCA
 ```
 
 4. Create the Environment: 
@@ -84,7 +84,7 @@ conda env create -f environment.yml
 ```
 5. Activate the Environment
 ```bash
-conda activate Project-Programming-2-Group-6
+conda activate ORCA
 ```
 ### Usage Examples:
 
