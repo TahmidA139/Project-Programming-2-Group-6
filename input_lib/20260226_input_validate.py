@@ -74,7 +74,7 @@ def fetch_fasta_from_ncbi(accession: str, db: str = "nucleotide") -> str | None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FUNCTION 2 — Validate (and clean) the DNA sequence
+# FUNCTION 2 — Validate and clean the DNA sequence
 # ─────────────────────────────────────────────────────────────────────────────
 
 def validate_dna_sequence(sequence: str) -> tuple[bool, str]:
