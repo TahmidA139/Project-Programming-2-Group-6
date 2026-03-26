@@ -1,26 +1,16 @@
 name: orf_project_env
 
 channels:
+  - conda-forge
   - defaults
-  - bioconda          # specialist channel for bioinformatics packages
-  - conda-forge       # community channel with up-to-date builds
+  - bioconda          
+  - conda-forge     
 
 dependencies:
   - python=3.10
+  - biopython=1.83        
+  - regex=2023.12.25    
+  - pandas=2.2.1          
+  - matplotlib=3.8.3   
 
-  # --- Bioinformatics ---
-  - biopython=1.83        # NCBI fetching, FASTA parsing       (input_validate.py)
-
-  # --- String & Sequence Analysis ---
-  - regex=2023.12.25      # Advanced ORF pattern matching       (ORF_finder.py)
   
-  # --- Data Handling/ Statistical Computing ---
-  - pandas=2.2.1          # ORF results tables                  (statistics_summary.py)
-                          # Similarity score calculations       (ORF_analysis.py)
-  # --- Plotting ---
-  - matplotlib=3.8.3      # ORF distribution charts             (statistics_summary.py)
-
-  # --- pip-only packages (not available on conda channels) ---
-  - pip
-  - pip:
-    - biopython==1.83     # fallback in case bioconda build fails
