@@ -1,4 +1,4 @@
-name: orf_project_env
+name: ORCA
 
 channels:
   - conda-forge
