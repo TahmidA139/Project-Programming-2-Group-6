@@ -64,4 +64,24 @@ orfs = ["ATGAAA", "ATGAAA", "ATGCCA", "ATGAAA"]
 print(find_repeated_orfs(orfs))
 print(calculate_similarity_scores(orfs))
 
+if __name__ == "__main__":
+    user_input = input("Enter ORFs separated by commas: ")
+    orfs = [orf.strip() for orf in user_input.split(",")]
+
+    print(find_repeated_orfs(orfs))
+    print(calculate_similarity_scores(orfs))
+
+"""
+def load_orfs_from_file(filename):
+    with open(filename, "r") as f:
+        return [line.strip() for line in f if line.strip()]
+
+if __name__ == "__main__":
+    filename = input("Enter filename: ")
+    orfs = load_orfs_from_file(filename)
+
+    print(find_repeated_orfs(orfs))
+    print(calculate_similarity_scores(orfs))
+Could add this if we want a user to put the file in"
+
 
