@@ -12,22 +12,25 @@ Output:
     Summary of ORFs found and their statistics.
 """
 
-# Import statements will go here
+from pprint import pprint
+from 20260226_input_validate import run as validate_run
+from ORF_finder import find_orfs
+
 
 def main():
-    """
-    Objective:
-        Coordinate execution of the ORF analysis pipeline.
-    Input:
-        None directly; input is handled through program arguments.
-    Output:
-        Program results displayed to the user.
-    High-Level Steps:
-        - Load input data
-        - Call other modules
-        - Display summary
-    """
-    pass
+    accession = "NM_001301717"
+
+    acc, clean_seq = validate_run(accession)
+
+    if clean_seq is None:
+        print("Pipeline failed.")
+        return
+
+    print("\n[INFO] Running ORF finder...\n")
+    orfs = find_orfs(clean_seq, include_reverse=True)
+
+    pprint(orfs)
+
 
 if __name__ == "__main__":
     main()
