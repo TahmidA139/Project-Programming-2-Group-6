@@ -33,8 +33,6 @@ def fetch_fasta_from_ncbi(accession: str, db: str = "nucleotide") -> str | None:
     # Instead of crashing the whole program, any error is caught and None
     # is returned so the caller can handle the failure gracefully.
     try:
-        print(f"[INFO] Querying NCBI for accession: '{accession}' ...")
-
         # Step 1 & 2 — query NCBI and parse the FASTA response
         # Entrez.efetch is the actual API call to NCBI:
         # db: which NCBI database to search (e.g. 'nucleotide')
@@ -94,8 +92,6 @@ def validate_dna_sequence(sequence: str) -> tuple[bool, str]:
     if invalid_chars:
         print(f"[VALIDATION] Invalid characters found and removed: {invalid_chars}")
         sequence = re.sub(r"[^ATGCRYSWKMBDHVN]", "", sequence)
-    else:
-        print("[VALIDATION] No invalid characters detected.")
 
     # Step 4 — verify the cleaned sequence is long enough for ORF analysis
     if len(sequence) < 6:
