@@ -215,19 +215,11 @@ def main() -> None:
         print("[ERROR] Pipeline failed: could not retrieve a valid sequence.")
         sys.exit(1)
 
-    # ------------------------------------------------------------------
-    # 4. Run the ORF finder
-    #    NOTE: start_codons, min_length, and ignore_nested are parsed here
-    #    and will be passed to find_orfs() once ORF_finder.py is updated.
-    #    For now they are stored and ready to wire in.
-    # ------------------------------------------------------------------
     nested, flat_list = find_orfs(
         clean_seq,
-        # These keyword arguments will be accepted by ORF_finder.py
-        # after the next round of changes:
-        # start_codons=start_codons,
-        # min_length=args.min_length,
-        # ignore_nested=args.ignore_nested,
+        start_codons=start_codons,
+        min_length=args.min_length,
+        ignore_nested=args.ignore_nested,
     )
 
     # ------------------------------------------------------------------
