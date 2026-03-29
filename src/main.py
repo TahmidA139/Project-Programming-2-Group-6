@@ -107,7 +107,7 @@ def _write_csv(flat_list: list, output_path: str) -> None:
     import os
     os.makedirs(os.path.dirname(output_path), exist_ok=True) if os.path.dirname(output_path) else None
     with open(output_path, "w", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=CSV_FIELDNAMES)
+        writer = csv.DictWriter(fh, fieldnames=CSV_FIELDNAMES, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(flat_list)
     print(f"[INFO] ORF table written to: {output_path}")
