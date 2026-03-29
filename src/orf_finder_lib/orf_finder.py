@@ -364,7 +364,8 @@ def find_orfs(
 
 CSV_FIELDNAMES: List[str] = [
     "orf_id",
-    "status",       # "complete", "incomplete", "complete|nested", "incomplete|nested"
+    "status",
+    "is_nested",
     "start_codon",
     "frame",
     "start",
