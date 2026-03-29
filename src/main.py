@@ -29,9 +29,7 @@ Output:
 from pprint import pprint
 import argparse
 
-from input_lib.input_validate import run as validate_run
-from orf_finder_lib.ORF_finder import _scan_frame
-
+from src.input_lib.input_validate import run as validate_run
 
 def main():
     parser = argparse.ArgumentParser(description="Main ORF analysis pipeline")
@@ -48,9 +46,9 @@ def main():
         print("Pipeline failed.")
         return
 
-    print("\n[INFO] Running ORF finder...\n")
-    orfs = find_orfs(clean_seq, include_reverse=True)
-    pprint(orfs)
+    # print("\n[INFO] Running ORF finder...\n")
+    # orfs = find_orfs(clean_seq, include_reverse=True)
+    # pprint(orfs)
 
 
 if __name__ == "__main__":
