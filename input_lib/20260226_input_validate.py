@@ -13,12 +13,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import re
 import os
-
-# NCBI requires a valid email address for all Entrez queries.
-# This is not a login — NCBI uses it only to contact you if your
-# script sends too many requests. Replace with your real email.
-Entrez.email = "tahmid4423@gmail.com"   # <-- replace before running
-
+import argparse
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FUNCTION 1 — Fetch FASTA from NCBI
@@ -47,13 +42,13 @@ def fetch_fasta_from_ncbi(accession: str, db: str = "nucleotide") -> str | None:
         # rettype: the file format to return ('fasta')
         # retmode: how the data is encoded ('text' = plain readable text)
         handle = Entrez.efetch(db=db, id=accession, rettype="fasta", retmode="text")
-
+       
         # 'handle' is a file-like object — SeqIO reads and parses it,
         # automatically separating the header from the sequence
         record = SeqIO.read(handle, "fasta")
-
         # Always close the handle — leaving it open can cause memory
         # leaks or hit NCBI's rate limits
+        
         handle.close()
 
         # Step 3 — extract the raw sequence string
@@ -157,13 +152,13 @@ def run(
     raw_sequence = fetch_fasta_from_ncbi(accession)
     if raw_sequence is None:
         return None, None
-
+    
     # Step 2 — validate and clean the sequence
     is_valid, clean_seq = validate_dna_sequence(raw_sequence)
     if not is_valid:
         print("[ERROR] Sequence failed validation. Aborting pipeline.")
         return None, None
-
+    
     # Step 3 — write cleaned FASTA to disk
     write_cleaned_fasta(clean_seq, accession, output_fasta)
 
@@ -172,15 +167,31 @@ def run(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Quick self-test when the module is run directly
+# COMMAND-LINE INTERFACE
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    TEST_ACCESSION = "NM_001301717"   # replace with any valid NCBI accession
+    parser = argparse.ArgumentParser(description="Fetch and validate DNA sequence from NCBI")
+
+    parser.add_argument("--accession", type=str, help="NCBI accession number")
+    parser.add_argument("--email", type=str, help="Email for NCBI Entrez")
+    parser.add_argument("--output", type=str, default="output/cleaned_sequence.fasta",
+                        help="Output FASTA file path")
+
+    args = parser.parse_args()
+
+    # Prompt if not provided
+    accession = args.accession or input("Enter NCBI accession number: ")
+    email = args.email or input("Enter your email (required by NCBI): ")
+
+    # NCBI requires a valid email address for all Entrez queries.
+    # This is not a login — NCBI uses it only to contact you if your
+    # script sends too many requests. Replace with your real email.
+    Entrez.email = email
 
     accession, result = run(
-        accession=TEST_ACCESSION,
-        output_fasta="output/cleaned_sequence.fasta",
+        accession=accession,
+        output_fasta=args.output,
     )
 
     if result:
@@ -188,4 +199,3 @@ if __name__ == "__main__":
         print(f"         First 60 bp: {result[:60]}")
     else:
         print("\n[RESULT] Pipeline failed. Check errors above.")
-        
