@@ -32,6 +32,7 @@ import sys
 
 from src.input_lib.input_validate import run as validate_run
 from src.orf_finder_lib.orf_finder import find_orfs, CSV_FIELDNAMES
+from src.statistics_lib.statistics_summary import (calculate_orf_stats, write_stats_to_file, ORF_STATS_FIELDNAMES,)
 
 # Valid start codons the user is allowed to request
 VALID_START_CODONS = {"ATG", "GTG", "TTG"}
@@ -111,7 +112,26 @@ def _write_csv(flat_list: list, output_path: str) -> None:
         writer.writeheader()
         writer.writerows(flat_list)
     print(f"[INFO] ORF table written to: {output_path}")
+    # Write per-ORF stats CSV
+    per_orf_stats = calculate_orf_stats(flat_list, clean_seq)
+    _write_csv_with_fields(
+    per_orf_stats,
+    "output/orf_stats.csv",
+    ORF_STATS_FIELDNAMES,
+    )
 
+    # Write human-readable summary report
+    write_stats_to_file(flat_list, clean_seq, acc, outfile="output/stats_summary.txt")
+
+def _write_csv_with_fields(data: list, output_path: str, fieldnames: list) -> None:
+    """Write a list of dicts to a CSV file with specified fieldnames."""
+    import os
+    os.makedirs(os.path.dirname(output_path), exist_ok=True) if os.path.dirname(output_path) else None
+    with open(output_path, "w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(data)
+    print(f"[INFO] Table written to: {output_path}")
 
 def _validate_start_codons(requested: list[str]) -> list[str]:
     """
