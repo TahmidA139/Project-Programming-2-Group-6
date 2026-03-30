@@ -16,37 +16,6 @@ Features:
     - Separates ORFs by start codon type (ATG canonical; GTG, TTG non-canonical)
     - Supports filtering by start codon type, minimum length, and nested status
     - Returns a structured nested dictionary and a flat list of dicts for CSV export
-
-Output dictionary schema
-------------------------
-{
-    "complete": {
-        "canonical": {
-            "ORF1": {strand, frame, start, end, length_nt, start_codon, status, is_nested},
-            ...
-        },
-        "noncanonical": {
-            "GTG": {"GTG_ORF1": {...}, ...},
-            "TTG": {"TTG_ORF1": {...}, ...},
-        },
-    },
-    "incomplete": {
-        "canonical":    {...},
-        "noncanonical": {"GTG": {...}, "TTG": {...}},
-    },
-}
-
-CSV status values
------------------
-    "complete"             - has start and stop codon, not nested
-    "incomplete"           - no stop codon found, not nested
-    "complete|nested"      - complete ORF whose start falls inside another ORF
-    "incomplete|nested"    - incomplete ORF whose start falls inside another ORF
-
-CSV strand values
------------------
-    "+"  - forward strand
-    "-"  - reverse complement strand
 """
 
 from __future__ import annotations
@@ -230,10 +199,6 @@ def _mark_nested(all_orfs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return all_orfs
 
 
-# ---------------------------------------------------------------------------
-# Core scanning function
-# ---------------------------------------------------------------------------
-
 def scan_frame(
     dna_sequence: str,
     frame:        int,
@@ -321,11 +286,6 @@ def scan_frame(
 
     return results
 
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 def find_orfs(
     dna_sequence:  str,
     start_codons:  List[str] = DEFAULT_START_CODONS,
@@ -358,9 +318,7 @@ def find_orfs(
     seq_len      = len(dna_sequence)
     rev_comp     = _reverse_complement(dna_sequence)
 
-    # ------------------------------------------------------------------
-    # 1. Scan all six frames
-    # ------------------------------------------------------------------
+
     all_orfs: List[Dict[str, Any]] = []
 
     for frame in range(3):
@@ -373,27 +331,18 @@ def find_orfs(
             scan_frame(rev_comp, frame, start_codons, min_length, "-", seq_len)
         )
 
-    # ------------------------------------------------------------------
-    # 2. Annotate every ORF with is_nested
-    # ------------------------------------------------------------------
+
     all_orfs = _mark_nested(all_orfs)
 
-    # ------------------------------------------------------------------
-    # 3. Optionally remove nested ORFs
-    # ------------------------------------------------------------------
+
     if ignore_nested:
         all_orfs = [o for o in all_orfs if not o["is_nested"]]
 
-    # ------------------------------------------------------------------
-    # 4. Encode nesting into the status field
-    # ------------------------------------------------------------------
+
     for orf in all_orfs:
         if orf["is_nested"]:
             orf["status"] = f"{orf['status']}|nested"
 
-    # ------------------------------------------------------------------
-    # 5. Build the nested output dictionary
-    # ------------------------------------------------------------------
     active_noncanonical = [sc for sc in NONCANONICAL_STARTS if sc in start_codons]
 
     canonical_complete_count:       int            = 0
@@ -445,11 +394,6 @@ def find_orfs(
         flat_list.append(flat_record)
 
     return nested_dict, flat_list
-
-
-# ---------------------------------------------------------------------------
-# Convenience: CSV field order for export (used by main.py)
-# ---------------------------------------------------------------------------
 
 CSV_FIELDNAMES: List[str] = [
     "orf_id",
