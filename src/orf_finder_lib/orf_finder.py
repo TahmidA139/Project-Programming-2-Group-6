@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
 
-from src.orf_finder_lib._frame_scanner import (
+from src.orf_finder_lib.frame_scanner import (
     _reverse_complement,
     _mark_nested,
     scan_frame,
