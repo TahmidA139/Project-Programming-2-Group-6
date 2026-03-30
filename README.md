@@ -2,7 +2,7 @@
   <img src="images/orca_banner.png" alt="ORCA Banner" width="350"/>
 </p>
 
-# ORCA (ORF Recognition and Classification/Comparative Annotator)
+# ORCA (ORF Recognition and Comparative Annotator)
 
 ## Objective 
 The project will develop a program that automate ORF detection and analysis in DNA sequences. It helps researchers identify potential protein-coding regions, repeated genes, and conserved sequences efficiently, while generating other ORF statistics for further study.
