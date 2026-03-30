@@ -48,14 +48,14 @@ import sys
 
 from src.input_lib.input_validate import run as validate_run
 from src.orf_finder_lib.orf_finder import find_orfs, CSV_FIELDNAMES
-# from src.statistics_lib.statistics_summary import (
-#     calculate_orf_stats,
-#     write_stats_to_file,
-#     write_comparative_report,
-#     write_comparative_csv,
-#     ORF_STATS_FIELDNAMES,
-# )
-# from src.analysis_lib.orf_analysis import compare_orf_sets
+from src.statistics_lib.statistics_summary import (
+    calculate_orf_stats,
+    write_stats_to_file,
+    write_comparative_report,
+    write_comparative_csv,
+    ORF_STATS_FIELDNAMES,
+)
+from src.analysis_lib.orf_analysis import compare_orf_sets
 
 # Valid start codons the user is allowed to request
 VALID_START_CODONS = {"ATG", "GTG", "TTG"}
@@ -201,10 +201,10 @@ def _run_single_sequence(
     # 4. Write output files
     _write_csv(flat_list, orf_csv)
 
-    # per_orf_stats = calculate_orf_stats(flat_list, clean_seq)
-    # _write_csv_with_fields(per_orf_stats, stats_csv, ORF_STATS_FIELDNAMES)
+    per_orf_stats = calculate_orf_stats(flat_list, clean_seq)
+    _write_csv_with_fields(per_orf_stats, stats_csv, ORF_STATS_FIELDNAMES)
 
-    # write_stats_to_file(flat_list, clean_seq, acc, outfile=summary_txt)
+    write_stats_to_file(flat_list, clean_seq, acc, outfile=summary_txt)
 
     return acc, clean_seq, nested, flat_list
 
@@ -313,75 +313,75 @@ def main() -> None:
         print("[ERROR] Pipeline failed: could not retrieve a valid sequence.")
         sys.exit(1)
 
-    # # ── 4. Run pipeline for sequence 2 (if requested) ────────────────────
-    # if comparative:
-    #     print(f"\n[ORCA] Processing sequence 2: {accession2}")
+    # ── 4. Run pipeline for sequence 2 (if requested) ────────────────────
+    if comparative:
+        print(f"\n[ORCA] Processing sequence 2: {accession2}")
 
-    #     acc2, seq2, nested2, flat2 = _run_single_sequence(
-    #         accession     = accession2,
-    #         email         = email,
-    #         start_codons  = start_codons,
-    #         min_length    = args.min_length,
-    #         ignore_nested = args.ignore_nested,
-    #         orf_csv       = "output/orfs_seq2.csv",
-    #         stats_csv     = "output/orf_stats_seq2.csv",
-    #         summary_txt   = "output/stats_summary_seq2.txt",
-    #         label         = "Sequence 2",
-    #     )
+        acc2, seq2, nested2, flat2 = _run_single_sequence(
+            accession     = accession2,
+            email         = email,
+            start_codons  = start_codons,
+            min_length    = args.min_length,
+            ignore_nested = args.ignore_nested,
+            orf_csv       = "output/orfs_seq2.csv",
+            stats_csv     = "output/orf_stats_seq2.csv",
+            summary_txt   = "output/stats_summary_seq2.txt",
+            label         = "Sequence 2",
+        )
 
-    #     if acc2 is None:
-    #         print("[ERROR] Pipeline failed for sequence 2.")
-    #         sys.exit(1)
+        if acc2 is None:
+            print("[ERROR] Pipeline failed for sequence 2.")
+            sys.exit(1)
 
-    #     # ── 5. Comparative analysis ───────────────────────────────────────
-    #     print("\n[ORCA] Running comparative analysis…")
+        # ── 5. Comparative analysis ───────────────────────────────────────
+        print("\n[ORCA] Running comparative analysis…")
 
-    #     # Enrich flat lists with codon_usage + gc_content_pct before comparing
-    #     enriched1 = calculate_orf_stats(flat1, seq1) if flat1 else []
-    #     enriched2 = calculate_orf_stats(flat2, seq2) if flat2 else []
+        # Enrich flat lists with codon_usage + gc_content_pct before comparing
+        enriched1 = calculate_orf_stats(flat1, seq1) if flat1 else []
+        enriched2 = calculate_orf_stats(flat2, seq2) if flat2 else []
 
-    #     comparison = compare_orf_sets(
-    #         flat_list_1 = enriched1,
-    #         flat_list_2 = enriched2,
-    #         acc1        = acc1,
-    #         acc2        = acc2,
-    #         seq1        = seq1,
-    #         seq2        = seq2,
-    #     )
+        comparison = compare_orf_sets(
+            flat_list_1 = enriched1,
+            flat_list_2 = enriched2,
+            acc1        = acc1,
+            acc2        = acc2,
+            seq1        = seq1,
+            seq2        = seq2,
+        )
 
-    #     write_comparative_report(comparison, outfile="output/comparative_report.txt")
-    #     write_comparative_csv(comparison,    outfile="output/comparative_stats.csv")
+        write_comparative_report(comparison, outfile="output/comparative_report.txt")
+        write_comparative_csv(comparison,    outfile="output/comparative_stats.csv")
 
-    #     # ── 6. Console summary of comparative findings ────────────────────
-    #     print("\n========== Comparative Summary ==========")
-    #     print(f"  {'Metric':<30} {acc1:>14}  {acc2:>14}")
-    #     print("  " + "-" * 62)
-    #     for label, key in [
-    #         ("Total ORFs",         "total_orfs"),
-    #         ("Complete ORFs",      "complete_orfs"),
-    #         ("Incomplete ORFs",    "incomplete_orfs"),
-    #         ("Nested ORFs",        "nested_orfs"),
-    #         ("Forward strand (+)", "plus_strand_orfs"),
-    #         ("Reverse strand (-)", "minus_strand_orfs"),
-    #     ]:
-    #         v1, v2 = comparison[key]
-    #         print(f"  {label:<30} {str(v1):>14}  {str(v2):>14}")
+        # ── 6. Console summary of comparative findings ────────────────────
+        print("\n========== Comparative Summary ==========")
+        print(f"  {'Metric':<30} {acc1:>14}  {acc2:>14}")
+        print("  " + "-" * 62)
+        for label, key in [
+            ("Total ORFs",         "total_orfs"),
+            ("Complete ORFs",      "complete_orfs"),
+            ("Incomplete ORFs",    "incomplete_orfs"),
+            ("Nested ORFs",        "nested_orfs"),
+            ("Forward strand (+)", "plus_strand_orfs"),
+            ("Reverse strand (-)", "minus_strand_orfs"),
+        ]:
+            v1, v2 = comparison[key]
+            print(f"  {label:<30} {str(v1):>14}  {str(v2):>14}")
 
-    #     gc1, gc2 = comparison["genomic_gc"]
-    #     print(f"  {'Genomic GC%':<30} {str(gc1):>14}  {str(gc2):>14}")
+        gc1, gc2 = comparison["genomic_gc"]
+        print(f"  {'Genomic GC%':<30} {str(gc1):>14}  {str(gc2):>14}")
 
-    #     shared_n = len(comparison["shared_start_sites"])
-    #     u1_n     = len(comparison["unique_to_seq1"])
-    #     u2_n     = len(comparison["unique_to_seq2"])
-    #     print(f"\n  Shared ORF start positions  : {shared_n}")
-    #     print(f"  Unique to {acc1:<14}: {u1_n}")
-    #     print(f"  Unique to {acc2:<14}: {u2_n}")
-    #     print("=========================================\n")
+        shared_n = len(comparison["shared_start_sites"])
+        u1_n     = len(comparison["unique_to_seq1"])
+        u2_n     = len(comparison["unique_to_seq2"])
+        print(f"\n  Shared ORF start positions  : {shared_n}")
+        print(f"  Unique to {acc1:<14}: {u1_n}")
+        print(f"  Unique to {acc2:<14}: {u2_n}")
+        print("=========================================\n")
 
-    # else:
-    #     # Single-sequence mode — nothing extra to do; files already written.
-    #     if not flat1:
-    #         print("[WARNING] No ORFs found. No output files written.")
+    else:
+        # Single-sequence mode — nothing extra to do; files already written.
+        if not flat1:
+            print("[WARNING] No ORFs found. No output files written.")
 
 
 if __name__ == "__main__":
