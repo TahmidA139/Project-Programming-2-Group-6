@@ -4,21 +4,21 @@ This Python module provides basic tools for analyzing Open Reading Frames (ORFs)
 
 ## nicoles commment:
 **Note on calculate_similarity_scores:**
-- We are dropping the position-by-position similarity score comparison between every ORF pair. The reason is that comparing every ORF to every other ORF scales very poorly. Like it means for a sequence with possibly hundreds of ORFs this becomes thousands of comparisons that are also not biologically meaningful without lotsssss more functions and analysis. So instead we think it would be best to replace similiarity scores   with codon usage analysis and comparative statistics between two sequences (this part will be in the stats files not ur stuff), which is more informative and computationally reasonable.
+- We are dropping the position-by-position similarity score comparison between every ORF pair. The reason is that comparing every ORF to every other ORF scales very poorly. Like it means for a sequence with possibly hundreds of ORFs this becomes thousands of comparisons that are also not biologically meaningful without lotsssss more functions and analysis. So instead we think it would be best to replace similiarity scores   with codon usage analysis (simpler math analysis) and comparative statistics between two sequences (comp stats will be in the stats files not ur stuff), which is more informative and computationally reasonable.
 
 **Functions that need to be in this file:**
-- **find_repeated_orfs** — this one she already has, just needs minor cleanup to match the new input format (list of ORF dicts instead of raw sequences)
-- **calculate_orf_stats** — the main workhorse of her file. Loops over every ORF and computes per-ORF statistics (GC content, protein length, codon usage). Calls the helper functions below to do the actual math
+- **find_repeated_orfs** — you have this! you do need to add list of ORF dicts instead of raw sequences tho 
+- **calculate_orf_stats** — Loops over every ORF and computes per-ORF statistics (GC content, protein length, codon usage). Calls the helper functions below to do the actual math (helpers keep functions less than 40 lines lol)
 - **_extract_sequence** — pulls the actual nucleotide sequence of each ORF out of the full DNA string. Needs to handle both forward and reverse strand ORFs separately
 -  **_gc_content** — calculates what percentage of a sequence is G or C bases. Called by calculate_orf_stats for each ORF
 - **_codon_usage** — counts how many times each codon appears in an ORF sequence. Called by calculate_orf_stats for each ORF
 - **_protein_length** — estimates how many amino acids the ORF would produce. Complete ORFs subtract the stop codon, incomplete ORFs use the full length
-- **_tally_by_frame** — counts how many ORFs are in each reading frame (e.g. +1, +2, +3, -1, -2, -3). Used by compare_orf_sets
-- **_length_stats** — computes min, max, and mean ORF length across all ORFs. Used by compare_orf_sets
-- **_codon_usage_totals** — aggregates codon usage counts across all ORFs into one summary dictionary. Used by compare_orf_sets which will need to be a function in the stats file
-- **_top_codons** — takes the aggregated codon usage and returns just the top 10 most used codons. Used by compare_orf_sets
+- **_tally_by_frame** — counts how many ORFs are in each reading frame (e.g. there are six reading frames we looked at: +1, +2, +3, -1, -2, -3). 
+- **_length_stats** — computes min, max, and mean ORF length across all ORFs. 
+- **_codon_usage_totals** — aggregates codon usage counts across all ORFs into one summary dictionary. 
+- **_top_codons** — takes the aggregated codon usage and returns just the top 10 most used codons. 
 
-if you want me to do this part and then you do the stats file which will legit just be to make the two txt summary output files with the comparison let me know the stats file will only need to have three functions:
+If you want me to do this part and then you do the stats file which will legit just be to make the two txt summary output files with the comparison let me know. If you want to keep your part let me know and ill start working on the stats file. The stats file will only need to have three functions:
 
 - **write_stats_to_file**  needs tp write a human-readable summary report to a text file that includes dataset-level counts, genomic GC content, longest ORF details, and a per-ORF table with GC content, protein length, and codon usage.
 
