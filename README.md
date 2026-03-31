@@ -5,17 +5,17 @@
 # ORCA (ORF Recognition and Comparative Annotator)
 
 ## Objective
-ORCA is a command-line bioinformatics pipeline that automates ORF detection and analysis in DNA sequences. It helps researchers identify potential protein-coding regions, compare ORF structure across two species or transcripts, and generates detailed statistics for further study. all from a single NCBI accession number (or two, for comparative mode)!
+ORCA is a command-line bioinformatics pipeline that automates ORF detection and analysis in DNA sequences. It helps researchers identify potential protein-coding regions, compare ORF structure across two transcripts and between species, and generates detailed statistics for further study. All from a single NCBI accession number (or two)!
 
 ## Features
 - Downloads DNA sequences in FASTA format directly from NCBI using an accession number
 - Validates and cleans sequences before analysis
 - Scans all six reading frames (+1, +2, +3, −1, −2, −3) using NumPy vectorization
 - Detects canonical (ATG) and non-canonical (GTG, TTG) start codons
-- Separates complete vs incomplete ORFs and flags nested ORFs
+- Separates complete vs incomplete ORFs and identifies nested ORFs
 - Computes per-ORF statistics: GC content, codon usage, and protein length
-- **Comparative mode** (`--accession2`): side-by-side ORF structure comparison, codon usage differences, and shared start-site analysis between two sequences
-- Writes all results to the `output/` folder as CSV and plain-text reports
+- **Comparative mode** (`--accession2`): side-by-side ORF structure comparison, codon usage differences, and other analysis between two sequences
+- Writes all results to the `output/` folder as .CSV and plain-text reports
 
 ## Project Structure
 
@@ -41,12 +41,16 @@ ORCA/
 │   │   └── orf_analysis.py            
 │   │                                  
 │   │
-│   └── statistics_lib/
-│       ├── __init__.py
-│       └── statistics_summary.py      
-│                                      
+│   └── statistics_lib/                # Erin Nicole Decocker 
+│   │   ├── __init__.py
+│   |   └── statistics_summary.py      
+│   │
+│   │
+│   ├── graphics_lib/                  # Tahmid Anwar
+│   │   ├── __init__.py
+│   │   └── graphics.py                                        
 │
-└── examples/
+└── examples/                          # Amanda Yaworsky
     ├── example_output.fasta
     └── example_run.txt
 ```
