@@ -56,8 +56,6 @@ def fetch_fasta_from_ncbi(accession: str, db: str = "nucleotide") -> str | None:
         # We wrap it in str() to convert it to a regular string, which
         # takes only the sequence (header already removed by SeqIO)
         sequence = str(record.seq)
-
-        print(f"[INFO] Fetched '{record.id}' — {len(sequence)} bp")
         return sequence
 
     except Exception as e:
