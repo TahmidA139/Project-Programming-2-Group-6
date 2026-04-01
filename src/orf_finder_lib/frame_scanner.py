@@ -78,27 +78,18 @@ def _find_stop_codon_index(
 
 def _mark_nested(all_orfs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Mark ORFs that overlap with a longer ORF on the same strand.
+    Add is_nested boolean to every ORF record in-place.
 
-    An ORF is considered nested/overlapping (and marked is_nested=True) if
-    there exists any other ORF on the same strand that:
-      1. Overlaps it (even partially), AND
-      2. Is strictly longer.
-
-    This matches NCBI ORF Finder's 'Nested ORFs removed' behaviour, which
-    removes shorter ORFs that overlap with any longer ORF on the same strand —
-    not just ORFs that are fully contained.
+    An ORF is nested if its start position falls strictly inside another
+    ORF's start-end range on the same strand and reading frame.
     """
     for i, orf in enumerate(all_orfs):
-        orf_s = min(orf["start"], orf["end"])
-        orf_e = max(orf["start"], orf["end"])
         orf["is_nested"] = any(
-            orf["strand"] == other["strand"]
-            and other["length_nt"] > orf["length_nt"]
-            and min(other["start"], other["end"]) < orf_e   # intervals overlap
-            and max(other["start"], other["end"]) > orf_s
+            other["start"] < orf["start"] < other["end"]
             for j, other in enumerate(all_orfs)
-            if i != j and other.get("end") is not None and orf.get("end") is not None
+            if i != j
+            and orf["strand"] == other["strand"]
+            and orf["frame"]  == other["frame"]
         )
     return all_orfs
 
