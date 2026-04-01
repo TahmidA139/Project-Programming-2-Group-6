@@ -9,16 +9,11 @@ This Python module provides basic tools for analyzing Open Reading Frames (ORFs)
 
 **Functions that need to be in this file:**
 - **find_repeated_orfs** — you have this! you do need to add list of ORF dicts instead of raw sequences tho 
-- **calculate_orf_stats** — Loops over every ORF and computes per-ORF statistics (GC content, protein length, codon usage). Calls the helper functions below to do the actual math (helpers keep functions less than 40 lines)
+- **calculate_orf_stats** — Loops over every ORF and computes per-ORF statistics (GC content, protein length). Calls the helper functions below to do the actual math (helpers keep functions less than 40 lines)
 - **extract_sequence** — pulls the actual nucleotide sequence of each ORF out of the full DNA string. Needs to handle both forward and reverse strand ORFs separately
 - **gc_content** — calculates what percentage of a sequence is G or C bases. Called by calculate_orf_stats for each ORF
 - **protein_length** — determines how many amino acids the ORF produces. 
 
-do all of those ↑↑↑ before touching the codon usage stuff. 
-
-- **codon_usage** — counts how many times each codon appears in an ORF sequence. Called by calculate_orf_stats for each ORF
-- **codon_usage_totals** — aggregates codon usage counts across all ORFs into one summary dictionary. 
-- **top_codons** — takes the aggregated codon usage and returns just the top 10 most used codons.
 
 If you want me to do this part and then you do the stats file which will legit just be to make the two txt summary output files with the comparison let me know. If you want to keep your part let me know and ill start working on the stats file. The stats file will only need to have three functions:
 
