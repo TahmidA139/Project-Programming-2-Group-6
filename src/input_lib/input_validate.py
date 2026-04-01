@@ -167,3 +167,20 @@ def run(
 
     # Step 4 — return clean sequence for ORF_finder.py
     return accession, clean_seq
+
+def _validate_start_codons(requested: list) -> list:
+    """
+    Upper-case and validate the user-supplied start codons.
+    Exits with a helpful message if any unrecognised codon is given.
+    """
+    upper   = [c.upper() for c in requested]
+    unknown = [c for c in upper if c not in VALID_START_CODONS]
+    if unknown:
+        print(
+            f"[ERROR] Unrecognised start codon(s): {', '.join(unknown)}\n"
+            f"        Allowed values are: {', '.join(sorted(VALID_START_CODONS))}"
+        )
+        sys.exit(1)
+    return upper
+
+
