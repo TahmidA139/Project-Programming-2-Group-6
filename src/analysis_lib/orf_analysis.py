@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""
-orf_analysis.py
-Amandas portion 
 
-This module finds repeated ORFs and calculates simple similarity scores. (Not anymore because we took out similirity scores)
-"""
-#!/usr/bin/env python3
 """
 ORF_analysis.py
 
