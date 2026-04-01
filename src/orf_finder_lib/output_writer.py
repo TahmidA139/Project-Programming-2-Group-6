@@ -52,12 +52,12 @@ def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
     print(f"  Forward strand (+)          : {plus_strand}")
     print(f"  Reverse strand (-)          : {minus_strand}")
     print(f"  Canonical   (ATG)           : {n_canonical}")
-    print(f"  Non-canonical               : {n_noncanonical}")
-
-    for sc in ("GTG", "TTG"):
-        n = len(noncanonical.get(sc, {}))
-        if n > 0:
-            print(f"    {sc}                       : {n}")
+    if n_noncanonical > 0:
+        print(f"  Non-canonical               : {n_noncanonical}")
+        for sc in ("GTG", "TTG"):
+            n = len(noncanonical.get(sc, {}))
+            if n > 0:
+                print(f"    {sc}                       : {n}")
 
     nested_found = find_nested(flat_list)
     print(f"  Nested ORFs detected        : {len(nested_found)}")
