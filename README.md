@@ -41,16 +41,16 @@ ORCA/
 │   │   └── orf_analysis.py            
 │   │                                  
 │   │
-│   └── statistics_lib/                # Erin Nicole Decocker 
+│   └── statistics_lib/                
 │   │   ├── __init__.py
 │   |   └── statistics_summary.py      
 │   │
 │   │
-│   ├── graphics_lib/                  # Tahmid Anwar
+│   ├── graphics_lib/                  # Erin Nicole Decocker 
 │   │   ├── __init__.py
 │   │   └── graphics.py                                        
 │
-└── examples/                          # Amanda Yaworsky
+└── examples/                          # Tahmid Anwar
     ├── example_output.fasta
     └── example_run.txt
 ```
