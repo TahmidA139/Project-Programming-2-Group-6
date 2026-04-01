@@ -29,6 +29,7 @@ import sys
 from src.input_lib.input_validate import run as validate_run, validate_start_codons
 from src.orf_finder_lib.orf_finder import find_orfs, CSV_FIELDNAMES
 from src.orf_finder_lib.output_writer import write_combined_csv, print_summary
+from src.graphics_lib.graphics import plot_orf_map, plot_comparative_orf_map
 
 VALID_START_CODONS = {"ATG", "GTG", "TTG"}
 
@@ -203,7 +204,20 @@ def main() -> None:
             flat2=flat2 if comparative else None,
             seq2=seq2 if comparative else None,
         )
-
+   
+    # ── 5. ORF map ────────────────────────────────────────────────────────
+    if comparative:
+        plot_comparative_orf_map(
+            flat1=flat1, seq_len1=len(seq1), acc1=acc1,
+            flat2=flat2, seq_len2=len(seq2), acc2=acc2,
+            output_path="output/orf_map.png",
+        )
+    else:
+        plot_orf_map(
+            flat_list=flat1, seq_len=len(seq1),
+            accession=acc1, output_path="output/orf_map.png",
+        )
+        
 if __name__ == "__main__":
     main()
 
