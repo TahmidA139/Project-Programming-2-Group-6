@@ -133,4 +133,4 @@ def write_combined_csv(
             fh.write("\n\n")
             _write_sequence_block(fh, writer, acc2, flat2, seq2)
 
-    print(f"[INFO] Combined ORF table written to: {output_path}")
+    
