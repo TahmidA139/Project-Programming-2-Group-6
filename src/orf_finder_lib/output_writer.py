@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-csv_writer.py
+output_writer.py
 
 Purpose:
     CSV output helpers for the ORCA pipeline.
@@ -48,7 +48,41 @@ def _write_sequence_block(
         row["sequence (5'->3')"] = extract_orf_sequence(orf, dna_sequence)
         writer.writerow(row)
 
+def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
+    """Print a short summary of ORF counts to stdout."""
+    complete   = nested["complete"]
+    incomplete = nested["incomplete"]
 
+    n_complete_canonical      = len(complete["canonical"])
+    n_incomplete_canonical    = len(incomplete["canonical"])
+    n_complete_noncanonical   = sum(len(v) for v in complete["noncanonical"].values())
+    n_incomplete_noncanonical = sum(len(v) for v in incomplete["noncanonical"].values())
+
+    total        = (n_complete_canonical + n_incomplete_canonical
+                    + n_complete_noncanonical + n_incomplete_noncanonical)
+    plus_strand  = sum(1 for o in flat_list if o.get("strand") == "+")
+    minus_strand = sum(1 for o in flat_list if o.get("strand") == "-")
+
+    header = f" ORF Summary{' — ' + label if label else ''} "
+    print(f"\n{'-' * 10}{header}{'-' * 10}")
+    print(f"  Total ORFs found            : {total}")
+    print(f"  Forward strand (+)          : {plus_strand}")
+    print(f"  Reverse strand (-)          : {minus_strand}")
+    print(f"  Complete   (ATG)            : {n_complete_canonical}")
+    print(f"  Incomplete (ATG)            : {n_incomplete_canonical}")
+    print(f"  Complete   (non-canonical)  : {n_complete_noncanonical}")
+    print(f"  Incomplete (non-canonical)  : {n_incomplete_noncanonical}")
+
+    for sc in ("GTG", "TTG"):
+        nc = len(complete["noncanonical"].get(sc, {}))
+        ni = len(incomplete["noncanonical"].get(sc, {}))
+        if nc + ni > 0:
+            print(f"    {sc} — complete: {nc}, incomplete: {ni}")
+
+    nested_found = find_nested(flat_list)
+    print(f"  Nested ORFs detected        : {len(nested_found)}")
+    print("-" * (20 + len(header)))
+    
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
