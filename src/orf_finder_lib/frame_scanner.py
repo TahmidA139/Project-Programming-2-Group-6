@@ -78,18 +78,27 @@ def _find_stop_codon_index(
 
 def _mark_nested(all_orfs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Add is_nested boolean to every ORF record in-place.
+    Mark ORFs that overlap with a longer ORF on the same strand.
 
-    An ORF is nested if its start position falls strictly inside another
-    ORF's start-end range on the same strand and reading frame.
+    An ORF is considered nested/overlapping (and marked is_nested=True) if
+    there exists any other ORF on the same strand that:
+      1. Overlaps it (even partially), AND
+      2. Is strictly longer.
+
+    This matches NCBI ORF Finder's 'Nested ORFs removed' behaviour, which
+    removes shorter ORFs that overlap with any longer ORF on the same strand —
+    not just ORFs that are fully contained.
     """
     for i, orf in enumerate(all_orfs):
+        orf_s = min(orf["start"], orf["end"])
+        orf_e = max(orf["start"], orf["end"])
         orf["is_nested"] = any(
-            other["start"] < orf["start"] < other["end"]
+            orf["strand"] == other["strand"]
+            and other["length_nt"] > orf["length_nt"]
+            and min(other["start"], other["end"]) < orf_e   # intervals overlap
+            and max(other["start"], other["end"]) > orf_s
             for j, other in enumerate(all_orfs)
-            if i != j
-            and orf["strand"] == other["strand"]
-            and orf["frame"]  == other["frame"]
+            if i != j and other.get("end") is not None and orf.get("end") is not None
         )
     return all_orfs
 
@@ -140,7 +149,14 @@ def scan_frame(
     dna_sequence: str, frame: int, start_codons: List[str],
     min_length: int, strand: str, seq_len: int,
 ) -> List[Dict[str, Any]]:
-    """Scan one reading frame and return all complete ORFs passing filters."""
+    """
+    Scan one reading frame and return all complete ORFs passing filters.
+
+    Within a single frame, multiple start codons can share the same stop codon
+    (each nested inside the longest). NCBI ORF Finder keeps only the longest
+    ORF per stop codon (i.e. the earliest start), so we deduplicate by stop
+    codon position here before returning results.
+    """
     codons = _sequence_to_codon_array(dna_sequence, frame)
     if codons.size == 0:
         return []
@@ -149,14 +165,25 @@ def scan_frame(
     for sc in start_codons:
         start_mask |= codons == sc
 
-    results = []
+    # Collect all candidate ORFs, keyed by their stop codon position.
+    # Iterating start codons in order (earliest first) means the first record
+    # stored for each stop position is always the longest — later ones are shorter
+    # and are simply skipped.
+    best_per_stop: Dict[int, Dict[str, Any]] = {}
     for ci in np.nonzero(start_mask)[0]:
         record = _process_start_codon(
             int(ci), codons, frame, strand, seq_len, min_length
         )
-        if record is not None:
-            results.append(record)
-    return results
+        if record is None:
+            continue
+        # rc_end is the stop codon's end position in the (possibly rc) scan
+        # coordinate space; use the raw end before coordinate flipping as the
+        # dedup key so both strands work correctly.
+        stop_key = _codon_index_to_nt(frame, _find_stop_codon_index(codons, int(ci))) # type: ignore[arg-type]
+        if stop_key not in best_per_stop:
+            best_per_stop[stop_key] = record   # first (longest) wins
+
+    return list(best_per_stop.values())
 
 
 # ---------------------------------------------------------------------------
