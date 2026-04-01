@@ -182,7 +182,7 @@ def validate_start_codons(requested: list) -> list:
     if noncanonical_requested:
         print(
             f"[WARNING] Non-canonical start codon(s) detected: {', '.join(noncanonical_requested)}\n"
-            f"          GTG and TTG produce many false positives in eukaryotic sequences.\n"
+            f"          GTG and TTG produce false positives in eukaryotic sequences.\n"
             f"          Consider using ATG only unless working with prokaryotic sequences."
         )
     
