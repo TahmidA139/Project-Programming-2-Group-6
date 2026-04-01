@@ -168,7 +168,7 @@ def run(
     # Step 4 — return clean sequence for ORF_finder.py
     return accession, clean_seq
 
-def _validate_start_codons(requested: list) -> list:
+def validate_start_codons(requested: list) -> list:
     """
     Upper-case and validate the user-supplied start codons.
     Exits with a helpful message if any unrecognised codon is given.
