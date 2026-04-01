@@ -12,7 +12,7 @@ ORCA is a command-line bioinformatics pipeline that automates ORF detection and 
 - Validates and cleans sequences before analysis
 - Scans all six reading frames (+1, +2, +3, −1, −2, −3) using NumPy vectorization
 - Detects canonical (ATG) and non-canonical (GTG, TTG) start codons
-- Separates complete vs incomplete ORFs and identifies nested ORFs
+- Identifies nested ORFs
 - Computes per-ORF statistics: GC content, codon usage, and protein length
 - **Comparative mode** (`--accession2`): side-by-side ORF structure comparison, codon usage differences, and other analysis between two sequences
 - Writes all results to the `output/` folder as .CSV and plain-text reports
