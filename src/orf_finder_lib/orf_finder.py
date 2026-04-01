@@ -46,7 +46,7 @@ DEFAULT_IGNORE_NESTED: bool      = False
 
 CSV_FIELDNAMES: List[str] = [
     "orf_id", "status", "strand", "start_codon",
-    "frame", "start", "end", "length_nt",
+    "frame", "start", "end", "length_nt", "sequence (5'->3')",
 ]
 
 
