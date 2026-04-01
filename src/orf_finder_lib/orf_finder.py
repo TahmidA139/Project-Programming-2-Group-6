@@ -165,10 +165,7 @@ def find_orfs(
     min_length : int, optional
         Minimum ORF length in nucleotides. Default: 30.
     ignore_nested : bool, optional
-        If True, overlapping shorter ORFs are removed, keeping only the
-        longest non-overlapping ORF from each overlapping group per strand.
-        Matches NCBI ORF Finder's 'Nested ORFs removed' behaviour.
-        Default: False.
+        If True, nested ORFs are removed from the output. Default: False.
 
     Returns
     -------
@@ -186,28 +183,17 @@ def find_orfs(
 
 
 def find_nested(flat_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Return ORFs that overlap with a longer ORF on the same strand.
-
-    Matches NCBI ORF Finder's definition: an ORF is considered nested if
-    any longer ORF on the same strand overlaps it (even partially).
-    Frame is intentionally NOT considered — this is purely coordinate-based.
-    """
+    """Return the subset of ORFs that are nested inside another ORF."""
     nested_orfs = []
     for i, orf in enumerate(flat_list):
-        orf_s = min(orf["start"], orf["end"])
-        orf_e = max(orf["start"], orf["end"])
         for j, other in enumerate(flat_list):
             if i == j:
                 continue
             if orf["strand"] != other["strand"]:
                 continue
-            other_s = min(other["start"], other["end"])
-            other_e = max(other["start"], other["end"])
-            # overlaps AND the other ORF is strictly longer
-            if (other_s < orf_e
-                    and other_e > orf_s
-                    and other["length_nt"] > orf["length_nt"]):
+            if orf["frame"] != other["frame"]:
+                continue
+            if other["start"] < orf["start"] < other["end"]:
                 nested_orfs.append(orf)
                 break
     return nested_orfs
