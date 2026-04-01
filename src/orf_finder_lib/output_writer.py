@@ -14,7 +14,7 @@ Location:
 
 Public API
 ----------
-    print_summary(nested, flat_list, nested_count, label)
+    print_summary(nested, flat_list, label)
     write_combined_csv(acc1, flat1, seq1, output_path, acc2, flat2, seq2)
 """
 
@@ -25,7 +25,7 @@ import os
 from typing import List, Optional
 
 from src.orf_finder_lib.frame_scanner import extract_orf_sequence
-from src.orf_finder_lib.orf_finder import CSV_FIELDNAMES
+from src.orf_finder_lib.orf_finder import CSV_FIELDNAMES, find_nested
 
 # Fieldnames with the sequence column appended
 OUTPUT_FIELDNAMES: List[str] = CSV_FIELDNAMES + ["sequence (5'->3')"]
@@ -35,22 +35,8 @@ OUTPUT_FIELDNAMES: List[str] = CSV_FIELDNAMES + ["sequence (5'->3')"]
 # Summary printing
 # ---------------------------------------------------------------------------
 
-def print_summary(nested: dict, flat_list: list, nested_count: int = 0, label: str = "") -> None:
-    """
-    Print a short summary of ORF counts to stdout.
-
-    Parameters
-    ----------
-    nested : dict
-        Nested dict returned by find_orfs().
-    flat_list : list
-        Flat ORF list returned by find_orfs() (may already be filtered).
-    nested_count : int
-        Number of nested ORFs detected before any ignore-nested filtering.
-        Pass the third return value of find_orfs() here.
-    label : str
-        Optional label shown in the header (e.g. accession number).
-    """
+def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
+    """Print a short summary of ORF counts to stdout."""
     canonical    = nested["canonical"]
     noncanonical = nested["noncanonical"]
 
@@ -73,7 +59,8 @@ def print_summary(nested: dict, flat_list: list, nested_count: int = 0, label: s
             if n > 0:
                 print(f"    {sc}                       : {n}")
 
-    print(f"  Nested ORFs detected        : {nested_count}")
+    nested_found = find_nested(flat_list)
+    print(f"  Nested ORFs detected        : {len(nested_found)}")
     print("-" * (20 + len(header)))
 
 
@@ -83,9 +70,9 @@ def print_summary(nested: dict, flat_list: list, nested_count: int = 0, label: s
 
 def _write_sequence_block(
     fh,
-    writer:       csv.DictWriter,
-    accession:    str,
-    flat_list:    list,
+    writer: csv.DictWriter,
+    accession: str,
+    flat_list: list,
     dna_sequence: str,
 ) -> None:
     """Write one accession header + ORF rows into an already-open CSV file."""
@@ -145,3 +132,5 @@ def write_combined_csv(
         if acc2 is not None and flat2 is not None and seq2 is not None:
             fh.write("\n\n")
             _write_sequence_block(fh, writer, acc2, flat2, seq2)
+
+    
