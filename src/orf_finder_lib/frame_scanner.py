@@ -172,3 +172,22 @@ def scan_frame(
         if record is not None:
             results.append(record)
     return results
+
+def extract_orf_sequence(orf: dict, forward_seq: str) -> str:
+    """
+    Extract the ORF nucleotide sequence in 5'->3' direction.
+
+    For '+' strand ORFs, slices directly from forward_seq.
+    For '-' strand ORFs, takes the reverse complement of the relevant slice
+    so the result always reads 5'->3'.
+    Incomplete ORFs (end is None) are extracted to the end of the sequence.
+    """
+    start  = orf["start"]
+    end    = orf["end"]
+    strand = orf["strand"]
+
+    if strand == "+":
+        return forward_seq[start:end]
+    else:
+        region = forward_seq[start:end] if end is not None else forward_seq[start:]
+        return _reverse_complement(region)
