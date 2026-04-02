@@ -3,9 +3,10 @@
 """
 orf_finder.py
 
+Nicole Decocker's Part
+
 Purpose:
-    ORF detection across all six reading frames.
-    Low-level scanning helpers live in frame_scanner.py.
+    Im loosing my mind trying to get the code to work correclty so when everything is figured out i will add docstrings. 
 """
 
 from __future__ import annotations
@@ -121,24 +122,6 @@ def find_orfs(
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Find all complete ORFs in all six reading frames of a DNA sequence.
-
-    Parameters
-    ----------
-    dna_sequence : str
-        Upper-case DNA string (A, T, G, C).
-    start_codons : list of str, optional
-        Start codons to search for. Default: ['ATG'].
-    min_length : int, optional
-        Minimum ORF length in nucleotides. Default: 30.
-    ignore_nested : bool, optional
-        If True, nested ORFs are removed from the output. Default: False.
-
-    Returns
-    -------
-    nested_dict : dict
-        Hierarchical dict organised by canonical/noncanonical.
-    flat_list : list of dict
-        Flat list of all ORF records with orf_id, strand, is_nested fields.
     """
     dna_sequence = dna_sequence.upper().strip()
 
