@@ -96,12 +96,12 @@ def write_stats_to_file(
 # Comparative report
 # ---------------------------------------------------------------------------
 
-def _avg_gc(orfs: List[Dict[str, Any]]) -> float:
+def avg_gc(orfs: List[Dict[str, Any]]) -> float:
     """Return average GC content across a list of ORFs."""
     return sum(o["gc_content"] for o in orfs) / len(orfs) if orfs else 0.0
 
 
-def _strand_counts(orfs: List[Dict[str, Any]]) -> Tuple[int, int]:
+def strand_counts(orfs: List[Dict[str, Any]]) -> Tuple[int, int]:
     """Return (plus_count, minus_count) for a list of ORFs."""
     plus  = sum(1 for o in orfs if o.get("strand") == "+")
     minus = sum(1 for o in orfs if o.get("strand") == "-")
@@ -135,10 +135,10 @@ def write_comparative_report(
         fh.write("=== COMPARATIVE ORF REPORT ===\n\n")
 
         for label, orfs in ((acc1, flat1), (acc2, flat2)):
-            plus, minus = _strand_counts(orfs)
+            plus, minus = strand_counts(orfs)
             fh.write(f"[{label}]\n")
             fh.write(f"  Total ORFs      : {len(orfs)}\n")
-            fh.write(f"  Average GC      : {_avg_gc(orfs):.2f}%\n")
+            fh.write(f"  Average GC      : {avg_gc(orfs):.2f}%\n")
             fh.write(f"  Forward strand  : {plus}\n")
             fh.write(f"  Reverse strand  : {minus}\n\n")
 
