@@ -26,13 +26,11 @@ import csv
 import os
 import sys
 
-from src.input_lib.input_validate import run as validate_run, validate_start_codons
-from src.orf_finder_lib.orf_finder import find_orfs, CSV_FIELDNAMES
-from src.orf_finder_lib.output_writer import write_combined_csv, print_summary
-from src.graphics_lib.graphics import plot_orf_map, plot_comparative_orf_map
+# REMOVE these three lines:
 from orf_finder import find_all_orfs
 from ORF_analysis import calculate_orf_stats, find_repeated_orfs
 from orf_stats import write_stats_to_file, write_comparative_report, write_comparative_csv
+from src.analysis_lib.orf_analysis import (calculate_orf_stats, find_repeated_orfs, write_stats_to_file, write_comparative_report, write_comparative_csv,)
 
 VALID_START_CODONS = {"ATG", "GTG", "TTG"}
 
@@ -199,15 +197,19 @@ def main() -> None:
         if acc2 is None:
             print("[ERROR] Pipeline failed for sequence 2.")
             sys.exit(1)
-            
-    write_combined_csv(
+
+        write_combined_csv(
             acc1=acc1, flat1=flat1, seq1=seq1,
             output_path=args.output,
-            acc2=acc2 if comparative else None,
-            flat2=flat2 if comparative else None,
-            seq2=seq2 if comparative else None,
+            acc2=acc2, flat2=flat2, seq2=seq2,
         )
-   
+
+    else:
+        write_combined_csv(
+            acc1=acc1, flat1=flat1, seq1=seq1,
+            output_path=args.output,
+        )
+
     # ── 5. ORF map ────────────────────────────────────────────────────────
     if comparative:
         plot_comparative_orf_map(
@@ -221,22 +223,21 @@ def main() -> None:
             accession=acc1, output_path="output/orf_map.png",
         )
 
-    # Find ORFs
-    orfs = find_all_orfs(dna)
+    # ── 6. Enrich ORFs with sequence/GC/protein stats ────────────────────
+    calculate_orf_stats(flat1, seq1)
+    repeats1 = find_repeated_orfs(flat1)
+    if repeats1:
+        print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
+    write_stats_to_file(flat1, filename="output/orf_summary.txt")
 
-    # Add stats
-    orfs = calculate_orf_stats(orfs, dna)
-
-    # Repeats
-    repeats = find_repeated_orfs(orfs)
-
-    print("Repeated ORFs:", repeats)
-
-    # Write outputs
-    write_stats_to_file(orfs)
-    write_comparative_report(orfs, orfs)
-    write_comparative_csv(orfs, orfs)
-
+    if comparative:
+        calculate_orf_stats(flat2, seq2)
+        repeats2 = find_repeated_orfs(flat2)
+        if repeats2:
+            print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
+        write_stats_to_file(flat2, filename="output/orf_summary_seq2.txt")
+        write_comparative_report(flat1, flat2, acc1=acc1, acc2=acc2)
+        write_comparative_csv(flat1, flat2, acc1=acc1, acc2=acc2)
 
 if __name__ == "__main__":
     main()
