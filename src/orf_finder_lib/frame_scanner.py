@@ -3,7 +3,10 @@
 """
 frame_scanner.py
 
+Nicole Decocker's part
+
 Purpose:
+     Im loosing my mind trying to get the code to work correclty so when everything is figured out i will add docstrings. 
      
 """
 
@@ -66,15 +69,6 @@ def _find_stop_codon_index(
 def _mark_nested(all_orfs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Mark ORFs that overlap with a longer ORF on the same strand.
-
-    An ORF is considered nested/overlapping (and marked is_nested=True) if
-    there exists any other ORF on the same strand that:
-      1. Overlaps it (even partially), AND
-      2. Is strictly longer.
-
-    This matches NCBI ORF Finder's 'Nested ORFs removed' behaviour, which
-    removes shorter ORFs that overlap with any longer ORF on the same strand —
-    not just ORFs that are fully contained.
     """
     for i, orf in enumerate(all_orfs):
         orf_s = min(orf["start"], orf["end"])
@@ -104,8 +98,7 @@ def _process_start_codon(
     strand: str, seq_len: int, min_length: int,
 ) -> Optional[Dict[str, Any]]:
     """
-    Build one ORF record for a single start codon index, or None if no stop
-    codon is found or the ORF is too short.
+    Build one ORF record for a single start codon index, or None if no stop codon is found or the ORF is too short.
     """
     rc_start = _codon_index_to_nt(frame, ci)
     stop_ci  = _find_stop_codon_index(codons, ci)
@@ -134,11 +127,6 @@ def scan_frame(
 ) -> List[Dict[str, Any]]:
     """
     Scan one reading frame and return all complete ORFs passing filters.
-
-    Within a single frame, multiple start codons can share the same stop codon
-    (each nested inside the longest). NCBI ORF Finder keeps only the longest
-    ORF per stop codon (i.e. the earliest start), so we deduplicate by stop
-    codon position here before returning results.
     """
     codons = _sequence_to_codon_array(dna_sequence, frame)
     if codons.size == 0:
