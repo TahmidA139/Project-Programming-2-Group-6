@@ -38,16 +38,14 @@ ORCA/
 │   │
 │   ├── orf_finder_lib/                # Erin Nicole Decocker
 │   │   ├── __init__.py
-│   │   └── orf_finder.py              
+│   │   └── frame_scanner.py   
+│   │   └── orf_finder.py
+│   │   └── output_writer.py                
 │   │
 │   ├── analysis_lib/                  # Amanda Yaworsky
 │   │   ├── __init__.py
 │   │   └── orf_analysis.py            
-│   │                                  
-│   │
-│   └── statistics_lib/                
-│   │   ├── __init__.py
-│   |   └── statistics_summary.py      
+│   │   └── statistics_summary.py                                    
 │   │
 │   │
 │   ├── graphics_lib/                  # Erin Nicole Decocker 
@@ -213,9 +211,8 @@ publication-quality plots for visualization.
 
 Summary statistics include:
 - Total number of ORFs detected
-- Number of repeated ORFs
-- Longest and shortest ORF lengths
-- Average ORF length
+- Longest ORF lengths
+- codon useage throughout the sequences 
 - ORF counts per reading frame
 - Forward vs reverse strand distribution
 
@@ -244,10 +241,10 @@ Expected files in `output/` after a successful run:
 cleaned_sequence.fasta
 orfs.csv
 orf_analysis.csv
-statistics_summary.txt
+orf_summary.txt
 plots/
-    orf_length_dist.png
-    strand_distribution.png
+    orf_map.png
+    codon_comparison.png
     similarity_heatmap.png
 ```
 
@@ -255,7 +252,7 @@ plots/
 
 ## Notes
 
-- Always activate `orf_project_env` before running any script.
+- Always activate `ORCA` before running any script.
 - The NCBI Entrez API requires a valid email — pass it with `--email`.
 - Accession numbers can be found at: https://www.ncbi.nlm.nih.gov/nucleotide/
 - The `output/` folder is created automatically on the first run.
@@ -312,10 +309,10 @@ Single sequence — all defaults (ATG only, min 30 nt, nested ORFs included):
 python -m src.main --accession NM_001301717 --email you@example.com
 ```
 
-Single sequence — all three start codons, minimum 60 nt, no nested ORFs:
+Single sequence — all three start codons, minimum 150 nt, no nested ORFs:
 ```bash
 python -m src.main --accession NM_001301717 --email you@example.com \
-    --start-codons ATG GTG TTG --min-length 60 --ignore-nested
+    --start-codons ATG GTG TTG --min-length 150 --ignore-nested
 ```
 
 Comparative mode — two accessions side by side:
