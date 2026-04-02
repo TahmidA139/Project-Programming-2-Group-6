@@ -6,6 +6,20 @@ Library setup:
 ```
 src/orf_finder_lib/
 ├── frame_scanner.py   # Low-level sequence utilities and per-frame scanning
+
+Forward DNA string
+       │
+       ├──► scan frames 0,1,2 on + strand ──────────────┐
+       │                                                  │
+       └──► reverse_complement ──► scan frames 0,1,2    ──┤
+                                   on - strand            │
+                                                          ▼
+                                              collect all ORF dicts
+                                                          │
+                                                    _mark_nested()
+                                                          │
+                                                   final ORF list
+
 ├── orf_finder.py      # orchestrates all six frames and builds output
 └── output_writer.py   # Summary printing and CSV export
 ```
