@@ -1,210 +1,245 @@
 #!/usr/bin/env python3
-
+# -*- coding: utf-8 -*-
 """
-ORF_analysis.py
+orf_analysis.py
 
-Handles ORF extraction and per-ORF statistics.
+Purpose:
+    Per-ORF statistics, repeated ORF detection, and summary/comparative
+    file writing for the ORCA pipeline.
 """
 
-# -------------------------------
-# REQUIRED FUNCTIONS
-# -------------------------------
+from __future__ import annotations
 
-def find_repeated_orfs(orfs):
-    """
-    Input: list of ORF dicts
-    Output: dict of repeated sequences
-    """
-    counts = {}
+import csv
+from typing import Any, Dict, List, Optional
 
-    for orf in orfs:
-        seq = orf["sequence"]
-        counts[seq] = counts.get(seq, 0) + 1
+from src.orf_finder_lib.frame_scanner import extract_orf_sequence
 
-    return {seq: count for seq, count in counts.items() if count > 1}
+# ---------------------------------------------------------------------------
+# Sequence-level statistics
+# ---------------------------------------------------------------------------
 
-
-def extract_sequence(dna, start, end, strand="+"):
-    """
-    Extract sequence from DNA.
-    Handles reverse strand.
-    """
-    seq = dna[start:end]
-
-    if strand == "-":
-        complement = str.maketrans("ATGC", "TACG")
-        seq = seq.translate(complement)[::-1]
-
-    return seq
-
-
-def gc_content(sequence):
-    """
-    % GC content
-    """
+def gc_content(sequence: str) -> float:
+    """Return the GC content of a nucleotide sequence as a percentage."""
     if not sequence:
-        return 0
-
+        return 0.0
     gc = sequence.count("G") + sequence.count("C")
     return (gc / len(sequence)) * 100
 
 
-def protein_length(sequence):
-    """
-    Number of amino acids
-    """
+def protein_length(sequence: str) -> int:
+    """Return the number of complete codons (amino acids) in a nucleotide sequence."""
     return len(sequence) // 3
 
 
-def calculate_orf_stats(orfs, dna_sequence):
+def codon_usage(sequence: str) -> Dict[str, int]:
     """
-    Adds sequence, GC content, and protein length to each ORF
+    Return a codon-frequency dict for a nucleotide sequence.
+    Incomplete trailing codons are ignored.
     """
-    for orf in orfs:
-        start = orf["start"]
-        end = orf["end"]
-        strand = orf.get("strand", "+")
-
-        seq = extract_sequence(dna_sequence, start, end, strand)
-
-        orf["sequence"] = seq
-        orf["gc_content"] = gc_content(seq)
-        orf["protein_length"] = protein_length(seq)
-
-    return orfs
-
-import csv
-# -------------------------------
-# Helper: Codon Usage
-# -------------------------------
-
-def codon_usage(sequence):
-    counts = {}
-
+    counts: Dict[str, int] = {}
     for i in range(0, len(sequence) - 2, 3):
-        codon = sequence[i:i+3]
+        codon = sequence[i:i + 3]
         counts[codon] = counts.get(codon, 0) + 1
-
     return counts
 
 
-# -------------------------------
-# 1. WRITE SUMMARY FILE
-# -------------------------------
+# ---------------------------------------------------------------------------
+# ORF-level stats
+# ---------------------------------------------------------------------------
 
-def write_stats_to_file(orfs, filename="orf_summary.txt"):
-    total_orfs = len(orfs)
+def calculate_orf_stats(
+    flat_list: List[Dict[str, Any]],
+    dna_sequence: str,
+) -> List[Dict[str, Any]]:
+    """
+    Enrich each ORF dict (as returned by find_orfs()) with:
+        - sequence    : nucleotide sequence, 5'->3', correct for strand
+        - gc_content  : GC% of that sequence
+        - protein_length : number of complete codons
 
-    avg_gc = sum(o["gc_content"] for o in orfs) / total_orfs if total_orfs else 0
-    longest = max(orfs, key=lambda x: len(x["sequence"]), default=None)
+    Parameters
+    ----------
+    flat_list : list of dict
+        Flat ORF list returned by find_orfs().
+    dna_sequence : str
+        Forward-strand DNA used to find the ORFs.
 
-    with open(filename, "w") as f:
-        f.write("=== ORF SUMMARY REPORT ===\n\n")
+    Returns
+    -------
+    The same list, mutated in-place and returned.
+    """
+    for orf in flat_list:
+        seq = extract_orf_sequence(orf, dna_sequence)
+        orf["sequence"]       = seq
+        orf["gc_content"]     = gc_content(seq)
+        orf["protein_length"] = protein_length(seq)
+    return flat_list
 
-        # Dataset stats
-        f.write(f"Total ORFs: {total_orfs}\n")
-        f.write(f"Average GC Content: {avg_gc:.2f}%\n")
+
+# ---------------------------------------------------------------------------
+# Repeated-ORF detection
+# ---------------------------------------------------------------------------
+
+def find_repeated_orfs(flat_list: List[Dict[str, Any]]) -> Dict[str, int]:
+    """
+    Identify ORF nucleotide sequences that appear more than once.
+
+    Requires calculate_orf_stats() to have been called first so that
+    each ORF dict contains a 'sequence' key.
+
+    Returns
+    -------
+    dict mapping repeated sequence -> occurrence count
+    """
+    counts: Dict[str, int] = {}
+    for orf in flat_list:
+        seq = orf.get("sequence", "")
+        if seq:
+            counts[seq] = counts.get(seq, 0) + 1
+    return {seq: n for seq, n in counts.items() if n > 1}
+
+
+# ---------------------------------------------------------------------------
+# File writers
+# ---------------------------------------------------------------------------
+
+def write_stats_to_file(
+    flat_list: List[Dict[str, Any]],
+    filename: str = "output/orf_summary.txt",
+) -> None:
+    """
+    Write a human-readable summary report for one sequence's ORF set.
+
+    Sections
+    --------
+    1. Dataset-level stats (total ORFs, average GC)
+    2. Longest ORF details
+    3. Per-ORF table  (index, length, GC%, protein length, strand, frame)
+    4. Aggregate codon-usage table
+    """
+    total_orfs = len(flat_list)
+    avg_gc = (
+        sum(o["gc_content"] for o in flat_list) / total_orfs
+        if total_orfs else 0.0
+    )
+    longest: Optional[Dict[str, Any]] = (
+        max(flat_list, key=lambda x: len(x.get("sequence", "")))
+        if flat_list else None
+    )
+
+    with open(filename, "w") as fh:
+        fh.write("=== ORF SUMMARY REPORT ===\n\n")
+
+        fh.write(f"Total ORFs        : {total_orfs}\n")
+        fh.write(f"Average GC Content: {avg_gc:.2f}%\n")
 
         if longest:
-            f.write("\nLongest ORF:\n")
-            f.write(f"Length: {len(longest['sequence'])}\n")
-            f.write(f"GC Content: {longest['gc_content']:.2f}%\n")
+            fh.write("\nLongest ORF:\n")
+            fh.write(f"  orf_id        : {longest.get('orf_id', 'N/A')}\n")
+            fh.write(f"  Length (nt)   : {len(longest['sequence'])}\n")
+            fh.write(f"  Strand        : {longest.get('strand', '?')}\n")
+            fh.write(f"  Frame         : {longest.get('frame', '?')}\n")
+            fh.write(f"  GC Content    : {longest['gc_content']:.2f}%\n")
 
-        # Table
-        f.write("\n--- Per ORF Stats ---\n")
-        f.write(f"{'Index':<6}{'Length':<10}{'GC%':<10}{'Protein Len':<12}\n")
+        # Per-ORF table
+        fh.write("\n--- Per-ORF Stats ---\n")
+        header = f"{'#':<5}{'orf_id':<12}{'Length':>8}{'GC%':>8}{'Prot_len':>10}{'Strand':>8}{'Frame':>7}\n"
+        fh.write(header)
+        fh.write("-" * len(header.rstrip()) + "\n")
 
-        for i, orf in enumerate(orfs):
-            f.write(f"{i:<6}{len(orf['sequence']):<10}{orf['gc_content']:<10.2f}{orf['protein_length']:<12}\n")
+        for i, orf in enumerate(flat_list):
+            fh.write(
+                f"{i:<5}{orf.get('orf_id',''):<12}"
+                f"{len(orf.get('sequence',''))!s:>8}"
+                f"{orf['gc_content']:>8.2f}"
+                f"{orf['protein_length']:>10}"
+                f"{orf.get('strand','?'):>8}"
+                f"{orf.get('frame','?')!s:>7}\n"
+            )
 
-        # Codon usage
-        f.write("\n--- Codon Usage ---\n")
-        total_codons = {}
-
-        for orf in orfs:
-            usage = codon_usage(orf["sequence"])
-            for codon, count in usage.items():
+        # Aggregate codon usage
+        fh.write("\n--- Codon Usage (aggregate) ---\n")
+        total_codons: Dict[str, int] = {}
+        for orf in flat_list:
+            for codon, count in codon_usage(orf.get("sequence", "")).items():
                 total_codons[codon] = total_codons.get(codon, 0) + count
 
         for codon, count in sorted(total_codons.items()):
-            f.write(f"{codon}: {count}\n")
+            fh.write(f"  {codon}: {count}\n")
+
+    print(f"[INFO] Summary written to '{filename}'")
 
 
-# -------------------------------
-# 2. COMPARATIVE REPORT (TEXT)
-# -------------------------------
+def write_comparative_report(
+    flat1: List[Dict[str, Any]],
+    flat2: List[Dict[str, Any]],
+    acc1: str = "Sequence 1",
+    acc2: str = "Sequence 2",
+    filename: str = "output/comparison.txt",
+) -> None:
+    """
+    Write a side-by-side text comparison of two ORF sets.
+    Requires calculate_orf_stats() to have been called on both lists.
+    """
+    def avg_gc(orfs: List[Dict[str, Any]]) -> float:
+        return sum(o["gc_content"] for o in orfs) / len(orfs) if orfs else 0.0
 
-def write_comparative_report(orfs1, orfs2, filename="comparison.txt"):
-    def avg_gc(orfs):
-        return sum(o["gc_content"] for o in orfs) / len(orfs) if orfs else 0
+    def strand_counts(orfs: List[Dict[str, Any]]) -> tuple[int, int]:
+        plus  = sum(1 for o in orfs if o.get("strand") == "+")
+        minus = sum(1 for o in orfs if o.get("strand") == "-")
+        return plus, minus
 
-    with open(filename, "w") as f:
-        f.write("=== COMPARATIVE REPORT ===\n\n")
+    with open(filename, "w") as fh:
+        fh.write("=== COMPARATIVE ORF REPORT ===\n\n")
 
-        f.write("Dataset 1:\n")
-        f.write(f"ORFs: {len(orfs1)}\n")
-        f.write(f"Avg GC: {avg_gc(orfs1):.2f}%\n\n")
+        for label, orfs in ((acc1, flat1), (acc2, flat2)):
+            plus, minus = strand_counts(orfs)
+            fh.write(f"[{label}]\n")
+            fh.write(f"  Total ORFs      : {len(orfs)}\n")
+            fh.write(f"  Average GC      : {avg_gc(orfs):.2f}%\n")
+            fh.write(f"  Forward strand  : {plus}\n")
+            fh.write(f"  Reverse strand  : {minus}\n\n")
 
-        f.write("Dataset 2:\n")
-        f.write(f"ORFs: {len(orfs2)}\n")
-        f.write(f"Avg GC: {avg_gc(orfs2):.2f}%\n\n")
+        # Shared / unique sequences
+        seqs1 = {o.get("sequence", "") for o in flat1}
+        seqs2 = {o.get("sequence", "") for o in flat2}
+        shared = seqs1 & seqs2
+        fh.write(f"Shared ORF sequences  : {len(shared)}\n")
+        fh.write(f"Unique to {acc1:<12}: {len(seqs1 - seqs2)}\n")
+        fh.write(f"Unique to {acc2:<12}: {len(seqs2 - seqs1)}\n")
+
+    print(f"[INFO] Comparative report written to '{filename}'")
 
 
-# -------------------------------
-# 3. COMPARATIVE CSV (CODON DELTA)
-# -------------------------------
-
-def write_comparative_csv(orfs1, orfs2, filename="codon_comparison.csv"):
-    def total_codons(orfs):
-        totals = {}
+def write_comparative_csv(
+    flat1: List[Dict[str, Any]],
+    flat2: List[Dict[str, Any]],
+    acc1: str = "Sequence 1",
+    acc2: str = "Sequence 2",
+    filename: str = "output/codon_comparison.csv",
+) -> None:
+    """
+    Write a CSV comparing codon-usage frequencies between two ORF sets.
+    Columns: Codon, <acc1>_count, <acc2>_count, Delta (acc1 - acc2)
+    """
+    def total_codons(orfs: List[Dict[str, Any]]) -> Dict[str, int]:
+        totals: Dict[str, int] = {}
         for orf in orfs:
-            usage = codon_usage(orf["sequence"])
-            for codon, count in usage.items():
+            for codon, count in codon_usage(orf.get("sequence", "")).items():
                 totals[codon] = totals.get(codon, 0) + count
         return totals
 
-    codons1 = total_codons(orfs1)
-    codons2 = total_codons(orfs2)
-
-    all_codons = set(codons1.keys()).union(codons2.keys())
+    codons1 = total_codons(flat1)
+    codons2 = total_codons(flat2)
+    all_codons = sorted(set(codons1) | set(codons2))
 
     with open(filename, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["Codon", "Seq1", "Seq2", "Delta"])
-
-        for codon in sorted(all_codons):
+        writer.writerow(["Codon", f"{acc1}_count", f"{acc2}_count", "Delta"])
+        for codon in all_codons:
             c1 = codons1.get(codon, 0)
             c2 = codons2.get(codon, 0)
             writer.writerow([codon, c1, c2, c1 - c2])
-            
-"""
-#Possible pipline when the other parts are completed :)
-from orf_finder import find_all_orfs
-from ORF_analysis import calculate_orf_stats, find_repeated_orfs
-from orf_stats import write_stats_to_file, write_comparative_report, write_comparative_csv
 
-
-def main():
-    dna = "ATGAAATAGATGCCCTAAATGAAATGA"
-
-    # Find ORFs
-    orfs = find_all_orfs(dna)
-
-    # Add stats
-    orfs = calculate_orf_stats(orfs, dna)
-
-    # Repeats
-    repeats = find_repeated_orfs(orfs)
-
-    print("Repeated ORFs:", repeats)
-
-    # Write outputs
-    write_stats_to_file(orfs)
-    write_comparative_report(orfs, orfs)
-    write_comparative_csv(orfs, orfs)
-
-
-if __name__ == "__main__":
-    main()
-"""
-
+    print(f"[INFO] Codon comparison CSV written to '{filename}'")
