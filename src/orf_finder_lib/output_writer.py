@@ -3,11 +3,10 @@
 """
 output_writer.py
 
+Nicole Decocker's Part
+
 Purpose:
-    Output helpers for the ORCA pipeline.
-    Handles terminal summary printing and writing ORF tables (with extracted
-    nucleotide sequences) to a single CSV file, optionally combining results
-    from two sequences in comparative mode.
+    Im loosing my mind trying to get the code to work correclty so when everything is figured out i will add docstrings. 
 """
 
 from __future__ import annotations
@@ -78,27 +77,6 @@ def write_combined_csv(
 ) -> None:
     """
     Write one or two ORF tables into a single CSV file.
-
-    Each sequence block begins with a row containing just the accession number,
-    followed by the column header row and then one row per ORF. In comparative
-    mode the two blocks are separated by two blank rows.
-
-    Parameters
-    ----------
-    acc1 : str
-        Accession number for the first sequence (used as a section header).
-    flat1 : list of dict
-        Flat ORF list returned by find_orfs() for the first sequence.
-    seq1 : str
-        Forward-strand DNA sequence for sequence 1 (used to extract ORF seqs).
-    output_path : str
-        Destination file path for the CSV.
-    acc2 : str, optional
-        Accession number for the second sequence (comparative mode only).
-    flat2 : list of dict, optional
-        Flat ORF list for the second sequence (comparative mode only).
-    seq2 : str, optional
-        Forward-strand DNA sequence for sequence 2 (comparative mode only).
     """
     if os.path.dirname(output_path):
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
