@@ -7,16 +7,6 @@ Purpose:
     Per-ORF statistics and repeated ORF detection for the ORCA pipeline.
     Writing/reporting functions live in statistics_summary.py.
 
-Location:
-    src/analysis_lib/orf_analysis.py
-
-Public API
-----------
-    gc_content(sequence)
-    protein_length(sequence)
-    codon_usage(sequence)
-    calculate_orf_stats(flat_list, dna_sequence)
-    find_repeated_orfs(flat_list)
 """
 
 from __future__ import annotations
