@@ -17,10 +17,6 @@ STOP_CODONS: List[str] = ["TAA", "TAG", "TGA"]
 _COMPLEMENT: Dict[str, str] = {"A": "T", "T": "A", "G": "C", "C": "G", "N": "N",}
 
 
-# ---------------------------------------------------------------------------
-# Sequence utilities
-# ---------------------------------------------------------------------------
-
 def _reverse_complement(dna_sequence: str) -> str:
     """Return the reverse complement of a DNA sequence using NumPy."""
     char_arr   = np.array(list(dna_sequence), dtype="<U1")
@@ -55,11 +51,6 @@ def _rc_coords_to_forward(
     fwd_start = seq_len - rc_end
     return fwd_start, fwd_end
 
-
-# ---------------------------------------------------------------------------
-# Stop codon search
-# ---------------------------------------------------------------------------
-
 def _find_stop_codon_index(
     codons: np.ndarray, start_codon_idx: int
 ) -> Optional[int]:
@@ -71,10 +62,6 @@ def _find_stop_codon_index(
     candidates = np.nonzero(stop_mask)[0]
     return int(candidates[0]) if candidates.size > 0 else None
 
-
-# ---------------------------------------------------------------------------
-# Nesting annotation
-# ---------------------------------------------------------------------------
 
 def _mark_nested(all_orfs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
@@ -102,10 +89,6 @@ def _mark_nested(all_orfs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         )
     return all_orfs
 
-
-# ---------------------------------------------------------------------------
-# Core frame scanner
-# ---------------------------------------------------------------------------
 
 def _resolve_coords(
     strand: str, rc_start: int, rc_end: int, seq_len: int
@@ -185,10 +168,6 @@ def scan_frame(
 
     return list(best_per_stop.values())
 
-
-# ---------------------------------------------------------------------------
-# ORF sequence extraction
-# ---------------------------------------------------------------------------
 
 def extract_orf_sequence(orf: dict, forward_seq: str) -> str:
     """
