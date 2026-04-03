@@ -3,6 +3,8 @@
 """
 orf_analysis.py
 
+Amanda Yaworsky's part 
+
 Purpose:
     Per-ORF statistics and repeated ORF detection for the ORCA pipeline.
     Writing/reporting functions live in statistics_summary.py.
