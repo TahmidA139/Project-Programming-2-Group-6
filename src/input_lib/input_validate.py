@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
+## Tahmid Anwar's Part 
+
+
 ## Title: Input Validation Script
 ## Input:
 ##   - accession (str): NCBI nucleotide accession number.
