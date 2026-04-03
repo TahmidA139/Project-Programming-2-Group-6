@@ -3,6 +3,8 @@
 """
 statistics_summary.py
 
+Amanda Yaworsky's part 
+
 Purpose:
     File writing and reporting functions for the ORCA pipeline.
     Computation functions (gc_content, codon_usage, etc.) live in orf_analysis.py.
