@@ -3,18 +3,13 @@
 """
 graphics.py
 
+Nicole Decocker's part 
+ 
 Purpose:
     Visual output for the ORCA pipeline.
-    Generates a genome-browser style ORF map showing all ORFs across
-    all six reading frames.
+    Generates a ORF map showing all ORFs across all six reading frames.
 
-Location:
-    src/graphics_lib/graphics.py
-
-Public API
-----------
-    plot_orf_map(flat_list, seq_len, accession, output_path)
-    plot_comparative_orf_map(flat1, seq_len1, acc1, flat2, seq_len2, acc2, output_path)
+    again unitll all is done im not messing with the docstrings sorry
 """
 
 from __future__ import annotations
@@ -27,7 +22,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyArrow
 
-# Color per start codon
 CODON_COLORS = {
     "ATG": "#e05c5c",
     "GTG": "#5c8ee0",
@@ -54,9 +48,6 @@ FRAME_LABELS = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
 
 def _draw_orf_map(
     ax,
@@ -69,15 +60,15 @@ def _draw_orf_map(
     ax.set_xlim(0, seq_len)
     ax.set_ylim(-0.6, 6.4)
 
-    # ── Background lane stripes ───────────────────────────────────────────
+
     for y in range(6):
         color = "#f5f5f5" if y % 2 == 0 else "#ebebeb"
         ax.axhspan(y - 0.4, y + 0.4, color=color, zorder=0)
 
-    # ── Divider between + and - strands ───────────────────────────────────
+    
     ax.axhline(y=2.5, color="#999999", linewidth=1, linestyle="--", zorder=1)
 
-    # ── ORF rectangles ────────────────────────────────────────────────────
+
     for orf in flat_list:
         start  = orf["start"]
         end    = orf["end"]
@@ -111,18 +102,18 @@ def _draw_orf_map(
         )
         ax.add_patch(rect)
 
-    # ── Frame labels on y axis ────────────────────────────────────────────
+
     ax.set_yticks(list(range(6)))
     ax.set_yticklabels(
         [FRAME_LABELS[(s, f)] for (s, f) in sorted(FRAME_Y, key=FRAME_Y.get)],
         fontsize=9,
     )
 
-    # ── X axis ───────────────────────────────────────────────────────────
+
     ax.set_xlabel("Nucleotide position (bp)", fontsize=9)
     ax.set_title(f"{accession}  —  {seq_len} bp", fontsize=10, fontweight="bold")
 
-    # ── Strand labels ─────────────────────────────────────────────────────
+
     ax.text(-seq_len * 0.01, 4, "(+) strand", va="center", ha="right",
             fontsize=8, color="#444444", rotation=90)
     ax.text(-seq_len * 0.01, 1, "(−) strand", va="center", ha="right",
@@ -137,10 +128,6 @@ def _make_legend() -> list:
     ]
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 def plot_orf_map(
     flat_list:   list,
     seq_len:     int,
@@ -150,16 +137,6 @@ def plot_orf_map(
     """
     Plot a single-sequence ORF map and save to file.
 
-    Parameters
-    ----------
-    flat_list : list of dict
-        Flat ORF list returned by find_orfs().
-    seq_len : int
-        Length of the sequence in nucleotides.
-    accession : str
-        Accession number used as the plot title.
-    output_path : str
-        File path to save the graphic (PNG or PDF).
     """
     fig, ax = plt.subplots(figsize=(14, 4))
     _draw_orf_map(ax, flat_list, seq_len, accession)
@@ -185,23 +162,6 @@ def plot_comparative_orf_map(
 
     The two maps share the same x-axis scale (the longer sequence sets
     the maximum) so ORF positions are visually comparable.
-
-    Parameters
-    ----------
-    flat1 : list of dict
-        Flat ORF list for sequence 1.
-    seq_len1 : int
-        Length of sequence 1 in nucleotides.
-    acc1 : str
-        Accession number for sequence 1.
-    flat2 : list of dict
-        Flat ORF list for sequence 2.
-    seq_len2 : int
-        Length of sequence 2 in nucleotides.
-    acc2 : str
-        Accession number for sequence 2.
-    output_path : str
-        File path to save the graphic (PNG or PDF).
     """
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 7), sharex=False)
 
@@ -215,4 +175,3 @@ def plot_comparative_orf_map(
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"[INFO] Comparative ORF map saved to: {output_path}")
