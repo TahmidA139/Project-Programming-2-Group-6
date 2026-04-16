@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # run_test.sh – ORCA quick-start test
-#
+# work done by amanda 
 # Tests the two most common use cases using two CCR5 mRNA variants from NCBI.
 # Sequences are fetched automatically — no local files needed.
 #
