@@ -1,0 +1,17 @@
+=== COMPARATIVE ORF REPORT ===
+
+[NM_001301717]
+  Total ORFs      : 9
+  Average GC      : 54.99%
+  Forward strand  : 3
+  Reverse strand  : 6
+
+[NM_001301718.2]
+  Total ORFs      : 10
+  Average GC      : 54.97%
+  Forward strand  : 3
+  Reverse strand  : 7
+
+Shared ORF sequences  : 9
+Unique to NM_001301717: 0
+Unique to NM_001301718.2: 1

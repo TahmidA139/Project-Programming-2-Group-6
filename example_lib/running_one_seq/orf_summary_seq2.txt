@@ -1,0 +1,91 @@
+=== ORF SUMMARY REPORT ===
+
+Total ORFs        : 10
+Average GC Content: 54.97%
+
+Longest ORF:
+  orf_id        : ORF1
+  Length (nt)   : 1119
+  Strand        : +
+  Frame         : 0
+  GC Content    : 55.67%
+
+--- Per-ORF Stats ---
+#    orf_id        Length     GC%  Prot_len  Strand  Frame
+----------------------------------------------------------
+0    ORF1            1119   55.67       373       +      0
+1    ORF2             189   52.38        63       +      0
+2    ORF3              93   60.22        31       -      1
+3    ORF4             600   53.00       200       +      2
+4    ORF5             165   61.21        55       -      2
+5    ORF6              84   53.57        28       -      2
+6    ORF7              93   53.76        31       -      2
+7    ORF8             225   58.67        75       -      2
+8    ORF9              84   46.43        28       -      2
+9    ORF10             84   54.76        28       -      2
+
+--- Codon Usage (aggregate) ---
+  AAA: 17
+  AAC: 18
+  AAG: 30
+  AAT: 2
+  ACA: 21
+  ACC: 28
+  ACG: 9
+  ACT: 8
+  AGA: 10
+  AGC: 25
+  AGG: 21
+  AGT: 12
+  ATA: 6
+  ATC: 33
+  ATG: 35
+  ATT: 5
+  CAA: 10
+  CAC: 14
+  CAG: 32
+  CAT: 4
+  CCA: 15
+  CCC: 15
+  CCG: 4
+  CCT: 8
+  CGA: 4
+  CGC: 15
+  CGG: 14
+  CGT: 4
+  CTA: 6
+  CTC: 33
+  CTG: 33
+  CTT: 15
+  GAA: 9
+  GAC: 16
+  GAG: 28
+  GAT: 9
+  GCA: 5
+  GCC: 31
+  GCG: 8
+  GCT: 20
+  GGA: 4
+  GGC: 15
+  GGG: 11
+  GGT: 5
+  GTA: 2
+  GTC: 21
+  GTG: 30
+  GTT: 1
+  TAA: 3
+  TAC: 16
+  TAG: 4
+  TAT: 2
+  TCA: 13
+  TCC: 24
+  TCG: 4
+  TCT: 9
+  TGA: 3
+  TGC: 20
+  TGG: 18
+  TGT: 12
+  TTA: 4
+  TTC: 27
+  TTG: 21
+  TTT: 11
