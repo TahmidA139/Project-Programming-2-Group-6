@@ -14,7 +14,6 @@ The pipeline accepts an NCBI accession number and email as inputs, fetches the D
 - Validates and cleans sequences before analysis
 - Scans all six reading frames (+1, +2, +3, −1, −2, −3) using NumPy vectorization
 - Detects canonical (ATG) and non-canonical (GTG, TTG) start codons  (non-canotical is not working great at the moment :) )
-- Identifies nested ORFs
 - Computes per-ORF statistics: GC content, codon usage, and protein length
 - infers the most likely genetic code of a sequence (still working on this currently)
 - **Comparative mode** (`--accession2`): side-by-side ORF structure comparison, codon usage differences, and other analysis between two sequences
@@ -99,7 +98,6 @@ conda activate ORCA
 | `--email` | Yes | — | Your email address (required by NCBI Entrez) |
 | `--start-codons` | No | `ATG` | One or more start codons: `ATG`, `GTG`, `TTG` |
 | `--min-length` | No | `30` | Minimum ORF length in nucleotides |
-| `--ignore-nested` | No | `False` | Exclude ORFs nested inside another ORF in the same frame |
 | `--output` | No | `output/orfs.csv` | Path for the primary ORF output CSV |
 
 ### Usage Examples
@@ -109,10 +107,10 @@ Single sequence — all defaults (ATG only, min 30 nt, nested ORFs included):
 python -m src.main --accession NM_001301717 --email you@example.com
 ```
 
-Single sequence — all three start codons, minimum 150 nt, no nested ORFs:
+Single sequence — all three start codons and minimum 150 nt:
 ```bash
 python -m src.main --accession NM_001301717 --email you@example.com \
-    --start-codons ATG GTG TTG --min-length 150 --ignore-nested
+    --start-codons ATG GTG TTG --min-length 150 
 ```
 
 Comparative mode — two accessions side by side:
