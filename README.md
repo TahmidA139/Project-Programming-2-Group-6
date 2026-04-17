@@ -180,7 +180,7 @@ publication-quality plots for visualization.
 
 
 # Step 2 — run the full pipeline
-python -m src.main --accession NM_001301717 --email your_email@example.com --min-length 75 --ignore-nested
+python -m src.main --accession NM_001301717 --email your_email@example.com --min-length 75
 
 # Step 3 — check outputs
 ls output/
