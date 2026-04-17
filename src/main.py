@@ -40,7 +40,6 @@ def _run_single_sequence(
     email:         str,
     start_codons:  list,
     min_length:    int,
-    ignore_nested: bool,
     orf_csv:       str,
     stats_csv:     str,
     summary_txt:   str,
@@ -65,7 +64,6 @@ def _run_single_sequence(
         clean_seq,
         start_codons=start_codons,
         min_length=min_length,
-        ignore_nested=ignore_nested,
     )
 
     # 3. Print terminal summary
@@ -129,12 +127,6 @@ def main() -> None:
             "Supply as a space-separated list, e.g.: --start-codons ATG GTG TTG"
         ),
     )
-    parser.add_argument(
-        "--ignore-nested",
-        action="store_true",
-        default=False,
-        help="Exclude ORFs whose start falls inside another ORF in the same frame",
-    )
 
     # ── Output options ────────────────────────────────────────────────────
     parser.add_argument(
@@ -168,7 +160,6 @@ def main() -> None:
         email         = email,
         start_codons  = start_codons,
         min_length    = args.min_length,
-        ignore_nested = args.ignore_nested,
         orf_csv       = args.output,
         stats_csv     = "output/orf_stats.csv",
         summary_txt   = "output/stats_summary.txt",
@@ -188,7 +179,6 @@ def main() -> None:
             email         = email,
             start_codons  = start_codons,
             min_length    = args.min_length,
-            ignore_nested = args.ignore_nested,
             orf_csv       = "output/orfs_seq2.csv",
             stats_csv     = "output/orf_stats_seq2.csv",
             summary_txt   = "output/stats_summary_seq2.txt",
