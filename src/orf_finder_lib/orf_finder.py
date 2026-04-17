@@ -15,7 +15,6 @@ from typing import Any, Dict, List, Tuple
 
 from src.orf_finder_lib.frame_scanner import (
     _reverse_complement,
-    _mark_nested,
     scan_frame,
 )
 
@@ -46,16 +45,6 @@ def _scan_all_frames(
         orfs.extend(scan_frame(dna_sequence, frame, start_codons, min_length, "+", seq_len))
         orfs.extend(scan_frame(rev_comp,     frame, start_codons, min_length, "-", seq_len))
     return orfs
-
-def _apply_nesting(
-    all_orfs:      List[Dict[str, Any]],
-    ignore_nested: bool,
-) -> List[Dict[str, Any]]:
-    """Annotate is_nested and optionally remove nested ORFs."""
-    all_orfs = _mark_nested(all_orfs)
-    if ignore_nested:
-        all_orfs = [o for o in all_orfs if not o["is_nested"]]
-    return all_orfs
 
 def _make_nested_dict(
     active_noncanonical: List[str],
@@ -126,23 +115,5 @@ def find_orfs(
     dna_sequence = dna_sequence.upper().strip()
 
     all_orfs = _scan_all_frames(dna_sequence, start_codons, min_length)
-    all_orfs = _apply_nesting(all_orfs, ignore_nested)
 
     return _build_outputs(all_orfs, start_codons)
-
-
-def find_nested(flat_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Return the subset of ORFs that are nested inside another ORF."""
-    nested_orfs = []
-    for i, orf in enumerate(flat_list):
-        for j, other in enumerate(flat_list):
-            if i == j:
-                continue
-            if orf["strand"] != other["strand"]:
-                continue
-            if orf["frame"] != other["frame"]:
-                continue
-            if other["start"] < orf["start"] < other["end"]:
-                nested_orfs.append(orf)
-                break
-    return nested_orfs
