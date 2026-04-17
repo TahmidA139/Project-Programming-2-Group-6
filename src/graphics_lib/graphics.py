@@ -362,7 +362,7 @@ def plot_codon_usage_comparison(
     )
 
     # ── Black horizontal line separating the two sequences ────────────────
-    ax.axhline(y=0.5, color="black", linewidth=2.5, zorder=4)
+    ax.axhline(y=0.5, color="black", linewidth=1.0, zorder=4)
 
     # ── White vertical lines separating amino acid groups ─────────────────
     for col_start, _, _ in aa_boundaries:
