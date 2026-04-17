@@ -102,7 +102,7 @@ conda activate ORCA
 
 ### Usage Examples
 
-Single sequence — all defaults (ATG only, min 30 nt, nested ORFs included):
+Single sequence — all defaults (ATG only, min 30 nt):
 ```bash
 python -m src.main --accession NM_001301717 --email you@example.com
 ```
@@ -206,7 +206,6 @@ plots/
 - Accession numbers can be found at: https://www.ncbi.nlm.nih.gov/nucleotide/
 - The `output/` folder is created automatically on the first run.
 - Use `--min-length` to filter out very short ORFs that may not be biologically meaningful.
-- Use `--ignore-nested` to exclude ORFs that are contained within longer ORFs.
 ```
 
 ## References
