@@ -211,7 +211,12 @@ def validate_dna_sequence(sequence: str) -> tuple[bool, str]:
     if invalid_chars:
         sequence = re.sub(r"[^ATGCRYSWKMBDHVN]", "", sequence)
 
-    # Step 4 — verify the cleaned sequence is long enough for ORF analysis
+    # Step 4 — check for IUPAC ambiguity codes (valid but not plain A/T/G/C)
+    ambiguous_chars = set(re.findall(r"[^ATGC]", sequence))
+    if ambiguous_chars:
+        print(f"[VALIDATION] IUPAC ambiguity codes detected ({', '.join(sorted(ambiguous_chars))}), sequence cleaned.")
+
+    # Step 5 — verify the cleaned sequence is long enough for ORF analysis
     if len(sequence) < 6:
         print(f"[VALIDATION] Cleaned sequence too short ({len(sequence)} bp). "
               "Minimum required: 6 bp.")
