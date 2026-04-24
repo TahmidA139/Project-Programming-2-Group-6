@@ -8,13 +8,17 @@
 ##   - accession  (str): NCBI nucleotide accession number (sequence 1).
 ##   - accession2 (str): NCBI nucleotide accession number (sequence 2, optional).
 ##   - email      (str): Valid email address required by NCBI Entrez API.
+##   - fasta_file (str): Path to a local single-sequence FASTA file (alternative to accession).
+##   - fasta_file2(str): Path to a local single-sequence FASTA file for sequence 2 (optional).
 ## Output:
-##   - Raw DNA sequence string(s) retrieved from NCBI, or None if the fetch fails.
+##   - Raw DNA sequence string(s) retrieved from NCBI or loaded from disk,
+##     or None if the fetch/load fails.
 ## How it works:
 ##   Accession number(s) are inputted into the function. The function retrieves the
 ##   FASTA file(s) from NCBI using the accession number(s), removes the header, and
 ##   returns the raw sequence string(s) as output, which will be used by ORF_finder.py.
-##   If two accession numbers are provided, both sequences are fetched, validated,
+##   If a local FASTA file path is provided instead, the sequence is loaded from disk.
+##   If two sequences are provided, both sequences are fetched/loaded, validated,
 ##   and returned for comparative analysis.
 
 from Bio import Entrez, SeqIO
@@ -24,7 +28,7 @@ import re
 import os
 import sys
 
-VALID_START_CODONS = {"ATG", "GTG", "TTG"}
+VALID_START_CODONS = {"ATG"}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -117,6 +121,75 @@ def fetch_fasta_from_ncbi(accession: str, db: str = "nucleotide") -> str | None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# FUNCTION 1b — Load a single sequence from a local FASTA file
+# ─────────────────────────────────────────────────────────────────────────────
+
+def load_fasta_from_file(filepath: str) -> tuple[str, str] | tuple[None, None]:
+    ## Input:
+    ##   - filepath (str): Path to a local FASTA file on disk.
+    ## Output:
+    ##   - (record_id, sequence) on success, (None, None) on failure.
+    ## How it works:
+    ##   Opens the file, counts how many sequences are inside it, and
+    ##   immediately exits with an error if more than one sequence is found.
+    ##   ORCA is designed to work with one sequence per run; multi-sequence
+    ##   FASTA files are ambiguous and not supported as input.
+
+    # Step 1 — make sure the file actually exists before trying to open it
+    if not os.path.isfile(filepath):
+        print(f"[ERROR] FASTA file not found: '{filepath}'")
+        print(f"        Please check the path and try again.")
+        return None, None
+
+    # Step 2 — parse all records from the file
+    try:
+        records = list(SeqIO.parse(filepath, "fasta"))
+    except Exception as e:
+        print(f"[ERROR] Could not read FASTA file '{filepath}': {e}")
+        return None, None
+
+    # Step 3 — reject empty files
+    if len(records) == 0:
+        print(f"[ERROR] No sequences found in '{filepath}'.")
+        print(f"        The file may be empty or not in valid FASTA format.")
+        return None, None
+
+    # Step 4 — HARD STOP: multi-sequence FASTA files are not allowed.
+    # A multi-sequence FASTA contains more than one '>' header line.
+    # ORCA processes exactly one sequence at a time. If the user supplies
+    # a file with multiple sequences it is unclear which one to use, so
+    # the pipeline exits immediately with a clear explanation.
+    if len(records) > 1:
+        print(
+            f"\n[ERROR] '{filepath}' contains {len(records)} sequences.\n"
+            f"        ORCA requires a single-sequence FASTA file.\n"
+            f"\n"
+            f"        A valid single-sequence FASTA looks like this:\n"
+            f"          >NM_001301717.1 Homo sapiens ...\n"
+            f"          ATGCGATCGATCGATCG...\n"
+            f"\n"
+            f"        Your file has {len(records)} entries starting with:\n"
+        )
+        # Show the IDs of the first few sequences so the user knows what's in it
+        for rec in records[:5]:
+            print(f"          > {rec.id}")
+        if len(records) > 5:
+            print(f"          ... and {len(records) - 5} more.")
+        print(
+            f"\n"
+            f"        Please extract a single sequence into its own FASTA file\n"
+            f"        and re-run ORCA with that file.\n"
+        )
+        sys.exit(1)
+
+    # Step 5 — single record confirmed, return it
+    record = records[0]
+    sequence = str(record.seq)
+    print(f"[INFO] Loaded '{record.id}' from '{filepath}' — {len(sequence)} bp")
+    return record.id, sequence
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # FUNCTION 2 — Validate and clean the DNA sequence
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -156,7 +229,7 @@ def validate_dna_sequence(sequence: str) -> tuple[bool, str]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# HELPER — Write cleaned sequence to a FASTA file
+# HELPER — Write a single cleaned sequence to a FASTA file
 # ─────────────────────────────────────────────────────────────────────────────
 
 def write_cleaned_fasta(
@@ -183,6 +256,49 @@ def write_cleaned_fasta(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# HELPER — Write both cleaned sequences into one combined FASTA file
+# ─────────────────────────────────────────────────────────────────────────────
+
+def write_combined_cleaned_fasta(
+    clean_seq1: str,
+    accession1: str,
+    clean_seq2: str,
+    accession2: str,
+    output_path: str = "output/cleaned_sequences.fasta",
+) -> None:
+    ## Input:
+    ##   - clean_seq1  (str): Validated, cleaned DNA string for sequence 1.
+    ##   - accession1  (str): Accession / ID label for sequence 1.
+    ##   - clean_seq2  (str): Validated, cleaned DNA string for sequence 2.
+    ##   - accession2  (str): Accession / ID label for sequence 2.
+    ##   - output_path (str): Destination file path.
+    ## Output:
+    ##   - Writes both cleaned sequences into a single two-record FASTA file.
+    ## Why:
+    ##   In comparative mode the user may want a single file containing both
+    ##   cleaned sequences for downstream tools.  This file uses the name
+    ##   'cleaned_sequences.fasta' (plural) to distinguish it from the
+    ##   single-sequence 'cleaned_sequence.fasta' produced in single mode.
+
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+    records = [
+        SeqRecord(
+            Seq(clean_seq1),
+            id=accession1,
+            description="cleaned sequence 1 | ready for ORF analysis",
+        ),
+        SeqRecord(
+            Seq(clean_seq2),
+            id=accession2,
+            description="cleaned sequence 2 | ready for ORF analysis",
+        ),
+    ]
+    with open(output_path, "w") as fh:
+        SeqIO.write(records, fh, "fasta")
+    print(f"[INFO] Combined cleaned FASTA (both sequences) written to: {output_path}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # FUNCTION 3 — Validate start codons
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -192,60 +308,66 @@ def validate_start_codons(requested: list) -> list:
     Exits with a helpful message if any unrecognised codon is given.
 
     Input:
-        requested (list): List of start codon strings e.g. ['ATG', 'GTG']
+        requested (list): List of start codon strings e.g. ['ATG']
     Output:
         list: Uppercased, validated list of start codons.
     """
     upper = [c.upper() for c in requested]
 
-    # Warn if any non-canonical start codons are requested
-    noncanonical_requested = [c for c in upper if c in {"GTG", "TTG"}]
-    if noncanonical_requested:
-        print(
-            f"[WARNING] Non-canonical start codon(s) detected: {', '.join(noncanonical_requested)}\n"
-            f"          GTG and TTG produce false positives in eukaryotic sequences.\n"
-            f"          Consider using ATG only unless working with prokaryotic sequences."
-        )
-
     unknown = [c for c in upper if c not in VALID_START_CODONS]
     if unknown:
         print(
             f"[ERROR] Unrecognised start codon(s): {', '.join(unknown)}\n"
-            f"        Allowed values are: {', '.join(sorted(VALID_START_CODONS))}"
+            f"        Allowed value is: ATG"
         )
         sys.exit(1)
     return upper
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# HELPER — Fetch and validate a single sequence
+# HELPER — Fetch/load and validate a single sequence
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fetch_and_validate_one(
     accession: str,
     output_fasta: str,
+    fasta_file: str | None = None,
 ) -> tuple[str, str] | tuple[None, None]:
     ## Input:
-    ##   - accession   (str): NCBI accession number.
-    ##   - output_fasta(str): Path for the cleaned FASTA output file.
+    ##   - accession   (str):       NCBI accession number (used when fasta_file is None).
+    ##   - output_fasta(str):       Path for the cleaned FASTA output file.
+    ##   - fasta_file  (str|None):  Path to a local FASTA file.
+    ##                              When provided, the local file is used instead of NCBI.
     ## Output:
     ##   - (accession, clean_seq) on success, (None, None) on failure.
     ## Note:
     ##   This is an internal helper used by run() to avoid repeating
     ##   the same fetch-validate-write steps for each sequence.
 
-    # Step 1 — fetch raw sequence from NCBI
-    raw_sequence = fetch_fasta_from_ncbi(accession)
-    if raw_sequence is None:
-        return None, None
+    if fasta_file is not None:
+        # ── Local file path: load from disk ───────────────────────────────────
+        # load_fasta_from_file() will sys.exit(1) if the file has multiple
+        # sequences, so if we reach the next line the file is guaranteed to
+        # contain exactly one record.
+        record_id, raw_sequence = load_fasta_from_file(fasta_file)
+        if raw_sequence is None:
+            return None, None
+        # Use the sequence ID embedded in the FASTA header as the label,
+        # overriding whatever placeholder accession string was passed in.
+        accession = record_id
+    else:
+        # ── NCBI path: fetch by accession number ──────────────────────────────
+        raw_sequence = fetch_fasta_from_ncbi(accession)
+        if raw_sequence is None:
+            return None, None
 
-    # Step 2 — validate and clean the sequence
+    # Step 2 — validate and clean the sequence (shared for both paths)
     is_valid, clean_seq = validate_dna_sequence(raw_sequence)
     if not is_valid:
-        print(f"[ERROR] Sequence {accession} failed validation. Aborting.")
+        print(f"[ERROR] Sequence '{accession}' failed validation. Aborting.")
         return None, None
 
-    # Step 3 — write cleaned FASTA to disk
+    # Step 3 — write the individual cleaned FASTA to disk
     write_cleaned_fasta(clean_seq, accession, output_fasta)
 
     return accession, clean_seq
@@ -256,29 +378,33 @@ def _fetch_and_validate_one(
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run(
-    accession:    str,
-    email:        str,
-    accession2:   str | None = None,
-    output_fasta: str = "output/cleaned_sequence.fasta",
+    accession:     str,
+    email:         str,
+    accession2:    str | None = None,
+    output_fasta:  str = "output/cleaned_sequence.fasta",
     output_fasta2: str = "output/cleaned_sequence_2.fasta",
+    fasta_file:    str | None = None,
+    fasta_file2:   str | None = None,
 ) -> tuple:
     ## Input:
     ##   - accession    (str):       NCBI accession number for sequence 1.
+    ##                               Ignored when fasta_file is provided.
     ##   - email        (str):       User email required by NCBI Entrez.
+    ##                               Still validated even in local-file mode.
     ##   - accession2   (str|None):  NCBI accession number for sequence 2 (optional).
-    ##                               If provided, comparative mode is enabled.
     ##   - output_fasta (str):       Output path for cleaned sequence 1 FASTA.
     ##   - output_fasta2(str):       Output path for cleaned sequence 2 FASTA.
+    ##   - fasta_file   (str|None):  Local FASTA file for sequence 1 (overrides NCBI).
+    ##   - fasta_file2  (str|None):  Local FASTA file for sequence 2 (overrides NCBI).
     ## Output:
     ##   Single mode:      (accession,  clean_seq,  None,        None)
     ##   Comparative mode: (accession,  clean_seq,  accession2,  clean_seq2)
     ##   On failure:       (None, None, None, None)
 
     # ── Step 0 — validate the email before making any NCBI requests ──────────
-    # This is checked first so the user gets an immediate clear error message
-    # if the email is wrong, rather than a confusing NCBI error later.
+    # Even when using local FASTA files we validate the email format so that
+    # if the user switches to NCBI mode later the email is already confirmed.
     if not validate_email(email):
-        # validate_email() already printed the specific error message
         return None, None, None, None
 
     # Email is valid — set it for all Entrez queries
@@ -286,112 +412,38 @@ def run(
     Entrez.email = email.strip()
     print(f"[INFO] NCBI email set to: {Entrez.email}")
 
-    # ── Step 1 — fetch and validate sequence 1 ───────────────────────────────
-    print(f"\n[INFO] Processing sequence 1: {accession}")
-    acc1, seq1 = _fetch_and_validate_one(accession, output_fasta)
+    # ── Step 1 — fetch/load and validate sequence 1 ──────────────────────────
+    print(f"\n[INFO] Processing sequence 1: "
+          f"{'(from file) ' + fasta_file if fasta_file else accession}")
+    acc1, seq1 = _fetch_and_validate_one(accession, output_fasta, fasta_file)
     if acc1 is None:
         return None, None, None, None
 
-    # ── Step 2 — fetch and validate sequence 2 (if provided) ─────────────────
-    # accession2 is only provided when the user passes --accession2 in main.py
-    # If not provided, we run in single sequence mode
-    if accession2:
-        print(f"\n[INFO] Processing sequence 2: {accession2}")
-        acc2, seq2 = _fetch_and_validate_one(accession2, output_fasta2)
+    # ── Step 2 — fetch/load and validate sequence 2 (if provided) ────────────
+    if accession2 or fasta_file2:
+        label2 = ('(from file) ' + fasta_file2) if fasta_file2 else accession2
+        print(f"\n[INFO] Processing sequence 2: {label2}")
+        acc2, seq2 = _fetch_and_validate_one(
+            accession2 or "",
+            output_fasta2,
+            fasta_file2,
+        )
         if acc2 is None:
-            # Sequence 1 succeeded but sequence 2 failed
-            # Return sequence 1 results and None for sequence 2
             print("[WARNING] Sequence 2 failed. Continuing with sequence 1 only.")
             return acc1, seq1, None, None
+
+        # ── Write both cleaned sequences into a single combined FASTA file ────
+        # This is written in addition to the two individual cleaned FASTAs so
+        # the user always has both a per-sequence file and a combined file.
+        write_combined_cleaned_fasta(
+            clean_seq1=seq1, accession1=acc1,
+            clean_seq2=seq2, accession2=acc2,
+            output_path="output/cleaned_sequences.fasta",
+        )
+
         print(f"\n[INFO] Both sequences ready for comparative analysis.")
         return acc1, seq1, acc2, seq2
 
     # Single sequence mode — return None for the second sequence slots
     return acc1, seq1, None, None
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Run interactively when the module is run directly
-# ─────────────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-
-    print("=" * 60)
-    print("  ORCA — Input Validation")
-    print("=" * 60)
-    print("  Fetch and validate DNA sequences from NCBI.")
-    print("  Find accession numbers at:")
-    print("  https://www.ncbi.nlm.nih.gov/nucleotide/")
-    print("=" * 60)
-
-    # ── Step 1 — get email from user ──────────────────────────────────────────
-    # Keep asking until a valid email is entered
-    # The loop only exits when validate_email() returns True
-    print()
-    while True:
-        email = input("Enter your email address (required by NCBI): ").strip()
-        if validate_email(email):
-            # Email is valid — break out of the loop and continue
-            break
-        # If invalid, validate_email() already printed the error message
-        # The loop repeats and asks again
-
-    # ── Step 2 — get accession number 1 from user ─────────────────────────────
-    # Keep asking until the user types something (not blank)
-    print()
-    while True:
-        accession = input("Enter accession number for sequence 1 "
-                          "(e.g. NM_001301717): ").strip()
-        if accession:
-            break
-        print("[ERROR] Accession number cannot be empty. Please try again.")
-
-    # ── Step 3 — ask if user wants a second sequence (comparative mode) ────────
-    print()
-    second = input("Do you want to enter a second accession number "
-                   "for comparative mode? (yes/no): ").strip().lower()
-
-    # Accept 'yes', 'y' as positive answers — anything else means no
-    accession2 = None
-    if second in ("yes", "y"):
-        while True:
-            accession2 = input("Enter accession number for sequence 2 "
-                               "(e.g. NM_001838.4): ").strip()
-            if accession2:
-                break
-            print("[ERROR] Accession number cannot be empty. Please try again.")
-
-    # ── Step 4 — run the pipeline with the user-provided inputs ───────────────
-    print()
-    acc1, seq1, acc2, seq2 = run(
-        accession=accession,
-        email=email,
-        accession2=accession2,
-    )
-
-    # ── Step 5 — display results ───────────────────────────────────────────────
-    print()
-    print("=" * 60)
-    print("  RESULTS")
-    print("=" * 60)
-
-    if seq1:
-        print(f"  Sequence 1 : {acc1}")
-        print(f"  Length     : {len(seq1)} bp")
-        print(f"  First 60bp : {seq1[:60]}")
-    else:
-        print("  Sequence 1 : FAILED — check accession number and internet connection")
-
-    if seq2:
-        print()
-        print(f"  Sequence 2 : {acc2}")
-        print(f"  Length     : {len(seq2)} bp")
-        print(f"  First 60bp : {seq2[:60]}")
-    elif accession2:
-        print()
-        print("  Sequence 2 : FAILED — check accession number and internet connection")
-
-    print("=" * 60)
-
-
 
