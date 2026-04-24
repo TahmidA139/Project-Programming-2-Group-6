@@ -213,7 +213,7 @@ plots/
 - NumPy: https://numpy.org/
 
 ## License
-This project is licensed under the GNU GPL v2.1. Chosen for open collaboration, ease of edits, and public use.
+This project is licensed under the GNU LGPL v2.1 Chosen for open collaboration, ease of edits, and public use.
 
 ## Authors
 **Amanda Yaworsky**
