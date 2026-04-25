@@ -28,7 +28,7 @@ import re
 import os
 import sys
 
-VALID_START_CODONS = {"ATG"}
+VALID_START_CODONS = {"ATG", "GTG", "TTG"}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -313,7 +313,7 @@ def validate_start_codons(requested: list) -> list:
     if unknown:
         print(
             f"[ERROR] Unrecognised start codon(s): {', '.join(unknown)}\n"
-            f"        Allowed value is: ATG"
+            f"        Allowed values are: ATG, GTG, TTG"
         )
         sys.exit(1)
     return upper
