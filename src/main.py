@@ -52,6 +52,7 @@ def _run_single_sequence(
     orf_csv:       str,
     stats_csv:     str,
     summary_txt:   str,
+    outdir:        str = "output",
     label:         str = "",
     fasta_file:    str | None = None,
 ) -> tuple[str, str, list, list] | tuple[None, None, None, None]:
@@ -67,6 +68,8 @@ def _run_single_sequence(
     orf_csv     : Output path for the ORF CSV file.
     stats_csv   : Output path for the stats CSV file.
     summary_txt : Output path for the human-readable summary.
+    outdir      : Output directory passed through to validate_run so cleaned
+                  FASTA files land in the correct location.
     label       : Human-friendly label printed in terminal output.
     fasta_file  : Path to a local FASTA file (mutually exclusive with NCBI).
                   When provided, the sequence is loaded from disk instead of
@@ -80,7 +83,7 @@ def _run_single_sequence(
     (None, None, None, None) on failure.
     """
     # 1. Fetch/load and validate
-    acc, clean_seq, _, _ = validate_run(accession, email, fasta_file=fasta_file)
+    acc, clean_seq, _, _ = validate_run(accession, email, outdir=outdir, fasta_file=fasta_file)
     if clean_seq is None:
         src = f"file '{fasta_file}'" if fasta_file else f"accession '{accession}'"
         print(f"[ERROR] Pipeline failed for {src}.")
@@ -188,13 +191,18 @@ def main() -> None:
 
     # ── Output options ────────────────────────────────────────────────────
     parser.add_argument(
-        "--output",
+        "--outdir",
         type=str,
-        default="output/orfs.csv",
-        help="Path for the primary ORF output CSV file",
+        default="output",
+        metavar="DIR",
+        help="Directory for all output files (default: output/)",
     )
 
     args = parser.parse_args()
+
+    # Create the output directory if it does not already exist
+    outdir = args.outdir
+    os.makedirs(outdir, exist_ok=True)
 
     # ── 1. Resolve sequence 1 source ──────────────────────────────────────
     # Determine whether the user is providing an accession or a local file.
@@ -239,9 +247,10 @@ def main() -> None:
         email         = email,
         start_codons  = start_codons,
         min_length    = args.min_length,
-        orf_csv       = args.output,
-        stats_csv     = "output/orf_stats.csv",
-        summary_txt   = "output/stats_summary.txt",
+        orf_csv       = os.path.join(outdir, "orfs.csv"),
+        stats_csv     = os.path.join(outdir, "orf_stats.csv"),
+        summary_txt   = os.path.join(outdir, "stats_summary.txt"),
+        outdir        = outdir,
         label         = "Sequence 1",
         fasta_file    = fasta_file,
     )
@@ -260,9 +269,10 @@ def main() -> None:
             email         = email,
             start_codons  = start_codons,
             min_length    = args.min_length,
-            orf_csv       = "output/orfs_seq2.csv",
-            stats_csv     = "output/orf_stats_seq2.csv",
-            summary_txt   = "output/stats_summary_seq2.txt",
+            orf_csv       = os.path.join(outdir, "orfs_seq2.csv"),
+            stats_csv     = os.path.join(outdir, "orf_stats_seq2.csv"),
+            summary_txt   = os.path.join(outdir, "stats_summary_seq2.txt"),
+            outdir        = outdir,
             label         = "Sequence 2",
             fasta_file    = fasta_file2,
         )
@@ -280,19 +290,19 @@ def main() -> None:
         write_combined_cleaned_fasta(
             clean_seq1=seq1, accession1=acc1,
             clean_seq2=seq2, accession2=acc2,
-            output_path="output/cleaned_sequences.fasta",
+            output_path=os.path.join(outdir, "cleaned_sequences.fasta"),
         )
 
         write_combined_csv(
             acc1=acc1, flat1=flat1, seq1=seq1,
-            output_path=args.output,
+            output_path=os.path.join(outdir, "orfs.csv"),
             acc2=acc2, flat2=flat2, seq2=seq2,
         )
 
     else:
         write_combined_csv(
             acc1=acc1, flat1=flat1, seq1=seq1,
-            output_path=args.output,
+            output_path=os.path.join(outdir, "orfs.csv"),
         )
 
     # ── 7. ORF map ────────────────────────────────────────────────────────
@@ -300,17 +310,17 @@ def main() -> None:
         plot_comparative_orf_map(
             flat1=flat1, seq_len1=len(seq1), acc1=acc1,
             flat2=flat2, seq_len2=len(seq2), acc2=acc2,
-            output_path="output/orf_map.png",
+            output_path=os.path.join(outdir, "orf_map.png"),
         )
         plot_codon_usage_comparison(
             seq1=seq1, acc1=acc1,
             seq2=seq2, acc2=acc2,
-            output_path="output/codon_usage_comparison.png",
+            output_path=os.path.join(outdir, "codon_usage_comparison.png"),
         )
     else:
         plot_orf_map(
             flat_list=flat1, seq_len=len(seq1),
-            accession=acc1, output_path="output/orf_map.png",
+            accession=acc1, output_path=os.path.join(outdir, "orf_map.png"),
         )
 
     # ── 8. Enrich ORFs with sequence/GC/protein stats ────────────────────
@@ -318,16 +328,18 @@ def main() -> None:
     repeats1 = find_repeated_orfs(flat1)
     if repeats1:
         print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
-    write_stats_to_file(flat1, filename="output/orf_summary.txt")
+    write_stats_to_file(flat1, filename=os.path.join(outdir, "orf_summary.txt"))
 
     if comparative:
         calculate_orf_stats(flat2, seq2)
         repeats2 = find_repeated_orfs(flat2)
         if repeats2:
             print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
-        write_stats_to_file(flat2, filename="output/orf_summary_seq2.txt")
-        write_comparative_report(flat1, flat2, acc1=acc1, acc2=acc2)
-        write_comparative_csv(flat1, flat2, acc1=acc1, acc2=acc2)
+        write_stats_to_file(flat2, filename=os.path.join(outdir, "orf_summary_seq2.txt"))
+        write_comparative_report(flat1, flat2, acc1=acc1, acc2=acc2,
+                                 filename=os.path.join(outdir, "comparison.txt"))
+        write_comparative_csv(flat1, flat2, acc1=acc1, acc2=acc2,
+                              filename=os.path.join(outdir, "codon_comparison.csv"))
 
 if __name__ == "__main__":
     main()
