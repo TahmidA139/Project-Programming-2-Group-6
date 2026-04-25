@@ -44,7 +44,7 @@ from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orf
 from src.analysis_lib.statistics_summary import (write_stats_to_file, write_comparative_report, write_comparative_csv, write_combined_csv, 
     print_summary,)
 
-VALID_START_CODONS = {"ATG"}
+VALID_START_CODONS = {"ATG", "GTG", "TTG"}
 
 def _run_single_sequence(
     accession:     str,
@@ -185,7 +185,7 @@ def main() -> None:
         nargs="+",
         default=["ATG"],
         metavar="CODON",
-        help="Start codon to search for (only ATG is supported).",
+        help="Start codons to search for. ATG is canonical; GTG and TTG are non-canonical alternatives. Default: ATG",
     )
 
     # ── Output options ────────────────────────────────────────────────────
