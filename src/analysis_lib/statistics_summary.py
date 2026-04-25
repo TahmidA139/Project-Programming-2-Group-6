@@ -151,7 +151,7 @@ def write_comparative_report(
     flat2:    List[Dict[str, Any]],
     acc1:     str = "Sequence 1",
     acc2:     str = "Sequence 2",
-    filename: str = "output/comparison.txt",
+    filename: str = "output/comparison.txt",  # default overridden by main.py
 ) -> None:
     """
     Write a side-by-side text comparison of two ORF sets.
@@ -198,7 +198,7 @@ def write_comparative_csv(
     flat2:    List[Dict[str, Any]],
     acc1:     str = "Sequence 1",
     acc2:     str = "Sequence 2",
-    filename: str = "output/codon_comparison.csv",
+    filename: str = "output/codon_comparison.csv",  # default overridden by main.py
 ) -> None:
     """
     Write a CSV comparing codon-usage frequencies between two ORF sets.
