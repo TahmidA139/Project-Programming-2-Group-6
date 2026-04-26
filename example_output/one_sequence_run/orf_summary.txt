@@ -105,3 +105,109 @@ Longest ORF:
   TTC: 31
   TTG: 29
   TTT: 16
+=== ORF SUMMARY REPORT ===
+
+Total ORFs        : 25
+Average GC Content: 54.29%
+
+Longest ORF:
+  orf_id        : ORF1
+  Length (nt)   : 1137
+  Strand        : +
+  Frame         : 0
+  GC Content    : 55.67%
+
+--- Per-ORF Stats ---
+#    orf_id        Length     GC%  Prot_len  Strand  Frame
+----------------------------------------------------------
+0    ORF1            1137   55.67       379       +      0
+1    ORF2             189   52.38        63       +      0
+2    ORF3              60   60.00        20       -      0
+3    ORF4              96   64.58        32       -      0
+4    ORF5             168   50.00        56       +      1
+5    ORF6              42   54.76        14       +      1
+6    ORF7             261   59.39        87       +      1
+7    ORF8              54   50.00        18       +      1
+8    ORF9             126   58.73        42       +      1
+9    ORF10             66   37.88        22       +      1
+10   ORF11             93   60.22        31       -      1
+11   ORF12             60   48.33        20       -      1
+12   ORF13             96   56.25        32       -      1
+13   ORF14            144   55.56        48       +      2
+14   ORF15            600   53.00       200       +      2
+15   ORF16             39   51.28        13       -      2
+16   ORF17            165   61.21        55       -      2
+17   ORF18             84   53.57        28       -      2
+18   ORF19             93   53.76        31       -      2
+19   ORF20            225   58.67        75       -      2
+20   ORF21             51   45.10        17       -      2
+21   ORF22             60   55.00        20       -      2
+22   ORF23             30   60.00        10       -      2
+23   ORF24             84   46.43        28       -      2
+24   ORF25             72   55.56        24       -      2
+
+--- Codon Usage (aggregate) ---
+  AAA: 20
+  AAC: 19
+  AAG: 41
+  AAT: 3
+  ACA: 31
+  ACC: 35
+  ACG: 18
+  ACT: 16
+  AGA: 22
+  AGC: 36
+  AGG: 38
+  AGT: 16
+  ATA: 6
+  ATC: 35
+  ATG: 57
+  ATT: 6
+  CAA: 15
+  CAC: 24
+  CAG: 37
+  CAT: 11
+  CCA: 31
+  CCC: 20
+  CCG: 7
+  CCT: 24
+  CGA: 5
+  CGC: 18
+  CGG: 20
+  CGT: 5
+  CTA: 7
+  CTC: 42
+  CTG: 39
+  CTT: 27
+  GAA: 9
+  GAC: 23
+  GAG: 37
+  GAT: 14
+  GCA: 12
+  GCC: 42
+  GCG: 12
+  GCT: 34
+  GGA: 15
+  GGC: 27
+  GGG: 19
+  GGT: 11
+  GTA: 4
+  GTC: 24
+  GTG: 32
+  GTT: 7
+  TAA: 5
+  TAC: 18
+  TAG: 9
+  TAT: 5
+  TCA: 30
+  TCC: 35
+  TCG: 11
+  TCT: 19
+  TGA: 11
+  TGC: 23
+  TGG: 39
+  TGT: 24
+  TTA: 8
+  TTC: 31
+  TTG: 28
+  TTT: 16
