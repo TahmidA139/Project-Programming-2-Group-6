@@ -21,6 +21,7 @@ Exports:
 Constants:
     ALL_START_CODONS     -- All recognised start codons: ATG, GTG, TTG.
     STOP_CODONS          -- Universal stop codons: TAA, TAG, TGA.
+                           Imported from frame_scanner.py (single source of truth).
     CANONICAL_START      -- The canonical start codon (ATG).
     NONCANONICAL_STARTS  -- Non-canonical start codons (GTG, TTG).
     DEFAULT_START_CODONS -- Default start-codon list used by find_orfs().
@@ -34,10 +35,11 @@ from typing import Any, Dict, List, Tuple
 from src.orf_finder_lib.frame_scanner import (
     _reverse_complement,
     scan_frame,
+    STOP_CODONS,
 )
 
 ALL_START_CODONS:    List[str] = ["ATG", "GTG", "TTG"]
-STOP_CODONS:         List[str] = ["TAA", "TAG", "TGA"]
+# STOP_CODONS is the single source of truth in frame_scanner.py; imported above.
 CANONICAL_START:     str       = "ATG"
 NONCANONICAL_STARTS: List[str] = ["GTG", "TTG"]
 
