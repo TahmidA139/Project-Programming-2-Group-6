@@ -211,7 +211,11 @@ plots/
 - NCBI Entrez API: https://www.ncbi.nlm.nih.gov/books/NBK25499/
 - Biopython: https://biopython.org/
 - NumPy: https://numpy.org/
-- 
+- Python Documentation: https://docs.python.org/3/
+- Argpars: https://docs.python.org/3/library/argparse.html
+- we should also think about adding something from the soft tips
+
+literature review docs: 
 - https://biology.stackexchange.com/questions/56440/why-are-there-six-reading-frames-if-only-one-strand-of-dna-is-referred-to-as-the
 
 https://www.bioinformatics.org/sms/iupac.html
