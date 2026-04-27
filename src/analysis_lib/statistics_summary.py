@@ -23,7 +23,7 @@ import csv
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.analysis_lib.orf_analysis import codon_usage
+from src.analysis_lib.orf_analysis import codon_usage, gc_content, protein_length
 from src.orf_finder_lib.frame_scanner import extract_orf_sequence
 from src.orf_finder_lib.orf_finder import CSV_FIELDNAMES
 
