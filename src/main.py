@@ -30,92 +30,266 @@ Output (comparative mode, additional files):
 """
 
 import argparse
-import csv
 import os
 import sys
 
-from src.input_validate import (run as validate_run, validate_start_codons,)
+from src.input_validate import run as validate_run, validate_start_codons
 from src.graphics import plot_orf_map, plot_comparative_orf_map, plot_codon_usage_comparison
-from src.orf_finder_lib.orf_finder import find_orfs, CSV_FIELDNAMES
+from src.orf_finder_lib.orf_finder import find_orfs
 from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orfs
-from src.analysis_lib.statistics_summary import (write_stats_to_file, write_orf_comparison_report, write_comparative_csv, write_combined_csv, print_summary,)
+from src.analysis_lib.statistics_summary import (
+    write_stats_to_file,
+    write_orf_comparison_report,
+    write_comparative_csv,
+    write_combined_csv,
+    print_summary,
+)
 
-
-def _run_single_sequence(
-    accession:     str,
-    email:         str,
-    start_codons:  list,
-    min_length:    int,
-    orf_csv:       str,
-    stats_csv:     str,
-    summary_txt:   str,
-    outdir:        str = "output",
-    label:         str = "",
-    fasta_file:    str | None = None,
-    comparative:   bool = False,
-    seq_num:       int  = 1,
-) -> tuple[str, str, list, list] | tuple[None, None, None, None]:
+class ORCAPipeline:
     """
-    Fetch/load, validate, analyse, and write outputs for a single sequence.
+    Orchestrates the full ORCA pipeline for one or two DNA sequences.
 
-    Parameters
-    ----------
-    accession   : NCBI accession number. Ignored when fasta_file is given.
-    email       : User email for NCBI Entrez.
-    start_codons: List of start codons to search for.
-    min_length  : Minimum ORF length in nucleotides.
-    orf_csv     : Output path for the ORF CSV file.
-    stats_csv   : Output path for the stats CSV file.
-    summary_txt : Output path for the human-readable summary.
-    outdir      : Output directory passed through to validate_run so cleaned
-                  FASTA files land in the correct location.
-    label       : Human-friendly label printed in terminal output.
-    fasta_file  : Path to a local FASTA file (mutually exclusive with NCBI).
-                  When provided, the sequence is loaded from disk instead of
-                  being fetched from NCBI.  The file must contain exactly one
-                  sequence — if it contains more, the pipeline exits with an
-                  error (handled inside load_fasta_from_file).
-    comparative : When True, the cleaned FASTA is written with the comp_
-                  prefix (e.g. comp_cleaned_sequence_1.fasta).
-    seq_num     : Sequence number (1 or 2) used in the cleaned FASTA filename.
+    Shared run parameters (email, output directory, start codons, minimum
+    ORF length) are stored as instance attributes so they do not need to
+    be threaded through every method call.  Per-sequence data is passed
+    explicitly between methods.
 
-    Returns
-    -------
-    (accession, clean_seq, nested_dict, flat_list) on success,
-    (None, None, None, None) on failure.
+    Typical usage
+    -------------
+    pipeline = ORCAPipeline(email=email, outdir=outdir,
+                            start_codons=start_codons, min_length=min_length)
+    pipeline.run(accession=accession, fasta_file=fasta_file,
+                 accession2=accession2, fasta_file2=fasta_file2)
     """
-    acc, clean_seq, _, _ = validate_run(
-        accession,
-        email,
-        outdir=outdir,
-        fasta_file=fasta_file,
-        comparative=comparative,
-        seq_num=seq_num,
-    )
-    if clean_seq is None:
-        src = f"file '{fasta_file}'" if fasta_file else f"accession '{accession}'"
-        print(f"[ERROR] Pipeline failed for {src}.")
-        return None, None, None, None
 
-    # 2. Find ORFs
-    nested, flat_list = find_orfs(
-        clean_seq,
-        start_codons=start_codons,
-        min_length=min_length,
-    )
+    def __init__(
+        self,
+        email:        str,
+        outdir:       str,
+        start_codons: list[str],
+        min_length:   int,
+    ) -> None:
+        """
+        Initialise the pipeline and create the output directory.
 
-    # 3. Print terminal summary
-    print_summary(nested, flat_list, label=label or acc)
+        Parameters
+        ----------
+        email : str
+            User email address required by NCBI Entrez.
+        outdir : str
+            Directory for all output files.  Created if it does not exist.
+        start_codons : list[str]
+            Validated start codons to search for, e.g. ``['ATG']``.
+        min_length : int
+            Minimum ORF length in nucleotides.
+        """
+        self.email        = email
+        self.outdir       = outdir
+        self.start_codons = start_codons
+        self.min_length   = min_length
+        os.makedirs(outdir, exist_ok=True)
 
-    if not flat_list:
-        src = f"file '{fasta_file}'" if fasta_file else f"accession '{accession}'"
-        print(f"[WARNING] No ORFs found for {src}. No output files written.")
+    def process_sequence(
+        self,
+        accession:   str,
+        fasta_file:  str | None,
+        seq_num:     int,
+        comparative: bool,
+        label:       str,
+    ) -> tuple[str, str, list, list] | tuple[None, None, None, None]:
+        """
+        Load, validate, and find ORFs for one sequence.
+
+        Parameters
+        ----------
+        accession : str
+            NCBI accession number.  Ignored when *fasta_file* is provided.
+        fasta_file : str or None
+            Path to a local FASTA file.  Overrides *accession* when given.
+        seq_num : int
+            Sequence number (1 or 2) used in the cleaned FASTA filename.
+        comparative : bool
+            When True the ``comp_`` filename prefix is applied.
+        label : str
+            Human-friendly label shown in terminal output.
+
+        Returns
+        -------
+        tuple[str, str, list, list]
+            ``(accession, clean_seq, nested_dict, flat_list)`` on success.
+        tuple[None, None, None, None]
+            On failure.
+        """
+        acc, clean_seq, _, _ = validate_run(
+            accession,
+            self.email,
+            outdir=self.outdir,
+            fasta_file=fasta_file,
+            comparative=comparative,
+            seq_num=seq_num,
+        )
+        if clean_seq is None:
+            src = f"file '{fasta_file}'" if fasta_file else f"accession '{accession}'"
+            print(f"[ERROR] Pipeline failed for {src}.")
+            return None, None, None, None
+
+        nested, flat_list = find_orfs(
+            clean_seq,
+            start_codons=self.start_codons,
+            min_length=self.min_length,
+        )
+        print_summary(nested, flat_list, label=label or acc)
+
+        if not flat_list:
+            src = f"file '{fasta_file}'" if fasta_file else f"accession '{accession}'"
+            print(f"[WARNING] No ORFs found for {src}. No output files written.")
+
         return acc, clean_seq, nested, flat_list
 
-    return acc, clean_seq, nested, flat_list
+    def write_csv(
+        self,
+        acc1:  str,
+        seq1:  str,
+        flat1: list,
+        acc2:  str | None = None,
+        seq2:  str | None = None,
+        flat2: list | None = None,
+    ) -> None:
+        """Write the ORF table CSV (single or comparative)."""
+        write_combined_csv(
+            acc1=acc1, flat1=flat1, seq1=seq1,
+            output_path=os.path.join(self.outdir, "orfs.csv"),
+            acc2=acc2, flat2=flat2, seq2=seq2,
+        )
+
+    def plot(
+        self,
+        acc1:        str,
+        seq1:        str,
+        flat1:       list,
+        comparative: bool,
+        acc2:        str | None = None,
+        seq2:        str | None = None,
+        flat2:       list | None = None,
+    ) -> None:
+        """Generate the ORF map and, in comparative mode, the codon usage heatmap."""
+        if comparative:
+            plot_comparative_orf_map(
+                flat1=flat1, seq_len1=len(seq1), acc1=acc1,
+                flat2=flat2, seq_len2=len(seq2), acc2=acc2,
+                output_path=os.path.join(self.outdir, "orf_map.png"),
+            )
+            plot_codon_usage_comparison(
+                seq1=seq1, acc1=acc1,
+                seq2=seq2, acc2=acc2,
+                output_path=os.path.join(self.outdir, "codon_usage_comparison.png"),
+            )
+        else:
+            plot_orf_map(
+                flat_list=flat1, seq_len=len(seq1),
+                accession=acc1,
+                output_path=os.path.join(self.outdir, "orf_map.png"),
+            )
+
+    def write_reports(
+        self,
+        acc1:        str,
+        seq1:        str,
+        flat1:       list,
+        comparative: bool,
+        acc2:        str | None = None,
+        seq2:        str | None = None,
+        flat2:       list | None = None,
+    ) -> None:
+        """Enrich ORFs with stats and write summary reports."""
+        calculate_orf_stats(flat1, seq1)
+        repeats1 = find_repeated_orfs(flat1)
+        if repeats1:
+            print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
+
+        if comparative:
+            calculate_orf_stats(flat2, seq2)
+            repeats2 = find_repeated_orfs(flat2)
+            if repeats2:
+                print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
+            write_orf_comparison_report(
+                flat1=flat1, flat2=flat2,
+                acc1=acc1,   acc2=acc2,
+                filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
+                codon_csv_name="codon_comparison.csv",
+            )
+            write_comparative_csv(
+                flat1, flat2, acc1=acc1, acc2=acc2,
+                filename=os.path.join(self.outdir, "codon_comparison.csv"),
+            )
+        else:
+            write_stats_to_file(flat1, filename=os.path.join(self.outdir, "orf_summary.txt"))
+
+    # Public entry point 
+    def run(
+        self,
+        accession:   str,
+        fasta_file:  str | None = None,
+        accession2:  str | None = None,
+        fasta_file2: str | None = None,
+    ) -> None:
+        """
+        Run the full ORCA pipeline for one or two sequences.
+
+        Parameters
+        ----------
+        accession : str
+            NCBI accession number for sequence 1.  Ignored when
+            *fasta_file* is provided.
+        fasta_file : str or None, optional
+            Local FASTA file for sequence 1.
+        accession2 : str or None, optional
+            NCBI accession number for sequence 2.  Triggers comparative
+            mode when provided.
+        fasta_file2 : str or None, optional
+            Local FASTA file for sequence 2.  Triggers comparative mode
+            when provided.
+        """
+        comparative = (accession2 is not None) or (fasta_file2 is not None)
+
+        src1_label = f"(local file) {fasta_file}" if fasta_file else accession
+        print(f"\n[ORCA] Processing sequence 1: {src1_label}")
+
+        acc1, seq1, _, flat1 = self.process_sequence(
+            accession=accession or "",
+            fasta_file=fasta_file,
+            seq_num=1,
+            comparative=comparative,
+            label="Sequence 1",
+        )
+        if acc1 is None:
+            print("[ERROR] Pipeline failed: could not retrieve a valid sequence.")
+            sys.exit(1)
+
+        acc2 = seq2 = flat2 = None
+        if comparative:
+            src2_label = f"(local file) {fasta_file2}" if fasta_file2 else accession2
+            print(f"\n[ORCA] Processing sequence 2: {src2_label}")
+
+            acc2, seq2, _, flat2 = self.process_sequence(
+                accession=accession2 or "",
+                fasta_file=fasta_file2,
+                seq_num=2,
+                comparative=True,
+                label="Sequence 2",
+            )
+            if acc2 is None:
+                print("[ERROR] Pipeline failed for sequence 2.")
+                sys.exit(1)
+
+        self.write_csv(acc1, seq1, flat1, acc2, seq2, flat2)
+        self.plot(acc1, seq1, flat1, comparative, acc2, seq2, flat2)
+        self.write_reports(acc1, seq1, flat1, comparative, acc2, seq2, flat2)
 
 
+# CLI entry point
 def main() -> None:
+    """Parse command-line arguments and run the ORCA pipeline."""
     parser = argparse.ArgumentParser(
         description=(
             "ORCA — ORF Recognition and Comparative Analysis.\n"
@@ -133,17 +307,13 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    # ── Sequence retrieval ────────────────────────────────────────────────
     seq1_group = parser.add_mutually_exclusive_group()
     seq1_group.add_argument(
-        "--accession",
-        type=str,
+        "--accession", type=str,
         help="NCBI accession number for sequence 1 (e.g. NM_001301717)",
     )
     seq1_group.add_argument(
-        "--fasta",
-        type=str,
-        metavar="FILE",
+        "--fasta", type=str, metavar="FILE",
         help=(
             "Path to a local FASTA file for sequence 1. "
             "The file must contain exactly one sequence. "
@@ -153,20 +323,14 @@ def main() -> None:
 
     seq2_group = parser.add_mutually_exclusive_group()
     seq2_group.add_argument(
-        "--accession2",
-        type=str,
-        default=None,
+        "--accession2", type=str, default=None,
         help=(
             "NCBI accession number for sequence 2. "
-            "When provided, comparative analysis is performed between "
-            "the two sequences."
+            "When provided, comparative analysis is performed between the two sequences."
         ),
     )
     seq2_group.add_argument(
-        "--fasta2",
-        type=str,
-        default=None,
-        metavar="FILE",
+        "--fasta2", type=str, default=None, metavar="FILE",
         help=(
             "Path to a local FASTA file for sequence 2. "
             "The file must contain exactly one sequence. "
@@ -175,175 +339,50 @@ def main() -> None:
         ),
     )
 
-    parser.add_argument(
-        "--email",
-        type=str,
-        help="Email address required by NCBI Entrez",
-    )
-
-    # ── ORF finder options ────────────────────────────────────────────────
-    parser.add_argument(
-        "--min-length",
-        type=int,
-        default=30,
-        metavar="NT",
-        help="Minimum ORF length in nucleotides",
-    )
-    parser.add_argument(
-        "--start-codons",
-        nargs="+",
-        default=["ATG"],
-        metavar="CODON",
-        help="Start codons to search for. ATG is canonical; GTG and TTG are non-canonical alternatives. Default: ATG",
-    )
-
-    # ── Output options ────────────────────────────────────────────────────
-    parser.add_argument(
-        "--outdir",
-        type=str,
-        default="output",
-        metavar="DIR",
-        help="Directory for all output files (default: output/)",
-    )
+    parser.add_argument("--email", type=str, help="Email address required by NCBI Entrez")
+    parser.add_argument("--min-length", type=int, default=30, metavar="NT",
+                        help="Minimum ORF length in nucleotides")
+    parser.add_argument("--start-codons", nargs="+", default=["ATG"], metavar="CODON",
+                        help="Start codons to search for. Default: ATG")
+    parser.add_argument("--outdir", type=str, default="output", metavar="DIR",
+                        help="Directory for all output files (default: output/)")
 
     args = parser.parse_args()
 
-    # Create the output directory if it does not already exist
-    outdir = args.outdir
-    os.makedirs(outdir, exist_ok=True)
-
-    # ── 1. Resolve sequence 1 source ──────────────────────────────────────
-    # Determine whether the user is providing an accession or a local file.
-    # If neither was passed on the command line, ask interactively.
-    fasta_file  = args.fasta       # None if not supplied
-    accession   = args.accession   # None if not supplied
+    fasta_file = args.fasta
+    accession  = args.accession
 
     if fasta_file is None and accession is None:
-        # Interactive fallback: ask which input method the user wants
         print("\nNo sequence 1 input provided. Choose an input method:")
         print("  1) NCBI accession number")
         print("  2) Local FASTA file path")
         choice = input("Enter 1 or 2: ").strip()
         if choice == "2":
             fasta_file = input("Enter path to FASTA file for sequence 1: ").strip()
-            accession  = ""   # placeholder; overridden by the record ID in the file
+            accession  = ""
         else:
-            accession  = input("Enter NCBI accession number: ").strip()
+            accession = input("Enter NCBI accession number: ").strip()
 
-    # ── 2. Resolve sequence 2 source ──────────────────────────────────────
-    fasta_file2  = args.fasta2      # None if not supplied
-    accession2   = args.accession2  # None if not supplied
-
-    comparative  = (accession2 is not None) or (fasta_file2 is not None)
-
-    # ── 3. Get email ──────────────────────────────────────────────────────
     email = args.email or input("Enter your email (required by NCBI): ").strip()
-
-    # ── 4. Validate shared options ────────────────────────────────────────
     start_codons = validate_start_codons(args.start_codons)
 
     if args.min_length < 3:
         print("[ERROR] --min-length must be at least 3 (one codon).")
         sys.exit(1)
 
-    # ── 5. Run pipeline for sequence 1 ───────────────────────────────────
-    src1_label = f"(local file) {fasta_file}" if fasta_file else accession
-    print(f"\n[ORCA] Processing sequence 1: {src1_label}")
-
-    acc1, seq1, nested1, flat1 = _run_single_sequence(
-        accession     = accession or "",
-        email         = email,
-        start_codons  = start_codons,
-        min_length    = args.min_length,
-        orf_csv       = os.path.join(outdir, "orfs.csv"),
-        stats_csv     = os.path.join(outdir, "orf_stats.csv"),
-        summary_txt   = os.path.join(outdir, "stats_summary.txt"),
-        outdir        = outdir,
-        label         = "Sequence 1",
-        fasta_file    = fasta_file,
-        comparative   = comparative,
-        seq_num       = 1,
+    pipeline = ORCAPipeline(
+        email=email,
+        outdir=args.outdir,
+        start_codons=start_codons,
+        min_length=args.min_length,
+    )
+    pipeline.run(
+        accession=accession or "",
+        fasta_file=fasta_file,
+        accession2=args.accession2,
+        fasta_file2=args.fasta2,
     )
 
-    if acc1 is None:
-        print("[ERROR] Pipeline failed: could not retrieve a valid sequence.")
-        sys.exit(1)
-
-    # ── 6. Run pipeline for sequence 2 (if requested) ────────────────────
-    if comparative:
-        src2_label = f"(local file) {fasta_file2}" if fasta_file2 else accession2
-        print(f"\n[ORCA] Processing sequence 2: {src2_label}")
-
-        acc2, seq2, nested2, flat2 = _run_single_sequence(
-            accession     = accession2 or "",
-            email         = email,
-            start_codons  = start_codons,
-            min_length    = args.min_length,
-            orf_csv       = os.path.join(outdir, "orfs_seq2.csv"),
-            stats_csv     = os.path.join(outdir, "orf_stats_seq2.csv"),
-            summary_txt   = os.path.join(outdir, "stats_summary_seq2.txt"),
-            outdir        = outdir,
-            label         = "Sequence 2",
-            fasta_file    = fasta_file2,
-            comparative   = True,
-            seq_num       = 2,
-        )
-
-        if acc2 is None:
-            print("[ERROR] Pipeline failed for sequence 2.")
-            sys.exit(1)
-
-        write_combined_csv(
-            acc1=acc1, flat1=flat1, seq1=seq1,
-            output_path=os.path.join(outdir, "orfs.csv"),
-            acc2=acc2, flat2=flat2, seq2=seq2,
-        )
-
-    else:
-        write_combined_csv(
-            acc1=acc1, flat1=flat1, seq1=seq1,
-            output_path=os.path.join(outdir, "orfs.csv"),
-        )
-
-    # ── 7. ORF map ────────────────────────────────────────────────────────
-    if comparative:
-        plot_comparative_orf_map(
-            flat1=flat1, seq_len1=len(seq1), acc1=acc1,
-            flat2=flat2, seq_len2=len(seq2), acc2=acc2,
-            output_path=os.path.join(outdir, "orf_map.png"),
-        )
-        plot_codon_usage_comparison(
-            seq1=seq1, acc1=acc1,
-            seq2=seq2, acc2=acc2,
-            output_path=os.path.join(outdir, "codon_usage_comparison.png"),
-        )
-    else:
-        plot_orf_map(
-            flat_list=flat1, seq_len=len(seq1),
-            accession=acc1, output_path=os.path.join(outdir, "orf_map.png"),
-        )
-
-    # ── 8. Enrich ORFs with sequence/GC/protein stats ────────────────────
-    calculate_orf_stats(flat1, seq1)
-    repeats1 = find_repeated_orfs(flat1)
-    if repeats1:
-        print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
-
-    if comparative:
-        calculate_orf_stats(flat2, seq2)
-        repeats2 = find_repeated_orfs(flat2)
-        if repeats2:
-            print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
-        write_orf_comparison_report(
-            flat1=flat1, flat2=flat2,
-            acc1=acc1,   acc2=acc2,
-            filename=os.path.join(outdir, "orf_comparison_report.txt"),
-            codon_csv_name="codon_comparison.csv",
-        )
-        write_comparative_csv(flat1, flat2, acc1=acc1, acc2=acc2,
-                              filename=os.path.join(outdir, "codon_comparison.csv"))
-    else:
-        write_stats_to_file(flat1, filename=os.path.join(outdir, "orf_summary.txt"))
 
 if __name__ == "__main__":
     main()
