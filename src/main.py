@@ -20,12 +20,13 @@ Input:
     OR loaded from local single-sequence FASTA files via --fasta / --fasta2.
 
 Output (single-sequence mode):
-    output/cleaned_sequence.fasta            : cleaned sequence
+    output/cleaned_sequence_1.fasta          : cleaned sequence
     output/orf_stats.csv                     : per-ORF statistics
     output/stats_summary.txt                 : human-readable summary report
 
 Output (comparative mode, additional files):
-    output/cleaned_sequences.fasta           : both cleaned sequences combined
+    output/comp_cleaned_sequence_1.fasta     : cleaned sequence 1
+    output/comp_cleaned_sequence_2.fasta     : cleaned sequence 2
 """
 
 import argparse
@@ -33,7 +34,7 @@ import csv
 import os
 import sys
 
-from src.input_validate import (run as validate_run, validate_start_codons, write_combined_cleaned_fasta,)
+from src.input_validate import (run as validate_run, validate_start_codons,)
 from src.graphics import plot_orf_map, plot_comparative_orf_map, plot_codon_usage_comparison
 from src.orf_finder_lib.orf_finder import find_orfs, CSV_FIELDNAMES
 from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orfs
@@ -51,6 +52,8 @@ def _run_single_sequence(
     outdir:        str = "output",
     label:         str = "",
     fasta_file:    str | None = None,
+    comparative:   bool = False,
+    seq_num:       int  = 1,
 ) -> tuple[str, str, list, list] | tuple[None, None, None, None]:
     """
     Fetch/load, validate, analyse, and write outputs for a single sequence.
@@ -72,14 +75,23 @@ def _run_single_sequence(
                   being fetched from NCBI.  The file must contain exactly one
                   sequence — if it contains more, the pipeline exits with an
                   error (handled inside load_fasta_from_file).
+    comparative : When True, the cleaned FASTA is written with the comp_
+                  prefix (e.g. comp_cleaned_sequence_1.fasta).
+    seq_num     : Sequence number (1 or 2) used in the cleaned FASTA filename.
 
     Returns
     -------
     (accession, clean_seq, nested_dict, flat_list) on success,
     (None, None, None, None) on failure.
     """
-    # 1. Fetch/load and validate
-    acc, clean_seq, _, _ = validate_run(accession, email, outdir=outdir, fasta_file=fasta_file)
+    acc, clean_seq, _, _ = validate_run(
+        accession,
+        email,
+        outdir=outdir,
+        fasta_file=fasta_file,
+        comparative=comparative,
+        seq_num=seq_num,
+    )
     if clean_seq is None:
         src = f"file '{fasta_file}'" if fasta_file else f"accession '{accession}'"
         print(f"[ERROR] Pipeline failed for {src}.")
@@ -249,6 +261,8 @@ def main() -> None:
         outdir        = outdir,
         label         = "Sequence 1",
         fasta_file    = fasta_file,
+        comparative   = comparative,
+        seq_num       = 1,
     )
 
     if acc1 is None:
@@ -271,23 +285,13 @@ def main() -> None:
             outdir        = outdir,
             label         = "Sequence 2",
             fasta_file    = fasta_file2,
+            comparative   = True,
+            seq_num       = 2,
         )
 
         if acc2 is None:
             print("[ERROR] Pipeline failed for sequence 2.")
             sys.exit(1)
-
-        # ── Write combined cleaned_sequences.fasta ────────────────────────
-        # In comparative mode we produce a single FASTA file that holds both
-        # cleaned sequences (named 'cleaned_sequences.fasta', plural).
-        # The individual per-sequence cleaned FASTAs ('cleaned_sequence.fasta'
-        # and 'cleaned_sequence_2.fasta') are still written by validate_run,
-        # so the user always has both individual and combined versions.
-        write_combined_cleaned_fasta(
-            clean_seq1=seq1, accession1=acc1,
-            clean_seq2=seq2, accession2=acc2,
-            output_path=os.path.join(outdir, "cleaned_sequences.fasta"),
-        )
 
         write_combined_csv(
             acc1=acc1, flat1=flat1, seq1=seq1,
