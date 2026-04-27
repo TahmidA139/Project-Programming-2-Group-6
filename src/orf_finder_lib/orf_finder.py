@@ -51,11 +51,6 @@ CSV_FIELDNAMES: List[str] = [
     "frame", "start", "end", "length_nt",
 ]
 
-
-# ---------------------------------------------------------------------------
-# Codon classification
-# ---------------------------------------------------------------------------
-
 def _codon_category(codon: str) -> str:
     """
     Return the classification key for a start codon.
@@ -87,11 +82,6 @@ def _codon_category(codon: str) -> str:
     raise ValueError(
         f"Unrecognised start codon: {codon!r}. Must be one of {ALL_START_CODONS}"
     )
-
-
-# ---------------------------------------------------------------------------
-# Frame scanning
-# ---------------------------------------------------------------------------
 
 def _scan_all_frames(
     dna_sequence: str,
@@ -130,11 +120,7 @@ def _scan_all_frames(
         orfs.extend(scan_frame(dna_sequence, frame, start_codons, min_length, "+", seq_len))
         orfs.extend(scan_frame(rev_comp,     frame, start_codons, min_length, "-", seq_len))
     return orfs
-
-
-# ---------------------------------------------------------------------------
-# Output building
-# ---------------------------------------------------------------------------
+    
 
 def _make_nested_dict(start_codons: List[str]) -> Dict[str, Any]:
     """
@@ -261,10 +247,6 @@ def _build_outputs(
 
     return nested_dict, flat_list
 
-
-# ---------------------------------------------------------------------------
-# Public interface
-# ---------------------------------------------------------------------------
 
 def find_orfs(
     dna_sequence: str,
