@@ -12,6 +12,7 @@ Purpose:
 
 from __future__ import annotations
 from typing import Any, Dict, List
+from Bio import Align
 from src.orf_finder_lib.frame_scanner import extract_orf_sequence
 
 def gc_content(sequence: str) -> float:
@@ -105,6 +106,66 @@ def calculate_orf_stats(
         orf["gc_content"] = gc_content(seq)
         orf["protein_length"] = protein_length(seq)
     return flat_list
+
+def global_alignment_stats(seq1: str, seq2: str) -> Dict[str, Any]:
+    """
+    Run a global pairwise alignment between two DNA sequences and return
+    summary statistics.
+
+    Uses Biopython's PairwiseAligner in global (Needleman-Wunsch) mode with
+    standard DNA scoring.  Intended for sequences up to ~30,000 bp; larger
+    inputs will work but may be slow.
+
+    Parameters
+    ----------
+    seq1 : str
+        First DNA sequence (any case; uppercased internally).
+    seq2 : str
+        Second DNA sequence (any case; uppercased internally).
+
+    Returns
+    -------
+    Dict[str, Any]
+        Keys:
+            ``seq1_len``         -- length of seq1 in bp.
+            ``seq2_len``         -- length of seq2 in bp.
+            ``alignment_length`` -- number of columns in the best alignment
+                                    (matches + mismatches + gaps).
+            ``matches``          -- identical base positions.
+            ``mismatches``       -- aligned positions with different bases.
+            ``gaps``             -- gap characters in either sequence.
+            ``identity_pct``     -- matches / alignment_length * 100.
+            ``coverage_pct``     -- alignment_length / max(seq1_len, seq2_len) * 100.
+            ``score``            -- raw aligner score.
+    """
+    aligner = Align.PairwiseAligner()
+    aligner.mode            = "global"
+    aligner.match_score     =  1
+    aligner.mismatch_score  =  0
+    aligner.open_gap_score  = -2
+    aligner.extend_gap_score = -0.5
+
+    best = next(iter(aligner.align(seq1.upper(), seq2.upper())))
+    counts = best.counts()
+
+    matches    = counts.identities
+    mismatches = counts.mismatches
+    gaps       = counts.gaps
+    aln_len    = matches + mismatches + gaps
+
+    return {
+        "seq1_len":         len(seq1),
+        "seq2_len":         len(seq2),
+        "alignment_length": aln_len,
+        "matches":          matches,
+        "mismatches":       mismatches,
+        "gaps":             gaps,
+        "identity_pct":     (matches / aln_len  * 100) if aln_len  else 0.0,
+        "coverage_pct":     (aln_len / max(len(seq1), len(seq2)) * 100)
+                            if max(len(seq1), len(seq2)) else 0.0,
+        "score":            best.score,
+    }
+
 
 def find_repeated_orfs(flat_list: List[Dict[str, Any]]) -> Dict[str, int]:
     """
