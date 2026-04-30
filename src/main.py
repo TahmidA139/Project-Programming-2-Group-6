@@ -185,34 +185,34 @@ class ORCAPipeline:
                 output_path=os.path.join(self.outdir, "orf_map.png"),
             )
 
-def write_reports(self, acc1, seq1, flat1, comparative,
-                  acc2=None, seq2=None, flat2=None) -> None:
-    calculate_orf_stats(flat1, seq1)
-    repeats1 = find_repeated_orfs(flat1)
-    if repeats1:
-        print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
-
-    if comparative:
-        calculate_orf_stats(flat2, seq2)
-        repeats2 = find_repeated_orfs(flat2)
-        if repeats2:
-            print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
-        write_orf_comparison_report(
-            flat1=flat1, flat2=flat2,
-            acc1=acc1,   acc2=acc2,
-            seq1=seq1,   seq2=seq2,
-            filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
-            start_codons=self.start_codons,   # add
-            min_length=self.min_length,        # add
-        )
-    else:
-        write_stats_to_file(
-            flat1,
-            filename=os.path.join(self.outdir, "orf_summary.txt"),
-            accession=acc1,                   # add
-            start_codons=self.start_codons,   # add
-            min_length=self.min_length,        # add
-        )
+    def write_reports(self, acc1, seq1, flat1, comparative,
+                      acc2=None, seq2=None, flat2=None) -> None:
+        calculate_orf_stats(flat1, seq1)
+        repeats1 = find_repeated_orfs(flat1)
+        if repeats1:
+            print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
+    
+        if comparative:
+            calculate_orf_stats(flat2, seq2)
+            repeats2 = find_repeated_orfs(flat2)
+            if repeats2:
+                print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
+            write_orf_comparison_report(
+                flat1=flat1, flat2=flat2,
+                acc1=acc1,   acc2=acc2,
+                seq1=seq1,   seq2=seq2,
+                filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
+                start_codons=self.start_codons,   # add
+                min_length=self.min_length,        # add
+            )
+        else:
+            write_stats_to_file(
+                flat1,
+                filename=os.path.join(self.outdir, "orf_summary.txt"),
+                accession=acc1,                   # add
+                start_codons=self.start_codons,   # add
+                min_length=self.min_length,        # add
+            )
 
     # Public entry point 
     def run(
