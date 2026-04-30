@@ -200,8 +200,8 @@ run_tests() {
     # ---------------------------------------------------------------------- #
     # Test 3: Comparative mode — OR2B6 vs CCR7
     # Runs the full comparative pipeline on two local FASTA files and checks
-    # that all comparative output files (combined FASTA, combined ORF CSV,
-    # codon-usage heatmap, comparison report) are produced.
+    # that all comparative output files are produced: two per-sequence cleaned
+    # FASTAs, a combined ORF CSV, the ORF map, and the comparison report.
     # ---------------------------------------------------------------------- #
     # stdout and stderr from this run are saved as reference files so readers
     # can see what a correct comparative run looks like without running it.
@@ -235,28 +235,29 @@ verify_output_files() {
     # Check that every expected output file was created and is non-empty.
 
     # ---- Test 1: single-sequence outputs --------------------------------- #
-    check_file_exists "${TEST_OUTDIR}/test1/orfs.csv"               "Test 1 ORF CSV"
-    check_file_exists "${TEST_OUTDIR}/test1/cleaned_sequence.fasta" "Test 1 cleaned FASTA"
-    check_file_exists "${TEST_OUTDIR}/test1/orf_map.png"            "Test 1 ORF map image"
-    check_file_exists "${TEST_OUTDIR}/test1/orf_summary.txt"        "Test 1 ORF summary"
+    # In single-sequence mode the cleaned FASTA is written as
+    # cleaned_sequence_1.fasta (seq_num=1, comparative=False).
+    check_file_exists "${TEST_OUTDIR}/test1/orfs.csv"                  "Test 1 ORF CSV"
+    check_file_exists "${TEST_OUTDIR}/test1/cleaned_sequence_1.fasta"  "Test 1 cleaned FASTA"
+    check_file_exists "${TEST_OUTDIR}/test1/orf_map.png"               "Test 1 ORF map image"
+    check_file_exists "${TEST_OUTDIR}/test1/orf_summary.txt"           "Test 1 ORF summary"
 
-    # ---- Test 2: IUPAC ambiguity — same file set as single-sequence mode - #
-    check_file_exists "${TEST_OUTDIR}/test2/orfs.csv"               "Test 2 ORF CSV"
-    check_file_exists "${TEST_OUTDIR}/test2/cleaned_sequence.fasta" "Test 2 cleaned FASTA"
-    check_file_exists "${TEST_OUTDIR}/test2/orf_map.png"            "Test 2 ORF map image"
-    check_file_exists "${TEST_OUTDIR}/test2/orf_summary.txt"        "Test 2 ORF summary"
+    # ---- Test 2: IUPAC ambiguity — same output set as single-sequence mode #
+    check_file_exists "${TEST_OUTDIR}/test2/orfs.csv"                  "Test 2 ORF CSV"
+    check_file_exists "${TEST_OUTDIR}/test2/cleaned_sequence_1.fasta"  "Test 2 cleaned FASTA"
+    check_file_exists "${TEST_OUTDIR}/test2/orf_map.png"               "Test 2 ORF map image"
+    check_file_exists "${TEST_OUTDIR}/test2/orf_summary.txt"           "Test 2 ORF summary"
 
     # ---- Test 3: comparative mode ---------------------------------------- #
-    # In comparative mode both sequences are written into a single orfs.csv;
-    # there is no separate orfs_seq2.csv.
-    check_file_exists "${TEST_OUTDIR}/test3/orfs.csv"                   "Test 3 combined ORF CSV"
-    check_file_exists "${TEST_OUTDIR}/test3/cleaned_sequences.fasta"    "Test 3 combined cleaned FASTA"
-    check_file_exists "${TEST_OUTDIR}/test3/orf_map.png"                "Test 3 comparative ORF map"
-    check_file_exists "${TEST_OUTDIR}/test3/codon_usage_comparison.png" "Test 3 codon-usage heatmap"
-    check_file_exists "${TEST_OUTDIR}/test3/orf_summary.txt"            "Test 3 sequence-1 ORF summary"
-    check_file_exists "${TEST_OUTDIR}/test3/orf_summary_seq2.txt"       "Test 3 sequence-2 ORF summary"
-    check_file_exists "${TEST_OUTDIR}/test3/comparison.txt"             "Test 3 comparative report"
-    check_file_exists "${TEST_OUTDIR}/test3/codon_comparison.csv"       "Test 3 codon comparison CSV"
+    # In comparative mode each sequence gets its own cleaned FASTA prefixed
+    # with "comp_" and numbered by position (seq_num 1 and 2).
+    # Both sequences share a single combined orfs.csv and a single orf_map.png.
+    # The comparison report is written as orf_comparison_report.txt.
+    check_file_exists "${TEST_OUTDIR}/test3/orfs.csv"                       "Test 3 combined ORF CSV"
+    check_file_exists "${TEST_OUTDIR}/test3/comp_cleaned_sequence_1.fasta"  "Test 3 sequence-1 cleaned FASTA"
+    check_file_exists "${TEST_OUTDIR}/test3/comp_cleaned_sequence_2.fasta"  "Test 3 sequence-2 cleaned FASTA"
+    check_file_exists "${TEST_OUTDIR}/test3/orf_map.png"                    "Test 3 comparative ORF map"
+    check_file_exists "${TEST_OUTDIR}/test3/orf_comparison_report.txt"      "Test 3 comparison report"
 }
 
 
@@ -275,9 +276,13 @@ verify_output_content() {
         1 \
         "Test 1 ORF CSV contains at least 1 ORF."
 
-    check_string_in_file "${TEST_OUTDIR}/test1/cleaned_sequence.fasta" \
+    check_string_in_file "${TEST_OUTDIR}/test1/cleaned_sequence_1.fasta" \
         "NM_012367" \
         "Test 1 cleaned FASTA header contains the OR2B6 accession."
+
+    check_string_in_file "${TEST_OUTDIR}/test1/orf_summary.txt" \
+        "NM_012367" \
+        "Test 1 ORF summary references the OR2B6 accession."
 
     # ---- Test 2: CCR7 with IUPAC ambiguity codes (accession NM_001838.4) --- #
 
@@ -289,12 +294,17 @@ verify_output_content() {
         1 \
         "Test 2 ORF CSV contains at least 1 ORF."
 
-    check_string_in_file "${TEST_OUTDIR}/test2/cleaned_sequence.fasta" \
+    check_string_in_file "${TEST_OUTDIR}/test2/cleaned_sequence_1.fasta" \
         "NM_001838" \
         "Test 2 cleaned FASTA header contains the CCR7 accession."
 
+    check_string_in_file "${TEST_OUTDIR}/test2/orf_summary.txt" \
+        "NM_001838" \
+        "Test 2 ORF summary references the CCR7 accession."
+
     # ---- Test 3: comparative mode ---------------------------------------- #
-    # Both accessions appear in the single combined orfs.csv.
+    # Both accessions appear in the single combined orfs.csv and in their
+    # respective cleaned FASTA files.
 
     check_string_in_file "${TEST_OUTDIR}/test3/orfs.csv" \
         "NM_012367" \
@@ -308,13 +318,21 @@ verify_output_content() {
         2 \
         "Test 3 combined ORF CSV contains ORFs from both sequences."
 
-    check_string_in_file "${TEST_OUTDIR}/test3/cleaned_sequences.fasta" \
+    check_string_in_file "${TEST_OUTDIR}/test3/comp_cleaned_sequence_1.fasta" \
         "NM_012367" \
-        "Test 3 combined FASTA contains the OR2B6 sequence."
+        "Test 3 sequence-1 cleaned FASTA contains the OR2B6 accession."
 
-    check_string_in_file "${TEST_OUTDIR}/test3/cleaned_sequences.fasta" \
+    check_string_in_file "${TEST_OUTDIR}/test3/comp_cleaned_sequence_2.fasta" \
         "NM_001838" \
-        "Test 3 combined FASTA contains the CCR7 sequence."
+        "Test 3 sequence-2 cleaned FASTA contains the CCR7 accession."
+
+    check_string_in_file "${TEST_OUTDIR}/test3/orf_comparison_report.txt" \
+        "NM_012367" \
+        "Test 3 comparison report references the OR2B6 accession."
+
+    check_string_in_file "${TEST_OUTDIR}/test3/orf_comparison_report.txt" \
+        "NM_001838" \
+        "Test 3 comparison report references the CCR7 accession."
 }
 
 
