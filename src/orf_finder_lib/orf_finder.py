@@ -51,6 +51,7 @@ CSV_FIELDNAMES: List[str] = [
     "frame", "start", "end", "length_nt",
 ]
 
+
 def _codon_category(codon: str) -> str:
     """
     Return the classification key for a start codon.
@@ -82,6 +83,7 @@ def _codon_category(codon: str) -> str:
     raise ValueError(
         f"Unrecognised start codon: {codon!r}. Must be one of {ALL_START_CODONS}"
     )
+
 
 def _scan_all_frames(
     dna_sequence: str,
@@ -120,7 +122,7 @@ def _scan_all_frames(
         orfs.extend(scan_frame(dna_sequence, frame, start_codons, min_length, "+", seq_len))
         orfs.extend(scan_frame(rev_comp,     frame, start_codons, min_length, "-", seq_len))
     return orfs
-    
+
 
 def _make_nested_dict(start_codons: List[str]) -> Dict[str, Any]:
     """
@@ -189,15 +191,13 @@ def _label_and_insert(
         The label assigned to this ORF (e.g. ``"ORF3"`` or ``"GTG_ORF1"``).
     """
     sc       = orf["start_codon"]
-    category = _codon_category(sc)   # raises for invalid codons (unreachable post-validation)
+    category = _codon_category(sc)
 
     if category == "canonical":
         counts["canonical"] = counts.get("canonical", 0) + 1
         label = f"ORF{counts['canonical']}"
         nested_dict["canonical"][label] = orf
-
     else:
-        # category is the codon string itself (e.g. "GTG")
         counts[sc] = counts.get(sc, 0) + 1
         label = f"{sc}_ORF{counts[sc]}"
         nested_dict["noncanonical"][sc][label] = orf
@@ -250,7 +250,7 @@ def _build_outputs(
 
 def find_orfs(
     dna_sequence: str,
-    start_codons: List[str] = DEFAULT_START_CODONS,
+    start_codons: List[str] = None,
     min_length:   int       = DEFAULT_MIN_LENGTH,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """
@@ -297,6 +297,9 @@ def find_orfs(
     >>> flat[0]["start_codon"]
     'ATG'
     """
+    if start_codons is None:
+        start_codons = DEFAULT_START_CODONS
+
     invalid = [sc for sc in start_codons if sc not in ALL_START_CODONS]
     if invalid:
         raise ValueError(
