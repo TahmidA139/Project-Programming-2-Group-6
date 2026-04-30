@@ -23,11 +23,6 @@ import numpy as np
 STOP_CODONS: List[str] = ["TAA", "TAG", "TGA"]
 _COMPLEMENT: Dict[str, str] = {"A": "T", "T": "A", "G": "C", "C": "G", "N": "N"}
 
-
-# ---------------------------------------------------------------------------
-# Sequence utilities
-# ---------------------------------------------------------------------------
-
 def _reverse_complement(dna_sequence: str) -> str:
     """Return the reverse complement of a DNA sequence using NumPy."""
     char_arr   = np.array(list(dna_sequence), dtype="<U1")
@@ -48,10 +43,6 @@ def _sequence_to_codon_array(dna_sequence: str, frame: int) -> np.ndarray:
         codon_chars[:, 2],
     )
 
-
-# ---------------------------------------------------------------------------
-# Coordinate helpers
-# ---------------------------------------------------------------------------
 
 def _codon_index_to_nt(frame: int, codon_index: int) -> int:
     """Convert a codon index within a frame-sliced array to a nucleotide index."""
@@ -145,10 +136,6 @@ def _process_start_codon(
     }
     return record, stop_ci
 
-
-# ---------------------------------------------------------------------------
-# Public interface
-# ---------------------------------------------------------------------------
 
 def scan_frame(
     dna_sequence: str,
