@@ -183,45 +183,45 @@ class ORCAPipeline:
 
     def write_reports(self, acc1, seq1, flat1, comparative,
                   acc2=None, seq2=None, flat2=None) -> None:
-    calculate_orf_stats(flat1, seq1)
-    repeats1 = find_repeated_orfs(flat1)
-    if repeats1:
-        print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
-
-    if comparative:
-        calculate_orf_stats(flat2, seq2)
-        repeats2 = find_repeated_orfs(flat2)
-        if repeats2:
-            print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
-        write_orf_comparison_report(
-            flat1=flat1, flat2=flat2,
-            acc1=acc1,   acc2=acc2,
-            seq1=seq1,   seq2=seq2,
-            filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
-            start_codons=self.start_codons,
-            min_length=self.min_length,
-        )
-    else:
-        write_stats_to_file(
-            flat1,
-            filename=os.path.join(self.outdir, "orf_summary.txt"),
-            accession=acc1,
-            start_codons=self.start_codons,
-            min_length=self.min_length,
-        )
-
-    # ADD: run inference for both single and comparative mode
-    from src.analysis_lib.genetic_code_inference import (       # ADD
-        infer_genetic_code, print_inference_report,             # ADD
-        write_inference_report,                                 # ADD
-    )                                                           # ADD
-    code_results = infer_genetic_code(flat1, seq1)              # ADD
-    print_inference_report(code_results)                        # ADD
-    write_inference_report(                                     # ADD
-        code_results,                                           # ADD
-        filename=os.path.join(self.outdir, "genetic_code_report.txt"), # ADD
-        accession=acc1,                                         # ADD
-    )                                                           # ADD
+        calculate_orf_stats(flat1, seq1)
+        repeats1 = find_repeated_orfs(flat1)
+        if repeats1:
+            print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
+    
+        if comparative:
+            calculate_orf_stats(flat2, seq2)
+            repeats2 = find_repeated_orfs(flat2)
+            if repeats2:
+                print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
+            write_orf_comparison_report(
+                flat1=flat1, flat2=flat2,
+                acc1=acc1,   acc2=acc2,
+                seq1=seq1,   seq2=seq2,
+                filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
+                start_codons=self.start_codons,
+                min_length=self.min_length,
+            )
+        else:
+            write_stats_to_file(
+                flat1,
+                filename=os.path.join(self.outdir, "orf_summary.txt"),
+                accession=acc1,
+                start_codons=self.start_codons,
+                min_length=self.min_length,
+            )
+    
+        # ADD: run inference for both single and comparative mode
+        from src.analysis_lib.genetic_code_inference import (       # ADD
+            infer_genetic_code, print_inference_report,             # ADD
+            write_inference_report,                                 # ADD
+        )                                                           # ADD
+        code_results = infer_genetic_code(flat1, seq1)              # ADD
+        print_inference_report(code_results)                        # ADD
+        write_inference_report(                                     # ADD
+            code_results,                                           # ADD
+            filename=os.path.join(self.outdir, "genetic_code_report.txt"), # ADD
+            accession=acc1,                                         # ADD
+        )                                                           # ADD
 
     # Public entry point 
     def run(
