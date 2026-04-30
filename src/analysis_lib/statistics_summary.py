@@ -11,9 +11,8 @@ Purpose:
 
 Exports:
     print_summary               -- Console summary of ORF counts.
-    write_stats_to_file         -- Single-sequence orf_summary.txt (unchanged).
+    write_stats_to_file         -- Single-sequence orf_summary.txt.
     write_orf_comparison_report -- Combined report for comparative mode only.
-    write_comparative_csv       -- Codon usage CSV for two sequences.
     write_combined_csv          -- ORF table CSV (single or comparative mode).
 """
 
@@ -23,7 +22,7 @@ import csv
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.analysis_lib.orf_analysis import codon_usage, gc_content, protein_length
+from src.analysis_lib.orf_analysis import codon_usage, gc_content, protein_length, global_alignment_stats
 from src.orf_finder_lib.frame_scanner import extract_orf_sequence
 from src.orf_finder_lib.orf_finder import CSV_FIELDNAMES
 
@@ -192,7 +191,6 @@ def _write_comparative_summary(
     flat2: List[Dict[str, Any]],
     acc1:  str,
     acc2:  str,
-    codon_csv_name: str,
 ) -> None:
     """Write the shared/unique ORF comparison block."""
     plus1  = sum(1 for o in flat1 if o.get("strand") == "+")
@@ -214,7 +212,45 @@ def _write_comparative_summary(
     fh.write(f"Shared ORF sequences       : {len(shared)}\n")
     fh.write(f"Unique to {acc1:<22}: {len(seqs1 - seqs2)}\n")
     fh.write(f"Unique to {acc2:<22}: {len(seqs2 - seqs1)}\n")
-    fh.write(f"\nSee {codon_csv_name} for full codon usage breakdown.\n")
+
+
+def _write_alignment_section(
+    fh,
+    seq1: str,
+    seq2: str,
+    acc1: str,
+    acc2: str,
+) -> None:
+    """Compute global alignment and write a summary block to an open file handle."""
+    fh.write("=== Global Pairwise Alignment ===\n\n")
+    fh.write(
+        "  Algorithm : Needleman-Wunsch (global)\n"
+        "  Scoring   : match +1 | mismatch 0 | gap open -2 | gap extend -0.5\n\n"
+    )
+
+    stats = global_alignment_stats(seq1, seq2)
+
+    fh.write(f"  {acc1:<30}: {stats['seq1_len']:,} bp\n")
+    fh.write(f"  {acc2:<30}: {stats['seq2_len']:,} bp\n")
+    fh.write(f"  Alignment length            : {stats['alignment_length']:,} bp\n")
+    fh.write(f"  Matches                     : {stats['matches']:,}\n")
+    fh.write(f"  Mismatches                  : {stats['mismatches']:,}\n")
+    fh.write(f"  Gaps                        : {stats['gaps']:,}\n")
+    fh.write(f"  Sequence identity           : {stats['identity_pct']:.2f}%\n")
+    fh.write(f"  Coverage (vs longer seq)    : {stats['coverage_pct']:.2f}%\n")
+    fh.write(f"  Raw alignment score         : {stats['score']:.1f}\n")
+
+    identity = stats["identity_pct"]
+    if identity >= 95:
+        interp = "highly conserved (≥95% identity)"
+    elif identity >= 70:
+        interp = "moderately conserved (70–94% identity)"
+    elif identity >= 40:
+        interp = "distantly related (40–69% identity)"
+    else:
+        interp = "low similarity (<40% identity) — sequences may be unrelated"
+
+    fh.write(f"\n  Interpretation: {interp}\n")
 
 
 # ---------------------------------------------------------------------------
@@ -222,19 +258,22 @@ def _write_comparative_summary(
 # ---------------------------------------------------------------------------
 
 def write_orf_comparison_report(
-    flat1:          List[Dict[str, Any]],
-    flat2:          List[Dict[str, Any]],
-    acc1:           str,
-    acc2:           str,
-    filename:       str = "output/orf_comparison_report.txt",
-    codon_csv_name: str = "codon_comparison.csv",
+    flat1:    List[Dict[str, Any]],
+    flat2:    List[Dict[str, Any]],
+    acc1:     str,
+    acc2:     str,
+    seq1:     str,
+    seq2:     str,
+    filename: str = "output/orf_comparison_report.txt",
 ) -> None:
     """
     Write a single combined report for a two-sequence comparative run.
 
-    Replaces the three separate files produced in comparative mode
-    (orf_summary.txt, orf_summary_seq2.txt, comparison.txt) with one file.
-    Single-sequence mode is unaffected — it still uses write_stats_to_file.
+    Sections
+    --------
+    1. Per-sequence ORF summaries (dataset stats, longest ORF, per-ORF table).
+    2. Comparative ORF summary (shared / unique ORF sequences, strand counts).
+    3. Global pairwise alignment (Needleman-Wunsch identity and coverage stats).
 
     Parameters
     ----------
@@ -246,11 +285,12 @@ def write_orf_comparison_report(
         Accession or label for sequence 1.
     acc2 : str
         Accession or label for sequence 2.
+    seq1 : str
+        Cleaned DNA sequence for sequence 1; used for global alignment.
+    seq2 : str
+        Cleaned DNA sequence for sequence 2; used for global alignment.
     filename : str
         Output file path.
-    codon_csv_name : str
-        Base filename of the codon comparison CSV, referenced at the end
-        of the comparative summary section.
     """
     with open(filename, "w") as fh:
         fh.write("=== ORF COMPARISON REPORT ===\n\n")
@@ -258,45 +298,9 @@ def write_orf_comparison_report(
         fh.write("\n\n")
         _write_sequence_section(fh, flat2, f"Sequence 2: {acc2}")
         fh.write("\n\n")
-        _write_comparative_summary(fh, flat1, flat2, acc1, acc2, codon_csv_name)
-
-
-# ---------------------------------------------------------------------------
-# Comparative codon usage CSV
-# ---------------------------------------------------------------------------
-
-def write_comparative_csv(
-    flat1:    List[Dict[str, Any]],
-    flat2:    List[Dict[str, Any]],
-    acc1:     str = "Sequence 1",
-    acc2:     str = "Sequence 2",
-    filename: str = "output/codon_comparison.csv",
-) -> None:
-    """
-    Write a CSV comparing codon-usage frequencies between two ORF sets.
-
-    Columns: Codon, <acc1>_count, <acc2>_count, Delta (acc1 - acc2)
-
-    Requires calculate_orf_stats() to have been called on both lists.
-    """
-    def total_codons(orfs: List[Dict[str, Any]]) -> Dict[str, int]:
-        totals: Dict[str, int] = {}
-        for orf in orfs:
-            for codon, count in codon_usage(orf.get("sequence", "")).items():
-                totals[codon] = totals.get(codon, 0) + count
-        return totals
-
-    codons1    = total_codons(flat1)
-    codons2    = total_codons(flat2)
-    all_codons = sorted(set(codons1) | set(codons2))
-
-    with open(filename, "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["Codon", f"{acc1}_count", f"{acc2}_count", "Delta"])
-        for codon in all_codons:
-            c1 = codons1.get(codon, 0)
-            c2 = codons2.get(codon, 0)
-            writer.writerow([codon, c1, c2, c1 - c2])
+        _write_comparative_summary(fh, flat1, flat2, acc1, acc2)
+        fh.write("\n\n")
+        _write_alignment_section(fh, seq1, seq2, acc1, acc2)
 
 
 # ---------------------------------------------------------------------------
