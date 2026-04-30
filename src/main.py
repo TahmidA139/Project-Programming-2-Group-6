@@ -34,13 +34,12 @@ import os
 import sys
 
 from src.input_validate import run as validate_run, validate_start_codons
-from src.graphics import plot_orf_map, plot_comparative_orf_map, plot_codon_usage_comparison
+from src.graphics import plot_orf_map, plot_comparative_orf_map
 from src.orf_finder_lib.orf_finder import find_orfs
 from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orfs
 from src.analysis_lib.statistics_summary import (
     write_stats_to_file,
     write_orf_comparison_report,
-    write_comparative_csv,
     write_combined_csv,
     print_summary,
 )
@@ -172,17 +171,12 @@ class ORCAPipeline:
         seq2:        str | None = None,
         flat2:       list | None = None,
     ) -> None:
-        """Generate the ORF map and, in comparative mode, the codon usage heatmap."""
+        """Generate the ORF map (single or comparative)."""
         if comparative:
             plot_comparative_orf_map(
                 flat1=flat1, seq_len1=len(seq1), acc1=acc1,
                 flat2=flat2, seq_len2=len(seq2), acc2=acc2,
                 output_path=os.path.join(self.outdir, "orf_map.png"),
-            )
-            plot_codon_usage_comparison(
-                seq1=seq1, acc1=acc1,
-                seq2=seq2, acc2=acc2,
-                output_path=os.path.join(self.outdir, "codon_usage_comparison.png"),
             )
         else:
             plot_orf_map(
@@ -215,12 +209,8 @@ class ORCAPipeline:
             write_orf_comparison_report(
                 flat1=flat1, flat2=flat2,
                 acc1=acc1,   acc2=acc2,
+                seq1=seq1,   seq2=seq2,
                 filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
-                codon_csv_name="codon_comparison.csv",
-            )
-            write_comparative_csv(
-                flat1, flat2, acc1=acc1, acc2=acc2,
-                filename=os.path.join(self.outdir, "codon_comparison.csv"),
             )
         else:
             write_stats_to_file(flat1, filename=os.path.join(self.outdir, "orf_summary.txt"))
