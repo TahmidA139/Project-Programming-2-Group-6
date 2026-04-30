@@ -72,10 +72,6 @@ def _resolve_coords(
     return rc_start, rc_end
 
 
-# ---------------------------------------------------------------------------
-# Stop-codon search
-# ---------------------------------------------------------------------------
-
 def _find_stop_codon_index(
     codons: np.ndarray, start_codon_idx: int
 ) -> Optional[int]:
@@ -87,11 +83,6 @@ def _find_stop_codon_index(
     candidates = np.nonzero(stop_mask)[0]
     return int(candidates[0]) if candidates.size > 0 else None
 
-
-# ---------------------------------------------------------------------------
-# ORF record construction
-# ---------------------------------------------------------------------------
-
 def _process_start_codon(
     ci:         int,
     codons:     np.ndarray,
@@ -99,12 +90,14 @@ def _process_start_codon(
     strand:     str,
     seq_len:    int,
     min_length: int,
-) -> Optional[Dict[str, Any]]:
+) -> Tuple[Optional[Dict[str, Any]], Optional[int]]:
     """
     Build one ORF record for a single start codon index.
 
-    Returns ``None`` if no downstream stop codon exists or the resulting
-    ORF is shorter than *min_length*.
+    Returns ``(None, None)`` if no downstream stop codon exists or the
+    resulting ORF is shorter than *min_length*.  Otherwise returns both
+    the ORF record dict and the stop codon index so the caller can use
+    the stop index as a deduplication key without recomputing it.
 
     Parameters
     ----------
@@ -123,22 +116,25 @@ def _process_start_codon(
 
     Returns
     -------
-    Dict[str, Any] or None
+    Tuple[Dict[str, Any], int]
+        ``(orf_record, stop_ci)`` on success.
+    Tuple[None, None]
+        When no valid ORF can be built from this start codon.
     """
     rc_start = _codon_index_to_nt(frame, ci)
     stop_ci  = _find_stop_codon_index(codons, ci)
 
     if stop_ci is None:
-        return None
+        return None, None
 
     rc_end    = _codon_index_to_nt(frame, stop_ci) + 3
     length_nt = rc_end - rc_start
 
     if length_nt < min_length:
-        return None
+        return None, None
 
     start, end = _resolve_coords(strand, rc_start, rc_end, seq_len)
-    return {
+    record = {
         "strand":      strand,
         "frame":       frame,
         "start":       start,
@@ -147,6 +143,7 @@ def _process_start_codon(
         "start_codon": str(codons[ci]),
         "status":      "complete",
     }
+    return record, stop_ci
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +163,9 @@ def scan_frame(
 
     For each stop codon position, only the longest ORF (i.e. the one with
     the earliest start codon) is kept, matching standard longest-ORF
-    convention.
+    convention.  The stop codon index returned by ``_process_start_codon``
+    is reused directly as the deduplication key — ``_find_stop_codon_index``
+    is therefore called exactly once per start codon candidate.
 
     Parameters
     ----------
@@ -202,15 +201,12 @@ def scan_frame(
     # same stop codon are simply skipped.
     best_per_stop: Dict[int, Dict[str, Any]] = {}
     for ci in np.nonzero(start_mask)[0]:
-        record = _process_start_codon(
+        record, stop_ci = _process_start_codon(
             int(ci), codons, frame, strand, seq_len, min_length
         )
         if record is None:
             continue
-        stop_key = _codon_index_to_nt(
-            frame,
-            _find_stop_codon_index(codons, int(ci)),  # type: ignore[arg-type]
-        )
+        stop_key = _codon_index_to_nt(frame, stop_ci)
         if stop_key not in best_per_stop:
             best_per_stop[stop_key] = record   # first (longest) wins
 
