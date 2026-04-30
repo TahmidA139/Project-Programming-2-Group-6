@@ -20,12 +20,12 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="0.52014861"
-     inkscape:cx="225.89698"
-     inkscape:cy="550.80412"
+     inkscape:zoom="0.65129676"
+     inkscape:cx="315.52437"
+     inkscape:cy="516.66156"
      inkscape:window-width="1102"
      inkscape:window-height="804"
-     inkscape:window-x="0"
+     inkscape:window-x="330"
      inkscape:window-y="37"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg16" />
@@ -260,23 +260,23 @@
      id="line11" />
   <!-- Write comparative report box -->
   <rect
-     x="56.693478"
-     y="657.73126"
-     width="190.00835"
-     height="54.090366"
-     rx="8.000351"
+     x="46.089916"
+     y="657.74811"
+     width="218.08751"
+     height="54.056656"
+     rx="9.1826305"
      fill="#ffffff"
      stroke="#141413"
-     stroke-width="0.474749"
+     stroke-width="0.508461"
      id="rect11" />
   <text
-     x="146.46945"
-     y="692.49377"
+     x="158.49025"
+     y="663.8847"
      text-anchor="middle"
      dominant-baseline="central"
-     style="font-weight:400;font-size:12.9403px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413;stroke-width:0.92431"
+     style="font-weight:400;font-size:12.3828px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413;stroke-width:0.884488"
      id="text12"
-     transform="scale(1.0252953,0.97532877)">Write comparative report</text>
+     transform="scale(0.98112214,1.0192411)">Write orf_comparison_report.txt</text>
   <text
      x="140.98656"
      y="730.94751"
@@ -314,7 +314,7 @@
      dominant-baseline="central"
      style="font-weight:400;font-size:13.2929px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413;stroke-width:0.949497"
      id="text14"
-     transform="scale(1.0532348,0.94945591)">Write summary report</text>
+     transform="scale(1.0532348,0.94945591)">Write orf_summary.txt</text>
   <text
      x="508.28363"
      y="732.99341"
