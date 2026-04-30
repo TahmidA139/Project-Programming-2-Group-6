@@ -20,13 +20,33 @@ from __future__ import annotations
 
 import csv
 import os
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.analysis_lib.orf_analysis import codon_usage, gc_content, protein_length, global_alignment_stats
+from src.analysis_lib.orf_analysis import (
+    codon_usage, gc_content, protein_length,
+    global_alignment_stats, local_alignment_stats,
+)
 from src.orf_finder_lib.frame_scanner import extract_orf_sequence
 from src.orf_finder_lib.orf_finder import CSV_FIELDNAMES
 
 OUTPUT_FIELDNAMES: List[str] = CSV_FIELDNAMES + ["sequence (5'->3')"]
+
+# ---------------------------------------------------------------------------
+# Formatting helpers
+# ---------------------------------------------------------------------------
+
+_W = 72   # report width
+
+def _rule(char: str = "─") -> str:
+    return char * _W
+
+def _header(title: str, char: str = "═") -> str:
+    pad = (_W - len(title) - 2) // 2
+    return f"{char * pad} {title} {char * (_W - pad - len(title) - 2)}"
+
+def _subheader(title: str) -> str:
+    return f"  {title}\n  {'─' * (len(title))}"
 
 
 # ---------------------------------------------------------------------------
@@ -44,19 +64,19 @@ def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
     plus_strand    = sum(1 for o in flat_list if o.get("strand") == "+")
     minus_strand   = sum(1 for o in flat_list if o.get("strand") == "-")
 
-    header = f" ORF Summary{' — ' + label if label else ''} "
-    print(f"\n{'-' * 10}{header}{'-' * 10}")
-    print(f"  Total ORFs found            : {total}")
-    print(f"  Forward strand (+)          : {plus_strand}")
-    print(f"  Reverse strand (-)          : {minus_strand}")
-    print(f"  Canonical   (ATG)           : {n_canonical}")
+    title = f"ORF Summary — {label}" if label else "ORF Summary"
+    print(f"\n{_header(title)}")
+    print(f"  Total ORFs found  : {total}")
+    print(f"  Forward strand (+): {plus_strand}")
+    print(f"  Reverse strand (-): {minus_strand}")
+    print(f"  Canonical (ATG)   : {n_canonical}")
     if n_noncanonical > 0:
-        print(f"  Non-canonical               : {n_noncanonical}")
+        print(f"  Non-canonical     : {n_noncanonical}")
         for sc in ("GTG", "TTG"):
             n = len(noncanonical.get(sc, {}))
             if n > 0:
-                print(f"    {sc}                       : {n}")
-    print("-" * (20 + len(header)))
+                print(f"    {sc}               : {n}")
+    print(_rule())
 
 
 # ---------------------------------------------------------------------------
@@ -67,23 +87,7 @@ def write_stats_to_file(
     flat_list: List[Dict[str, Any]],
     filename:  str = "output/orf_summary.txt",
 ) -> None:
-    """
-    Write a human-readable summary report for one sequence's ORF set.
-
-    Sections
-    --------
-    1. Dataset-level stats (total ORFs, average GC)
-    2. Longest ORF details
-    3. Per-ORF table (index, length, GC%, protein length, strand, frame)
-    4. Aggregate codon-usage table
-
-    Parameters
-    ----------
-    flat_list : list of dict
-        Flat ORF list enriched by calculate_orf_stats().
-    filename : str
-        Output file path.
-    """
+    """Write a human-readable summary report for one sequence's ORF set."""
     total_orfs = len(flat_list)
     avg_gc     = (
         sum(o["gc_content"] for o in flat_list) / total_orfs
@@ -95,29 +99,27 @@ def write_stats_to_file(
     )
 
     with open(filename, "w") as fh:
-        fh.write("=== ORF SUMMARY REPORT ===\n\n")
-        fh.write(f"Total ORFs        : {total_orfs}\n")
-        fh.write(f"Average GC Content: {avg_gc:.2f}%\n")
+        fh.write(_header("ORF SUMMARY REPORT") + "\n")
+        fh.write(f"  Generated : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+
+        fh.write(_subheader("Dataset Statistics") + "\n")
+        fh.write(f"  Total ORFs         : {total_orfs}\n")
+        fh.write(f"  Average GC Content : {avg_gc:.2f}%\n\n")
 
         if longest:
-            fh.write("\nLongest ORF:\n")
-            fh.write(f"  orf_id        : {longest.get('orf_id', 'N/A')}\n")
-            fh.write(f"  Length (nt)   : {len(longest['sequence'])}\n")
-            fh.write(f"  Strand        : {longest.get('strand', '?')}\n")
-            fh.write(f"  Frame         : {longest.get('frame', '?')}\n")
-            fh.write(f"  GC Content    : {longest['gc_content']:.2f}%\n")
+            fh.write(_subheader("Longest ORF") + "\n")
+            fh.write(f"  ID         : {longest.get('orf_id', 'N/A')}\n")
+            fh.write(f"  Length     : {len(longest['sequence'])} nt\n")
+            fh.write(f"  Strand     : {longest.get('strand', '?')}\n")
+            fh.write(f"  Frame      : {longest.get('frame', '?')}\n")
+            fh.write(f"  GC Content : {longest['gc_content']:.2f}%\n\n")
 
-        fh.write("\n--- Per-ORF Stats ---\n")
-        header = (
-            f"{'#':<5}{'orf_id':<12}{'Length':>8}"
-            f"{'GC%':>8}{'Prot_len':>10}{'Strand':>8}{'Frame':>7}\n"
-        )
-        fh.write(header)
-        fh.write("-" * len(header.rstrip()) + "\n")
-
+        fh.write(_subheader("Per-ORF Statistics") + "\n")
+        fh.write(f"  {'#':<5}{'ID':<14}{'Length':>8}{'GC%':>8}{'Prot_len':>10}{'Strand':>8}{'Frame':>7}\n")
+        fh.write(f"  {_rule('─')}\n")
         for i, orf in enumerate(flat_list):
             fh.write(
-                f"{i:<5}{orf.get('orf_id', ''):<12}"
+                f"  {i:<5}{orf.get('orf_id', ''):<14}"
                 f"{len(orf.get('sequence', ''))!s:>8}"
                 f"{orf['gc_content']:>8.2f}"
                 f"{orf['protein_length']:>10}"
@@ -125,13 +127,13 @@ def write_stats_to_file(
                 f"{orf.get('frame', '?')!s:>7}\n"
             )
 
-        fh.write("\n--- Codon Usage (aggregate) ---\n")
+        fh.write(f"\n{_subheader('Aggregate Codon Usage')}\n")
         total_codons: Dict[str, int] = {}
         for orf in flat_list:
             for codon, count in codon_usage(orf.get("sequence", "")).items():
                 total_codons[codon] = total_codons.get(codon, 0) + count
         for codon, count in sorted(total_codons.items()):
-            fh.write(f"  {codon}: {count}\n")
+            fh.write(f"  {codon} : {count}\n")
 
 
 # ---------------------------------------------------------------------------
@@ -154,29 +156,26 @@ def _write_sequence_section(
         if flat_list else None
     )
 
-    fh.write(f"=== {label} ===\n\n")
-    fh.write(f"Total ORFs        : {total_orfs}\n")
-    fh.write(f"Average GC Content: {avg_gc:.2f}%\n")
+    fh.write(_header(label) + "\n\n")
+
+    fh.write(_subheader("Dataset Statistics") + "\n")
+    fh.write(f"  Total ORFs         : {total_orfs}\n")
+    fh.write(f"  Average GC Content : {avg_gc:.2f}%\n\n")
 
     if longest:
-        fh.write("\nLongest ORF:\n")
-        fh.write(f"  orf_id        : {longest.get('orf_id', 'N/A')}\n")
-        fh.write(f"  Length (nt)   : {len(longest['sequence'])}\n")
-        fh.write(f"  Strand        : {longest.get('strand', '?')}\n")
-        fh.write(f"  Frame         : {longest.get('frame', '?')}\n")
-        fh.write(f"  GC Content    : {longest['gc_content']:.2f}%\n")
+        fh.write(_subheader("Longest ORF") + "\n")
+        fh.write(f"  ID         : {longest.get('orf_id', 'N/A')}\n")
+        fh.write(f"  Length     : {len(longest['sequence'])} nt\n")
+        fh.write(f"  Strand     : {longest.get('strand', '?')}\n")
+        fh.write(f"  Frame      : {longest.get('frame', '?')}\n")
+        fh.write(f"  GC Content : {longest['gc_content']:.2f}%\n\n")
 
-    fh.write("\n--- Per-ORF Stats ---\n")
-    header = (
-        f"{'#':<5}{'orf_id':<12}{'Length':>8}"
-        f"{'GC%':>8}{'Prot_len':>10}{'Strand':>8}{'Frame':>7}\n"
-    )
-    fh.write(header)
-    fh.write("-" * len(header.rstrip()) + "\n")
-
+    fh.write(_subheader("Per-ORF Statistics") + "\n")
+    fh.write(f"  {'#':<5}{'ID':<14}{'Length':>8}{'GC%':>8}{'Prot_len':>10}{'Strand':>8}{'Frame':>7}\n")
+    fh.write(f"  {_rule('─')}\n")
     for i, orf in enumerate(flat_list):
         fh.write(
-            f"{i:<5}{orf.get('orf_id', ''):<12}"
+            f"  {i:<5}{orf.get('orf_id', ''):<14}"
             f"{len(orf.get('sequence', ''))!s:>8}"
             f"{orf['gc_content']:>8.2f}"
             f"{orf['protein_length']:>10}"
@@ -202,16 +201,23 @@ def _write_comparative_summary(
     seqs2  = {o.get("sequence", "") for o in flat2}
     shared = seqs1 & seqs2
 
-    fh.write("=== Comparative Summary ===\n\n")
-    fh.write(f"{'Metric':<30} {acc1:>20} {acc2:>20}\n")
-    fh.write("-" * 72 + "\n")
-    fh.write(f"{'Total ORFs':<30} {len(flat1):>20} {len(flat2):>20}\n")
-    fh.write(f"{'Forward strand (+)':<30} {plus1:>20} {plus2:>20}\n")
-    fh.write(f"{'Reverse strand (-)':<30} {minus1:>20} {minus2:>20}\n")
-    fh.write("\n")
-    fh.write(f"Shared ORF sequences       : {len(shared)}\n")
-    fh.write(f"Unique to {acc1:<22}: {len(seqs1 - seqs2)}\n")
-    fh.write(f"Unique to {acc2:<22}: {len(seqs2 - seqs1)}\n")
+    fh.write(_header("Comparative Summary") + "\n\n")
+    col = 24
+    fh.write(f"  {'Metric':<28} {acc1:>{col}} {acc2:>{col}}\n")
+    fh.write(f"  {_rule('─')}\n")
+    fh.write(f"  {'Total ORFs':<28} {len(flat1):>{col}} {len(flat2):>{col}}\n")
+    fh.write(f"  {'Forward strand (+)':<28} {plus1:>{col}} {plus2:>{col}}\n")
+    fh.write(f"  {'Reverse strand (-)':<28} {minus1:>{col}} {minus2:>{col}}\n")
+    fh.write(f"\n  {'Shared ORF sequences':<28} {len(shared):>{col}}\n")
+    fh.write(f"  {f'Unique to {acc1}':<28} {len(seqs1 - seqs2):>{col}}\n")
+    fh.write(f"  {f'Unique to {acc2}':<28} {len(seqs2 - seqs1):>{col}}\n")
+
+
+def _interpret_identity(pct: float) -> str:
+    if pct >= 95:  return "highly conserved (≥95%)"
+    if pct >= 70:  return "moderately conserved (70–94%)"
+    if pct >= 40:  return "distantly related (40–69%)"
+    return "low similarity (<40%) — may be unrelated"
 
 
 def _write_alignment_section(
@@ -221,36 +227,40 @@ def _write_alignment_section(
     acc1: str,
     acc2: str,
 ) -> None:
-    """Compute global alignment and write a summary block to an open file handle."""
-    fh.write("=== Global Pairwise Alignment ===\n\n")
-    fh.write(
-        "  Algorithm : Needleman-Wunsch (global)\n"
-        "  Scoring   : match +1 | mismatch 0 | gap open -2 | gap extend -0.5\n\n"
-    )
+    """Compute global and local alignments and write a dual summary block."""
+    g = global_alignment_stats(seq1, seq2)
+    l = local_alignment_stats(seq1, seq2)
 
-    stats = global_alignment_stats(seq1, seq2)
+    fh.write(_header("Sequence Alignment") + "\n\n")
 
-    fh.write(f"  {acc1:<30}: {stats['seq1_len']:,} bp\n")
-    fh.write(f"  {acc2:<30}: {stats['seq2_len']:,} bp\n")
-    fh.write(f"  Alignment length            : {stats['alignment_length']:,} bp\n")
-    fh.write(f"  Matches                     : {stats['matches']:,}\n")
-    fh.write(f"  Mismatches                  : {stats['mismatches']:,}\n")
-    fh.write(f"  Gaps                        : {stats['gaps']:,}\n")
-    fh.write(f"  Sequence identity           : {stats['identity_pct']:.2f}%\n")
-    fh.write(f"  Coverage (vs longer seq)    : {stats['coverage_pct']:.2f}%\n")
-    fh.write(f"  Raw alignment score         : {stats['score']:.1f}\n")
+    # Global
+    fh.write(_subheader("Global Alignment  (Needleman-Wunsch)") + "\n")
+    fh.write("  Scoring: match +1 | mismatch 0 | gap open −2 | gap extend −0.5\n")
+    fh.write(f"  Note: global alignment spans the full length of both sequences.\n")
+    fh.write(f"  High gap counts are expected when sequence lengths differ greatly.\n\n")
+    fh.write(f"  {'Sequence 1 length':<28}: {g['seq1_len']:,} bp  ({acc1})\n")
+    fh.write(f"  {'Sequence 2 length':<28}: {g['seq2_len']:,} bp  ({acc2})\n")
+    fh.write(f"  {'Alignment length':<28}: {g['alignment_length']:,} bp\n")
+    fh.write(f"  {'Matches':<28}: {g['matches']:,}\n")
+    fh.write(f"  {'Mismatches':<28}: {g['mismatches']:,}\n")
+    fh.write(f"  {'Gaps':<28}: {g['gaps']:,}\n")
+    fh.write(f"  {'Identity':<28}: {g['identity_pct']:.2f}%\n")
+    fh.write(f"  {'Coverage (vs longer seq)':<28}: {g['coverage_pct']:.2f}%\n")
+    fh.write(f"  {'Raw score':<28}: {g['score']:.1f}\n")
+    fh.write(f"  {'Interpretation':<28}: {_interpret_identity(g['identity_pct'])}\n\n")
 
-    identity = stats["identity_pct"]
-    if identity >= 95:
-        interp = "highly conserved (≥95% identity)"
-    elif identity >= 70:
-        interp = "moderately conserved (70–94% identity)"
-    elif identity >= 40:
-        interp = "distantly related (40–69% identity)"
-    else:
-        interp = "low similarity (<40% identity) — sequences may be unrelated"
-
-    fh.write(f"\n  Interpretation: {interp}\n")
+    # Local
+    fh.write(_subheader("Local Alignment  (Smith-Waterman)") + "\n")
+    fh.write("  Scoring: match +2 | mismatch −1 | gap open −2 | gap extend −0.5\n")
+    fh.write(f"  Note: reports only the best-matching subsequence region.\n")
+    fh.write(f"  A high identity here with low global identity indicates a conserved domain.\n\n")
+    fh.write(f"  {'Best region length':<28}: {l['alignment_length']:,} bp\n")
+    fh.write(f"  {'Matches':<28}: {l['matches']:,}\n")
+    fh.write(f"  {'Mismatches':<28}: {l['mismatches']:,}\n")
+    fh.write(f"  {'Gaps':<28}: {l['gaps']:,}\n")
+    fh.write(f"  {'Identity (local region)':<28}: {l['identity_pct']:.2f}%\n")
+    fh.write(f"  {'Raw score':<28}: {l['score']:.1f}\n")
+    fh.write(f"  {'Interpretation':<28}: {_interpret_identity(l['identity_pct'])}\n")
 
 
 # ---------------------------------------------------------------------------
@@ -293,13 +303,17 @@ def write_orf_comparison_report(
         Output file path.
     """
     with open(filename, "w") as fh:
-        fh.write("=== ORF COMPARISON REPORT ===\n\n")
-        _write_sequence_section(fh, flat1, f"Sequence 1: {acc1}")
-        fh.write("\n\n")
-        _write_sequence_section(fh, flat2, f"Sequence 2: {acc2}")
-        fh.write("\n\n")
+        fh.write(_header("ORF COMPARISON REPORT", "═") + "\n")
+        fh.write(f"  Generated  : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        fh.write(f"  Sequence 1 : {acc1}\n")
+        fh.write(f"  Sequence 2 : {acc2}\n")
+        fh.write(_rule() + "\n\n")
+        _write_sequence_section(fh, flat1, f"Sequence 1 — {acc1}")
+        fh.write("\n")
+        _write_sequence_section(fh, flat2, f"Sequence 2 — {acc2}")
+        fh.write("\n")
         _write_comparative_summary(fh, flat1, flat2, acc1, acc2)
-        fh.write("\n\n")
+        fh.write("\n")
         _write_alignment_section(fh, seq1, seq2, acc1, acc2)
 
 
