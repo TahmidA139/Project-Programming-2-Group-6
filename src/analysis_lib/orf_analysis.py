@@ -107,14 +107,13 @@ def calculate_orf_stats(
         orf["protein_length"] = protein_length(seq)
     return flat_list
 
-def global_alignment_stats(seq1: str, seq2: str) -> Dict[str, Any]:
+def global_alignment_stats(seq1: str, seq2: str) -> dict[str, Any]:
     """
-    Run a global pairwise alignment between two DNA sequences and return
-    summary statistics.
+    Run a global pairwise alignment (Needleman-Wunsch) and return summary stats.
 
-    Uses Biopython's PairwiseAligner in global (Needleman-Wunsch) mode with
-    standard DNA scoring.  Intended for sequences up to ~30,000 bp; larger
-    inputs will work but may be slow.
+    Best suited for sequences of similar length and known homology.  For
+    divergent or very different-length sequences, pair with
+    ``local_alignment_stats`` for a complete picture.
 
     Parameters
     ----------
@@ -125,27 +124,18 @@ def global_alignment_stats(seq1: str, seq2: str) -> Dict[str, Any]:
 
     Returns
     -------
-    Dict[str, Any]
-        Keys:
-            ``seq1_len``         -- length of seq1 in bp.
-            ``seq2_len``         -- length of seq2 in bp.
-            ``alignment_length`` -- number of columns in the best alignment
-                                    (matches + mismatches + gaps).
-            ``matches``          -- identical base positions.
-            ``mismatches``       -- aligned positions with different bases.
-            ``gaps``             -- gap characters in either sequence.
-            ``identity_pct``     -- matches / alignment_length * 100.
-            ``coverage_pct``     -- alignment_length / max(seq1_len, seq2_len) * 100.
-            ``score``            -- raw aligner score.
+    dict[str, Any]
+        Keys: seq1_len, seq2_len, alignment_length, matches, mismatches,
+        gaps, identity_pct, coverage_pct, score.
     """
     aligner = Align.PairwiseAligner()
-    aligner.mode            = "global"
-    aligner.match_score     =  1
-    aligner.mismatch_score  =  0
-    aligner.open_gap_score  = -2
+    aligner.mode             = "global"
+    aligner.match_score      =  1
+    aligner.mismatch_score   =  0
+    aligner.open_gap_score   = -2
     aligner.extend_gap_score = -0.5
 
-    best = next(iter(aligner.align(seq1.upper(), seq2.upper())))
+    best   = next(iter(aligner.align(seq1.upper(), seq2.upper())))
     counts = best.counts()
 
     matches    = counts.identities
@@ -160,9 +150,59 @@ def global_alignment_stats(seq1: str, seq2: str) -> Dict[str, Any]:
         "matches":          matches,
         "mismatches":       mismatches,
         "gaps":             gaps,
-        "identity_pct":     (matches / aln_len  * 100) if aln_len  else 0.0,
+        "identity_pct":     (matches / aln_len * 100) if aln_len else 0.0,
         "coverage_pct":     (aln_len / max(len(seq1), len(seq2)) * 100)
                             if max(len(seq1), len(seq2)) else 0.0,
+        "score":            best.score,
+    }
+
+
+def local_alignment_stats(seq1: str, seq2: str) -> dict[str, Any]:
+    """
+    Run a local pairwise alignment (Smith-Waterman) and return summary stats.
+
+    Finds the highest-scoring conserved subsequence between seq1 and seq2
+    without penalising flanking regions.  Complements global alignment:
+    a low local score confirms genuine low similarity; a high local score
+    on otherwise divergent sequences reveals a conserved domain.
+
+    Parameters
+    ----------
+    seq1 : str
+        First DNA sequence (any case; uppercased internally).
+    seq2 : str
+        Second DNA sequence (any case; uppercased internally).
+
+    Returns
+    -------
+    dict[str, Any]
+        Keys: seq1_len, seq2_len, alignment_length, matches, mismatches,
+        gaps, identity_pct, score.
+        ``identity_pct`` is computed over the local alignment length only.
+    """
+    aligner = Align.PairwiseAligner()
+    aligner.mode             = "local"
+    aligner.match_score      =  2
+    aligner.mismatch_score   = -1
+    aligner.open_gap_score   = -2
+    aligner.extend_gap_score = -0.5
+
+    best   = next(iter(aligner.align(seq1.upper(), seq2.upper())))
+    counts = best.counts()
+
+    matches    = counts.identities
+    mismatches = counts.mismatches
+    gaps       = counts.gaps
+    aln_len    = matches + mismatches + gaps
+
+    return {
+        "seq1_len":         len(seq1),
+        "seq2_len":         len(seq2),
+        "alignment_length": aln_len,
+        "matches":          matches,
+        "mismatches":       mismatches,
+        "gaps":             gaps,
+        "identity_pct":     (matches / aln_len * 100) if aln_len else 0.0,
         "score":            best.score,
     }
 
