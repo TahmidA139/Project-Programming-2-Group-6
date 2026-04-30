@@ -202,16 +202,16 @@ class ORCAPipeline:
                 acc1=acc1,   acc2=acc2,
                 seq1=seq1,   seq2=seq2,
                 filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
-                start_codons=self.start_codons,   # add
-                min_length=self.min_length,        # add
+                start_codons=self.start_codons,
+                min_length=self.min_length,
             )
         else:
             write_stats_to_file(
                 flat1,
                 filename=os.path.join(self.outdir, "orf_summary.txt"),
-                accession=acc1,                   # add
-                start_codons=self.start_codons,   # add
-                min_length=self.min_length,        # add
+                accession=acc1,
+                start_codons=self.start_codons,
+                min_length=self.min_length,
             )
 
     # Public entry point 
@@ -353,7 +353,15 @@ def main() -> None:
             accession = input("Enter NCBI accession number: ").strip()
 
     email = args.email or input("Enter your email (required by NCBI): ").strip()
-    start_codons = validate_start_codons(args.start_codons)
+
+    # validate_start_codons raises ValueError for unrecognised codons.
+    # Catch it here at the CLI boundary and convert to a clean exit — library
+    # code should never call sys.exit() directly.
+    try:
+        start_codons = validate_start_codons(args.start_codons)
+    except ValueError as e:
+        print(f"[ERROR] {e}")
+        sys.exit(1)
 
     if args.min_length < 3:
         print("[ERROR] --min-length must be at least 3 (one codon).")
