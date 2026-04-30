@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100%"
+   viewBox="0 0 680 1484"
+   role="img"
+   version="1.1"
+   id="svg28"
+   sodipodi:docname="orca_single_sequence_pipeline.svg"
+   inkscape:version="1.4.3 (0d15f750, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview28"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.51223885"
+     inkscape:cx="606.16254"
+     inkscape:cy="708.65379"
+     inkscape:window-width="1312"
+     inkscape:window-height="805"
+     inkscape:window-x="0"
+     inkscape:window-y="37"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg28" />
+  <title
+     id="title1">ORCA single-sequence pipeline flowchart</title>
+  <desc
+     id="desc1">Flowchart showing the ORCA single-sequence pipeline from CLI parsing through ORF detection, statistics calculation, and summary report writing.</desc>
+  <defs
+     id="defs1">
+    <marker
+       id="arrow"
+       viewBox="0 0 10 10"
+       refX="8"
+       refY="5"
+       markerWidth="6"
+       markerHeight="6"
+       orient="auto-start-reverse">
+      <path
+         d="M2 1L8 5L2 9"
+         fill="none"
+         stroke="context-stroke"
+         stroke-width="1.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         id="path1" />
+    </marker>
+    <marker
+       id="arrow-8"
+       viewBox="0 0 10 10"
+       refX="8"
+       refY="5"
+       markerWidth="6"
+       markerHeight="6"
+       orient="auto-start-reverse">
+      <path
+         d="M 2,1 8,5 2,9"
+         fill="none"
+         stroke="context-stroke"
+         stroke-width="1.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         id="path1-0" />
+    </marker>
+    <marker
+       id="arrow-0"
+       viewBox="0 0 10 10"
+       refX="8"
+       refY="5"
+       markerWidth="6"
+       markerHeight="6"
+       orient="auto-start-reverse">
+      <path
+         d="M 2,1 8,5 2,9"
+         fill="none"
+         stroke="context-stroke"
+         stroke-width="1.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         id="path1-5" />
+    </marker>
+    <marker
+       id="arrow-9"
+       viewBox="0 0 10 10"
+       refX="8"
+       refY="5"
+       markerWidth="6"
+       markerHeight="6"
+       orient="auto-start-reverse">
+      <path
+         d="M 2,1 8,5 2,9"
+         fill="none"
+         stroke="context-stroke"
+         stroke-width="1.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         id="path1-02" />
+    </marker>
+    <marker
+       id="arrow-3"
+       viewBox="0 0 10 10"
+       refX="8"
+       refY="5"
+       markerWidth="6"
+       markerHeight="6"
+       orient="auto-start-reverse">
+      <path
+         d="M 2,1 8,5 2,9"
+         fill="none"
+         stroke="context-stroke"
+         stroke-width="1.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         id="path1-9" />
+    </marker>
+  </defs>
+  <!-- START -->
+  <rect
+     x="270"
+     y="40"
+     width="140"
+     height="44"
+     rx="22"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="rect1" />
+  <text
+     x="340"
+     y="62"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:500;"
+     id="text1">Start</text>
+  <line
+     x1="340"
+     y1="84"
+     x2="340"
+     y2="130"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line1" />
+  <!-- Parse CLI arguments -->
+  <rect
+     x="210"
+     y="130"
+     width="260"
+     height="44"
+     rx="8"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="rect2" />
+  <text
+     x="340"
+     y="152"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text2">Parse CLI arguments</text>
+  <line
+     x1="340"
+     y1="174"
+     x2="340"
+     y2="225"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line2" />
+  <!-- Validate inputs -->
+  <rect
+     x="210"
+     y="225"
+     width="260"
+     height="60"
+     rx="8"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="rect3" />
+  <text
+     x="340"
+     y="246"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text3">Validate email, start codons,</text>
+  <text
+     x="340"
+     y="266"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text4">and minimum ORF length</text>
+  <line
+     x1="340"
+     y1="285"
+     x2="340"
+     y2="335"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line4" />
+  <!-- Inputs valid? diamond -->
+  <polygon
+     points="340,335 450,387 340,439 230,387"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="polygon4" />
+  <text
+     x="340"
+     y="387"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text5">Inputs valid?</text>
+  <!-- No → Print error and exit -->
+  <line
+     x1="449.4758"
+     y1="387"
+     x2="507.48801"
+     y2="387"
+     stroke="#141413"
+     stroke-width="1.17838"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line5" />
+  <text
+     x="481.40317"
+     y="375"
+     text-anchor="middle"
+     style="font-size:12px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#3d3d3a"
+     id="text6">No</text>
+  <rect
+     x="508.07367"
+     y="364.22955"
+     width="143.69237"
+     height="43.966255"
+     rx="9.1233244"
+     fill="#ffffff"
+     stroke="#141413"
+     stroke-width="0.5"
+     id="rect6" />
+  <text
+     x="579.60278"
+     y="387"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text7">Print error and exit</text>
+  <!-- Yes → down -->
+  <line
+     x1="340"
+     y1="439"
+     x2="340"
+     y2="490"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line7" />
+  <text
+     x="352"
+     y="468"
+     text-anchor="start"
+     style="fill:rgb(61,61,58);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:12px;"
+     id="text8">Yes</text>
+  <!-- Fetch or load sequence -->
+  <rect
+     x="210"
+     y="490"
+     width="260"
+     height="60"
+     rx="8"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="rect8" />
+  <text
+     x="340"
+     y="511"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text9">Fetch sequence from NCBI</text>
+  <text
+     x="340"
+     y="531"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text10">or load local FASTA file</text>
+  <line
+     x1="340"
+     y1="550"
+     x2="340"
+     y2="600"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line10" />
+  <!-- Fetch successful? diamond -->
+  <polygon
+     points="340,600 450,652 340,704 230,652"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="polygon10" />
+  <text
+     x="340"
+     y="652"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text11">Fetch successful?</text>
+  <!-- No → Print error and exit -->
+  <text
+     x="484.61951"
+     y="642.1073"
+     text-anchor="middle"
+     style="font-size:12px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#3d3d3a"
+     id="text12">No</text>
+  <rect
+     x="513.4754"
+     y="630.01727"
+     width="144.14105"
+     height="43.965427"
+     rx="9.1518135"
+     fill="#ffffff"
+     stroke="#141413"
+     stroke-width="0.5"
+     id="rect12" />
+  <text
+     x="583.89972"
+     y="652.74872"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text13">Print error and exit</text>
+  <!-- Yes → down -->
+  <line
+     x1="340"
+     y1="704"
+     x2="340"
+     y2="755"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line13" />
+  <text
+     x="352"
+     y="733"
+     text-anchor="start"
+     style="fill:rgb(61,61,58);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:12px;"
+     id="text14">Yes</text>
+  <!-- Validate and clean sequence -->
+  <rect
+     x="210"
+     y="755"
+     width="260"
+     height="60"
+     rx="8"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="rect14" />
+  <text
+     x="340"
+     y="776"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text15">Validate, clean, and write</text>
+  <text
+     x="340"
+     y="796"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text16">cleaned FASTA to disk</text>
+  <line
+     x1="340"
+     y1="815"
+     x2="340"
+     y2="865"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line16" />
+  <!-- Scan six reading frames -->
+  <rect
+     x="210"
+     y="865"
+     width="260"
+     height="60"
+     rx="8"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="rect16" />
+  <text
+     x="340"
+     y="886"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text17">Scan all six reading frames</text>
+  <text
+     x="340"
+     y="906"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text18">Find all ORFs above minimum length</text>
+  <line
+     x1="340"
+     y1="925"
+     x2="340"
+     y2="975"
+     stroke="rgb(20,20,19)"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line18" />
+  <!-- Any ORFs found? diamond -->
+  <polygon
+     points="340,975 450,1027 340,1079 230,1027"
+     fill="rgb(255,255,255)"
+     stroke="rgb(20,20,19)"
+     stroke-width="0.5"
+     id="polygon18" />
+  <text
+     x="340"
+     y="1027"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:400;"
+     id="text19">Any ORFs found?</text>
+  <!-- No → Print warning -->
+  <text
+     x="484.42886"
+     y="1015"
+     text-anchor="middle"
+     style="font-size:12px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#3d3d3a"
+     id="text20">No</text>
+  <rect
+     x="519.64343"
+     y="1004.2143"
+     width="126"
+     height="44"
+     rx="8"
+     fill="#ffffff"
+     stroke="#141413"
+     stroke-width="0.5"
+     id="rect20" />
+  <text
+     x="586.5719"
+     y="1027"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text21">Print warning</text>
+  <!-- Yes → down -->
+  <line
+     x1="340"
+     y1="1079"
+     x2="340"
+     y2="1122.3813"
+     stroke="#141413"
+     stroke-width="1.5"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line21" />
+  <text
+     x="352"
+     y="1108"
+     text-anchor="start"
+     style="fill:rgb(61,61,58);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:12px;"
+     id="text22">Yes</text>
+  <!-- Print ORF summary, write CSV, generate ORF map -->
+  <rect
+     x="211.92987"
+     y="1123.5671"
+     width="260"
+     height="60"
+     rx="8"
+     fill="#ffffff"
+     stroke="#141413"
+     stroke-width="0.5"
+     id="rect22" />
+  <text
+     x="340"
+     y="1143.2805"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text23">Print ORF summary to terminal</text>
+  <text
+     x="340"
+     y="1161.3507"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text24">Write CSV and generate ORF map</text>
+  <line
+     x1="340.64328"
+     y1="1184.2104"
+     x2="340.64328"
+     y2="1224.0549"
+     stroke="#141413"
+     stroke-width="1.33903"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line24" />
+  <!-- Calculate statistics, detect repeats -->
+  <rect
+     x="210.64328"
+     y="1227.1343"
+     width="260"
+     height="60"
+     rx="8"
+     fill="#ffffff"
+     stroke="#141413"
+     stroke-width="0.5"
+     id="rect24" />
+  <text
+     x="340.64328"
+     y="1247.491"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text25">Calculate per-ORF statistics</text>
+  <text
+     x="340"
+     y="1266.2045"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text26">Detect repeated ORF sequences</text>
+  <line
+     x1="341.28656"
+     y1="1287.1343"
+     x2="341.28656"
+     y2="1325.0746"
+     stroke="#141413"
+     stroke-width="1.30664"
+     fill="none"
+     marker-end="url(#arrow)"
+     id="line26" />
+  <line
+     x1="340.22946"
+     y1="1364.2614"
+     x2="340.22946"
+     y2="1405.7336"
+     stroke="#141413"
+     stroke-width="1.36611"
+     fill="none"
+     marker-end="url(#arrow-3)"
+     id="line26-6"
+     style="marker-end:url(#arrow-3)" />
+  <!-- Write summary report -->
+  <rect
+     x="210.62442"
+     y="1327.4661"
+     width="260.03772"
+     height="37.604862"
+     rx="8.0011606"
+     fill="#ffffff"
+     stroke="#141413"
+     stroke-width="0.462272"
+     id="rect26" />
+  <text
+     x="340"
+     y="1346.2686"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="font-weight:400;font-size:14px;font-family:'Anthropic Sans', '-apple-system', system-ui, 'Segoe UI', sans-serif;fill:#141413"
+     id="text27">Write summary report to file</text>
+  <!-- DONE -->
+  <rect
+     x="269.96078"
+     y="1406.5364"
+     width="140.07841"
+     height="31.713253"
+     rx="22.012321"
+     fill="#ffffff"
+     stroke="#141413"
+     stroke-width="0.455383"
+     id="rect27" />
+  <text
+     x="340"
+     y="1422"
+     text-anchor="middle"
+     dominant-baseline="central"
+     style="fill:rgb(20,20,19);font-family:'Anthropic Sans',-apple-system,'system-ui','Segoe UI',sans-serif;font-size:14px;font-weight:500;"
+     id="text28">Done</text>
+  <line
+     x1="450.50037"
+     y1="651.76086"
+     x2="511.25323"
+     y2="651.76086"
+     stroke="#141413"
+     stroke-width="1.2059"
+     fill="none"
+     marker-end="url(#arrow-0)"
+     id="line5-2"
+     style="marker-end:url(#arrow-0)" />
+  <line
+     x1="449.71542"
+     y1="1026.9751"
+     x2="517.04602"
+     y2="1026.9751"
+     stroke="#141413"
+     stroke-width="1.2695"
+     fill="none"
+     marker-end="url(#arrow-9)"
+     id="line5-9"
+     style="marker-end:url(#arrow-9)" />
+</svg>
