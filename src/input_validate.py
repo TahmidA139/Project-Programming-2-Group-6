@@ -105,8 +105,10 @@ def load_fasta_from_file(filepath: str) -> tuple[str, str] | tuple[None, None]:
     Load a single DNA sequence from a local FASTA file.
 
     ORCA processes exactly one sequence at a time.  If the file contains
-    more than one record the pipeline exits immediately with a descriptive
-    error rather than silently choosing one.
+    more than one record the function raises ``ValueError`` with a
+    descriptive message rather than silently choosing one or killing the
+    process.  Callers (i.e. CLI entry points) are responsible for catching
+    the exception and deciding how to handle it.
 
     Parameters
     ----------
@@ -122,7 +124,7 @@ def load_fasta_from_file(filepath: str) -> tuple[str, str] | tuple[None, None]:
 
     Raises
     ------
-    SystemExit
+    ValueError
         If the file contains more than one sequence record.
     """
     if not os.path.isfile(filepath):
@@ -142,8 +144,13 @@ def load_fasta_from_file(filepath: str) -> tuple[str, str] | tuple[None, None]:
         return None, None
 
     if len(records) > 1:
-        print(
-            f"\n[ERROR] '{filepath}' contains {len(records)} sequences.\n"
+        # Build a readable preview of the first few record IDs.
+        preview = "\n".join(f"          > {rec.id}" for rec in records[:5])
+        if len(records) > 5:
+            preview += f"\n          ... and {len(records) - 5} more."
+
+        raise ValueError(
+            f"'{filepath}' contains {len(records)} sequences.\n"
             f"        ORCA requires a single-sequence FASTA file.\n"
             f"\n"
             f"        A valid single-sequence FASTA looks like this:\n"
@@ -151,17 +158,11 @@ def load_fasta_from_file(filepath: str) -> tuple[str, str] | tuple[None, None]:
             f"          ATGCGATCGATCGATCG...\n"
             f"\n"
             f"        Your file has {len(records)} entries starting with:\n"
-        )
-        for rec in records[:5]:
-            print(f"          > {rec.id}")
-        if len(records) > 5:
-            print(f"          ... and {len(records) - 5} more.")
-        print(
+            f"{preview}\n"
             f"\n"
             f"        Please extract a single sequence into its own FASTA file\n"
-            f"        and re-run ORCA with that file.\n"
+            f"        and re-run ORCA with that file."
         )
-        sys.exit(1)
 
     record = records[0]
     return record.id, str(record.seq)
@@ -271,17 +272,19 @@ def validate_start_codons(requested: list[str]) -> list[str]:
 
     Raises
     ------
-    SystemExit
+    ValueError
         If any codon is not one of ``ATG``, ``GTG``, or ``TTG``.
+        The caller (CLI entry point) is responsible for catching this
+        and handling it appropriately (e.g. printing an error and
+        calling ``sys.exit``).
     """
     upper = [c.upper() for c in requested]
     unknown = [c for c in upper if c not in VALID_START_CODONS]
     if unknown:
-        print(
-            f"[ERROR] Unrecognised start codon(s): {', '.join(unknown)}\n"
+        raise ValueError(
+            f"Unrecognised start codon(s): {', '.join(unknown)}\n"
             f"        Allowed values are: ATG, GTG, TTG"
         )
-        sys.exit(1)
     return upper
 
 
@@ -315,7 +318,15 @@ def _fetch_and_validate_one(
         On failure.
     """
     if fasta_file is not None:
-        record_id, raw_sequence = load_fasta_from_file(fasta_file)
+        try:
+            record_id, raw_sequence = load_fasta_from_file(fasta_file)
+        except ValueError as e:
+            # load_fasta_from_file raises ValueError for multi-sequence files.
+            # Print the message here so the error is visible, then signal
+            # failure to the caller via the (None, None) sentinel.
+            print(f"\n[ERROR] {e}\n")
+            return None, None
+
         if raw_sequence is None:
             return None, None
         accession = record_id
