@@ -19,7 +19,7 @@ With this file:
 # run()                  — fetches and validates sequences from NCBI
 # validate_start_codons()— checks that start codons are valid (ATG/GTG/TTG)
 # validate_email()       — checks the user email format before NCBI queries
-from src.input_lib.input_validate import (
+from src.input_validate import (
     run,
     validate_start_codons,
     validate_email,
@@ -29,7 +29,7 @@ from src.input_lib.input_validate import (
 # Import the plot functions from graphics_lib/graphics.py
 # plot_orf_map()            — generates the ORF map for a single sequence
 # plot_comparative_orf_map()— generates a side-by-side ORF map for two sequences
-from src.graphics_lib.graphics import (
+from src.graphics import (
     plot_orf_map,
     plot_comparative_orf_map,
 )
