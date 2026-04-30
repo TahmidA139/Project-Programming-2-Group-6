@@ -37,12 +37,8 @@ from src.input_validate import run as validate_run, validate_start_codons
 from src.graphics import plot_orf_map, plot_comparative_orf_map
 from src.orf_finder_lib.orf_finder import find_orfs
 from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orfs
-from src.analysis_lib.statistics_summary import (
-    write_stats_to_file,
-    write_orf_comparison_report,
-    write_combined_csv,
-    print_summary,
-)
+from src.analysis_lib.statistics_summary import (write_stats_to_file, write_orf_comparison_report, write_combined_csv, print_summary,)
+from src.analysis_lib.genetic_code_inference import (infer_genetic_code, print_inference_report, write_inference_report)
 
 class ORCAPipeline:
     """
@@ -197,6 +193,13 @@ class ORCAPipeline:
             repeats2 = find_repeated_orfs(flat2)
             if repeats2:
                 print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
+            code_results = infer_genetic_code(flat1, seq1)
+            print_inference_report(code_results)
+            write_inference_report(
+                code_results,
+                filename=os.path.join(self.outdir, "genetic_code_report.txt"),
+                accession=acc1,
+            )
             write_orf_comparison_report(
                 flat1=flat1, flat2=flat2,
                 acc1=acc1,   acc2=acc2,
