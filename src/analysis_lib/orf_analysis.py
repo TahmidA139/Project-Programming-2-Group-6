@@ -131,7 +131,7 @@ def global_alignment_stats(seq1: str, seq2: str) -> dict[str, Any]:
     aligner = Align.PairwiseAligner()
     aligner.mode             = "global"
     aligner.match_score      =  1
-    aligner.mismatch_score   =  0
+    aligner.mismatch_score   =  -1
     aligner.open_gap_score   = -2
     aligner.extend_gap_score = -0.5
 
