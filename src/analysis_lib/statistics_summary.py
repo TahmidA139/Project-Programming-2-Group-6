@@ -32,9 +32,6 @@ from src.orf_finder_lib.orf_finder import CSV_FIELDNAMES
 
 OUTPUT_FIELDNAMES: List[str] = CSV_FIELDNAMES + ["sequence (5'->3')"]
 
-# ---------------------------------------------------------------------------
-# Formatting helpers
-# ---------------------------------------------------------------------------
 
 _W = 72   # report width
 
@@ -48,10 +45,6 @@ def _header(title: str, char: str = "═") -> str:
 def _subheader(title: str) -> str:
     return f"  {title}\n  {'─' * (len(title))}"
 
-
-# ---------------------------------------------------------------------------
-# Run metadata helper
-# ---------------------------------------------------------------------------
 
 def _write_run_metadata(
     fh,
@@ -80,10 +73,6 @@ def _write_run_metadata(
     fh.write(f"  Min length   : {min_length} nt\n\n")
 
 
-# ---------------------------------------------------------------------------
-# Console summary
-# ---------------------------------------------------------------------------
-
 def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
     """Print a short summary of ORF counts to stdout."""
     canonical    = nested["canonical"]
@@ -109,10 +98,6 @@ def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
                 print(f"    {sc}               : {n}")
     print(_rule())
 
-
-# ---------------------------------------------------------------------------
-# Single-sequence summary
-# ---------------------------------------------------------------------------
 
 def write_stats_to_file(
     flat_list:    List[Dict[str, Any]],
@@ -186,10 +171,6 @@ def write_stats_to_file(
         for codon, count in sorted(total_codons.items()):
             fh.write(f"  {codon} : {count}\n")
 
-
-# ---------------------------------------------------------------------------
-# Private helpers for comparative report
-# ---------------------------------------------------------------------------
 
 def _write_sequence_section(
     fh,
@@ -314,10 +295,6 @@ def _write_alignment_section(
     fh.write(f"  {'Interpretation':<28}: {_interpret_identity(l['identity_pct'])}\n")
 
 
-# ---------------------------------------------------------------------------
-# Comparative report (comparative mode only)
-# ---------------------------------------------------------------------------
-
 def write_orf_comparison_report(
     flat1:        List[Dict[str, Any]],
     flat2:        List[Dict[str, Any]],
@@ -375,10 +352,6 @@ def write_orf_comparison_report(
         fh.write("\n")
         _write_alignment_section(fh, seq1, seq2, acc1, acc2)
 
-
-# ---------------------------------------------------------------------------
-# Combined CSV output
-# ---------------------------------------------------------------------------
 
 def _write_sequence_block(
     fh,
