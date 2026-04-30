@@ -33,10 +33,10 @@ import argparse
 import os
 import sys
 
-from src.input_validate import run as validate_run, validate_start_codons
-from src.graphics import plot_orf_map, plot_comparative_orf_map
+from src.input_lib.input_validate import run as validate_run, validate_start_codons
+from src.graphics_lib.graphics import plot_orf_map, plot_comparative_orf_map
 from src.orf_finder_lib.orf_finder import find_orfs
-from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orfs
+from src.orf_analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orfs
 from src.analysis_lib.statistics_summary import (
     write_stats_to_file,
     write_orf_comparison_report,
