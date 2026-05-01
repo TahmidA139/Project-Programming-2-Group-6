@@ -8,6 +8,13 @@ Amanda Yaworsky's part
 Purpose:
     Per-ORF statistics and repeated-ORF detection for the ORCA pipeline.
     All file writing and console reporting functions live in statistics_summary.py.
+
+Exports:
+    gc_content          -- Return GC content of a sequence as a percentage.
+    protein_length      -- Return the number of translated codons in a sequence.
+    codon_usage         -- Return a codon-frequency dict for a sequence.
+    calculate_orf_stats -- Enrich each ORF dict with sequence-derived statistics.
+    find_repeated_orfs  -- Return ORF sequences that appear more than once.
 """
 
 from __future__ import annotations
