@@ -32,10 +32,6 @@ OUTPUT_FIELDNAMES: List[str] = CSV_FIELDNAMES + ["sequence (5'->3')"]
 _W = 72   # report width
 
 
-# ---------------------------------------------------------------------------
-# Internal formatting helpers
-# ---------------------------------------------------------------------------
-
 def rule(char: str = "─") -> str:
     return char * _W
 
@@ -76,9 +72,6 @@ def write_run_metadata(
     fh.write(f"  Min length   : {min_length} nt\n\n")
 
 
-# ---------------------------------------------------------------------------
-# Print summary (console output)
-# ---------------------------------------------------------------------------
 
 def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
     """Print a short summary of ORF counts to stdout."""
@@ -105,10 +98,6 @@ def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
                 print(f"    {sc}               : {n}")
     print(rule())
 
-
-# ---------------------------------------------------------------------------
-# Single-sequence summary
-# ---------------------------------------------------------------------------
 
 def write_stats_to_file(
     flat_list:    List[Dict[str, Any]],
@@ -183,9 +172,6 @@ def write_stats_to_file(
             fh.write(f"  {codon} : {count}\n")
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers for comparative report
-# ---------------------------------------------------------------------------
 
 def avg_gc(orfs: List[Dict[str, Any]]) -> float:
     """Return average GC content across a list of ORFs."""
@@ -270,12 +256,13 @@ def write_comparative_summary(
     fh.write(f"  {f'Unique to {acc2}':<28} {len(seqs2 - seqs1):>{col}}\n")
 
 
-# ---------------------------------------------------------------------------
-# Comparative report
-# ---------------------------------------------------------------------------
-
 def collect_codons(orfs: List[Dict[str, Any]]) -> Dict[str, int]:
-    """Return aggregate codon counts across all ORFs in *orfs*."""
+    """Return aggregate codon counts across all ORF sequences in *orfs*.
+
+    Requires ``calculate_orf_stats()`` to have been called first so that
+    each ORF dict contains a ``"sequence"`` key.  Only counts codons from
+    within detected ORFs, not the full background sequence.
+    """
     totals: Dict[str, int] = {}
     for orf in orfs:
         for codon, count in codon_usage(orf.get("sequence", "")).items():
@@ -290,20 +277,30 @@ def write_codon_section(
     acc1:  str,
     acc2:  str,
 ) -> None:
-    """Write a side-by-side aggregate codon-usage table for two ORF sets."""
+    """Write a side-by-side relative-frequency codon table for two ORF sets.
+
+    Frequencies are expressed as a percentage of all valid (ACGT-only) codons
+    across each sequence's ORFs.  The Delta column is acc1 minus acc2 in
+    percentage points, making it easy to spot codons that are enriched or
+    depleted in one sequence relative to the other.
+    """
     codons1    = collect_codons(flat1)
     codons2    = collect_codons(flat2)
+    total1     = sum(codons1.values()) or 1   # guard against empty ORF sets
+    total2     = sum(codons2.values()) or 1
     all_codons = sorted(set(codons1) | set(codons2))
 
-    fh.write(header("Aggregate Codon Usage") + "\n\n")
+    fh.write(header("Aggregate Codon Usage (% of ORF codons)") + "\n\n")
     col = 12
-    fh.write(f"  {'Codon':<8} {acc1:>{col}} {acc2:>{col}} {'Delta':>{col}}\n")
+    fh.write(f"  {'Codon':<8} {acc1:>{col}} {acc2:>{col}} {'Delta (pp)':>{col}}\n")
     fh.write(f"  {rule('─')}\n")
     for codon in all_codons:
-        c1    = codons1.get(codon, 0)
-        c2    = codons2.get(codon, 0)
-        delta = c1 - c2
-        fh.write(f"  {codon:<8} {c1:>{col}} {c2:>{col}} {delta:>{col}}\n")
+        f1    = codons1.get(codon, 0) / total1 * 100
+        f2    = codons2.get(codon, 0) / total2 * 100
+        delta = f1 - f2
+        fh.write(
+            f"  {codon:<8} {f1:>{col}.2f}% {f2:>{col}.2f}% {delta:>+{col}.2f}pp\n"
+        )
 
 
 def write_orf_comparison_report(
@@ -357,10 +354,6 @@ def write_orf_comparison_report(
         fh.write("\n")
         write_codon_section(fh, flat1, flat2, acc1, acc2)
 
-
-# ---------------------------------------------------------------------------
-# Combined CSV output
-# ---------------------------------------------------------------------------
 
 def write_sequence_block(
     fh,
