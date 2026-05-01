@@ -23,14 +23,14 @@ import numpy as np
 STOP_CODONS: List[str] = ["TAA", "TAG", "TGA"]
 _COMPLEMENT: Dict[str, str] = {"A": "T", "T": "A", "G": "C", "C": "G", "N": "N"}
 
-def _reverse_complement(dna_sequence: str) -> str:
+def reverse_complement(dna_sequence: str) -> str:
     """Return the reverse complement of a DNA sequence using NumPy."""
     char_arr   = np.array(list(dna_sequence), dtype="<U1")
     complement = np.vectorize(_COMPLEMENT.get)(char_arr, char_arr)
     return "".join(complement[::-1])
 
 
-def _sequence_to_codon_array(dna_sequence: str, frame: int) -> np.ndarray:
+def sequence_to_codon_array(dna_sequence: str, frame: int) -> np.ndarray:
     """Convert a DNA string into a 1-D array of 3-character codon strings."""
     trimmed  = dna_sequence[frame:]
     n_codons = len(trimmed) // 3
@@ -44,26 +44,26 @@ def _sequence_to_codon_array(dna_sequence: str, frame: int) -> np.ndarray:
     )
 
 
-def _codon_index_to_nt(frame: int, codon_index: int) -> int:
+def codon_index_to_nt(frame: int, codon_index: int) -> int:
     """Convert a codon index within a frame-sliced array to a nucleotide index."""
     return frame + codon_index * 3
 
 
-def _rc_coords_to_forward(rc_start: int, rc_end: int, seq_len: int) -> Tuple[int, int]:
+def rc_coords_to_forward(rc_start: int, rc_end: int, seq_len: int) -> Tuple[int, int]:
     """Convert reverse-complement start/end coordinates to forward-strand positions."""
     return seq_len - rc_end, seq_len - rc_start
 
 
-def _resolve_coords(
+def resolve_coords(
     strand: str, rc_start: int, rc_end: int, seq_len: int
 ) -> Tuple[int, int]:
     """Return forward-strand (start, end) from raw scan coordinates."""
     if strand == "-":
-        return _rc_coords_to_forward(rc_start, rc_end, seq_len)
+        return rc_coords_to_forward(rc_start, rc_end, seq_len)
     return rc_start, rc_end
 
 
-def _find_stop_codon_index(
+def find_stop_codon_index(
     codons: np.ndarray, start_codon_idx: int
 ) -> Optional[int]:
     """Return the index of the first stop codon strictly after start_codon_idx."""
@@ -74,7 +74,7 @@ def _find_stop_codon_index(
     candidates = np.nonzero(stop_mask)[0]
     return int(candidates[0]) if candidates.size > 0 else None
 
-def _process_start_codon(
+def process_start_codon(
     ci:         int,
     codons:     np.ndarray,
     frame:      int,
@@ -112,19 +112,19 @@ def _process_start_codon(
     Tuple[None, None]
         When no valid ORF can be built from this start codon.
     """
-    rc_start = _codon_index_to_nt(frame, ci)
-    stop_ci  = _find_stop_codon_index(codons, ci)
+    rc_start = codon_index_to_nt(frame, ci)
+    stop_ci  = find_stop_codon_index(codons, ci)
 
     if stop_ci is None:
         return None, None
 
-    rc_end    = _codon_index_to_nt(frame, stop_ci) + 3
+    rc_end    = codon_index_to_nt(frame, stop_ci) + 3
     length_nt = rc_end - rc_start
 
     if length_nt < min_length:
         return None, None
 
-    start, end = _resolve_coords(strand, rc_start, rc_end, seq_len)
+    start, end = resolve_coords(strand, rc_start, rc_end, seq_len)
     record = {
         "strand":      strand,
         "frame":       frame,
@@ -175,7 +175,7 @@ def scan_frame(
     List[Dict[str, Any]]
         One record per unique stop-codon position (longest ORF wins).
     """
-    codons = _sequence_to_codon_array(dna_sequence, frame)
+    codons = sequence_to_codon_array(dna_sequence, frame)
     if codons.size == 0:
         return []
 
@@ -188,12 +188,12 @@ def scan_frame(
     # same stop codon are simply skipped.
     best_per_stop: Dict[int, Dict[str, Any]] = {}
     for ci in np.nonzero(start_mask)[0]:
-        record, stop_ci = _process_start_codon(
+        record, stop_ci = process_start_codon(
             int(ci), codons, frame, strand, seq_len, min_length
         )
         if record is None:
             continue
-        stop_key = _codon_index_to_nt(frame, stop_ci)
+        stop_key = codon_index_to_nt(frame, stop_ci)
         if stop_key not in best_per_stop:
             best_per_stop[stop_key] = record   # first (longest) wins
 
@@ -226,4 +226,4 @@ def extract_orf_sequence(orf: dict, forward_seq: str) -> str:
 
     if strand == "+":
         return forward_seq[start:end]
-    return _reverse_complement(forward_seq[start:end])
+    return reverse_complement(forward_seq[start:end])
