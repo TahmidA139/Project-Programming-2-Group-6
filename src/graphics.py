@@ -150,64 +150,40 @@ def build_codon_order() -> tuple[list[str], list[tuple[int, int, str]]]:
 def configure_heatmap_axes(
     ax: Axes,
     ax_top: Axes,
-    gapped_codon_list: list[str],
-    new_aa_boundaries: list[tuple[int, int, str]],
-    gap_positions: list[float],
+    codon_list: list[str],
+    aa_boundaries: list[tuple[int, int, str]],
     acc1: str,
     acc2: str,
 ) -> None:
-    """Apply codon ticks, amino-acid group labels, and sequence divider to the RSCU heatmap axes.
+    """Apply codon ticks, amino-acid group labels, and sequence divider to the RSCU heatmap axes."""
+    ax.axhline(y=0.5, color="black", linewidth=1.0, zorder=4)
+    for col_start, _, _ in aa_boundaries:
+        if col_start > 0:
+            ax.axvline(x=col_start - 0.5, color="black", linewidth=2.0, zorder=5)
 
-    Parameters
-    ----------
-    gapped_codon_list : list[str]
-        Full codon list including empty-string placeholders for NaN gap columns.
-    new_aa_boundaries : list[tuple[int, int, str]]
-        AA group boundaries in gapped-column coordinates.
-    gap_positions : list[float]
-        X-positions (gapped coords) of the centre of each NaN separator column;
-        used to draw black divider lines on both axes.
-    """
-    # ── Set ax_top xlim FIRST so all subsequent axvline calls land in the
-    #    correct coordinate space. Previously this was called after the axvline
-    #    calls, so ax_top still had its default xlim of (0,1) and every gap
-    #    position (e.g. x=5, 9, …) was invisible off-screen.
-    ax_top.set_xlim(ax.get_xlim())
-
-    # ── Thick horizontal line between the two sequence rows ──────────────────
-    ax.axhline(y=0.5, color="black", linewidth=4.0, zorder=6)
-
-    # ── Thin separator between every codon column ────────────────────────────
-    for i, c in enumerate(gapped_codon_list):
-        if i == 0 or c == "" or gapped_codon_list[i - 1] == "":
-            continue  # skip left edge and gap columns
-        ax.axvline(x=i - 0.5, color="black", linewidth=0.4, alpha=0.45, zorder=3)
-
-    # ── Thick AA-group dividers ───────────────────────────────────────────────
-    # Drawn on ax (inside the heatmap) and on ax_top (clip_on=False so the
-    # line extends upward into the amino-acid tick-label area above the table).
-    for gp in gap_positions:
-        ax.axvline(x=gp, color="black", linewidth=2.5, zorder=5)
-        ax_top.axvline(x=gp, color="black", linewidth=2.5, zorder=5, clip_on=False)
-
-    # ── Y-axis sequence labels ───────────────────────────────────────────────
     ax.set_yticks([0, 1])
     ax.set_yticklabels([acc1, acc2], fontsize=9, fontweight="bold")
     ax.tick_params(axis="y", length=0)
-
-    # ── X-axis codon ticks — skip gap placeholder columns ───────────────────
-    tick_positions = [i for i, c in enumerate(gapped_codon_list) if c != ""]
-    tick_labels    = [c for c in gapped_codon_list if c != ""]
-    ax.set_xticks(tick_positions)
-    ax.set_xticklabels(tick_labels, rotation=90, fontsize=6.5, family="monospace")
+    ax.set_xticks(range(len(codon_list)))
+    ax.set_xticklabels(codon_list, rotation=90, fontsize=6.5, family="monospace")
     ax.tick_params(axis="x", length=2, pad=1)
 
-    # ── Top axis amino-acid group labels ─────────────────────────────────────
-    aa_mid   = [(s + e - 1) / 2 for s, e, _ in new_aa_boundaries]
-    aa_names = [name              for _, _, name in new_aa_boundaries]
+    ax_top.set_xlim(ax.get_xlim())
+    aa_mid   = [(s + e - 1) / 2 for s, e, _ in aa_boundaries]
+    aa_names = [name              for _, _, name in aa_boundaries]
     ax_top.set_xticks(aa_mid)
     ax_top.set_xticklabels(aa_names, fontsize=8, fontweight="bold", rotation=45, ha="left")
     ax_top.tick_params(top=False, pad=2)
+
+    # Extend thick black dividers into ax_top, acting as barriers between AA labels.
+    # clip_on=False lets the lines draw outside the ax_top data area.
+    for col_start, _, _ in aa_boundaries:
+        if col_start > 0:
+            ax_top.axvline(
+                x=col_start - 0.5,
+                color="black", linewidth=2.0, zorder=5,
+                clip_on=False,
+            )
 
 
 def add_rscu_colorbar(fig: Figure, im: Any) -> None:
@@ -453,42 +429,17 @@ def plot_codon_usage_comparison(
     codon_list, aa_boundaries = build_codon_order()
     rscu1 = compute_rscu(seq1)
     rscu2 = compute_rscu(seq2)
-
-    # Build a gapped data matrix by inserting one NaN column between each
-    # amino-acid group. imshow renders NaN as blank, giving a real white gap
-    # in the bitmap — unlike axvline calls which can be obscured by the image.
-    row1: list[float] = []
-    row2: list[float] = []
-    gapped_codon_list: list[str] = []
-    new_aa_boundaries: list[tuple[int, int, str]] = []
-    gap_positions: list[float] = []
-
-    gapped_pos = 0
-    for i, (col_start, col_end, aa) in enumerate(aa_boundaries):
-        codons = codon_list[col_start:col_end]
-        new_aa_boundaries.append((gapped_pos, gapped_pos + len(codons), aa))
-        for c in codons:
-            row1.append(rscu1.get(c, 0.0))
-            row2.append(rscu2.get(c, 0.0))
-            gapped_codon_list.append(c)
-        gapped_pos += len(codons)
-        if i < len(aa_boundaries) - 1:
-            row1.append(np.nan)
-            row2.append(np.nan)
-            gapped_codon_list.append("")
-            gap_positions.append(gapped_pos)
-            gapped_pos += 1
-
-    data = np.array([row1, row2])
+    data = np.array([
+        [rscu1.get(c, 0.0) for c in codon_list],
+        [rscu2.get(c, 0.0) for c in codon_list],
+    ])
 
     fig, ax = plt.subplots(figsize=(22, 3.2))
     fig.subplots_adjust(top=0.72, bottom=0.38, left=0.07, right=0.97)
 
     im = ax.imshow(data, aspect="auto", cmap="RdYlBu_r", vmin=0.0, vmax=3.0)
     ax_top = ax.twiny()
-    configure_heatmap_axes(
-        ax, ax_top, gapped_codon_list, new_aa_boundaries, gap_positions, acc1, acc2
-    )
+    configure_heatmap_axes(ax, ax_top, codon_list, aa_boundaries, acc1, acc2)
     add_rscu_colorbar(fig, im)
 
     ax.set_title(
@@ -498,3 +449,4 @@ def plot_codon_usage_comparison(
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
     log.info("Codon usage comparison saved to: %s", output_path)
+
