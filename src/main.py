@@ -21,13 +21,15 @@ Input:
 
 Output (single-sequence mode):
     output/cleaned_sequence_1.fasta          : cleaned sequence
-    output/orfs.csv                          : per-ORF statistics
+    output/<accession>.gff3                  : ORF annotations in GFF3 format
     output/orf_summary.txt                   : human-readable summary report
     output/orf_map.png                       : six-frame ORF map
 
 Output (comparative mode, additional files):
     output/comp_cleaned_sequence_1.fasta     : cleaned sequence 1
     output/comp_cleaned_sequence_2.fasta     : cleaned sequence 2
+    output/<accession1>.gff3                 : ORF annotations for sequence 1
+    output/<accession2>.gff3                 : ORF annotations for sequence 2
     output/orf_comparison_report.txt         : side-by-side ORF report with codon usage
     output/codon_usage_comparison.png        : RSCU heatmap
 """
@@ -47,7 +49,7 @@ from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orf
 from src.analysis_lib.statistics_summary import (
     write_stats_to_file,
     write_orf_comparison_report,
-    write_combined_csv,
+    write_gff3,
     print_summary,
 )
 
@@ -153,22 +155,6 @@ class ORCAPipeline:
 
         return acc, clean_seq, nested, flat_list
 
-    def write_csv(
-        self,
-        acc1:  str,
-        seq1:  str,
-        flat1: list,
-        acc2:  str | None = None,
-        seq2:  str | None = None,
-        flat2: list | None = None,
-    ) -> None:
-        """Write the ORF table CSV (single or comparative)."""
-        write_combined_csv(
-            acc1=acc1, flat1=flat1, seq1=seq1,
-            output_path=os.path.join(self.outdir, "orfs.csv"),
-            acc2=acc2, flat2=flat2, seq2=seq2,
-        )
-
     def plot(
         self,
         acc1:        str,
@@ -188,8 +174,8 @@ class ORCAPipeline:
                 output_path=os.path.join(self.outdir, "orf_map.png"),
             )
             plot_codon_usage_comparison(
-                flat1=flat1, acc1=acc1, seq1=seq1,
-                flat2=flat2, acc2=acc2, seq2=seq2,
+                seq1=seq1, acc1=acc1,
+                seq2=seq2, acc2=acc2,
                 output_path=os.path.join(self.outdir, "codon_usage_comparison.png"),
             )
         else:
@@ -209,17 +195,21 @@ class ORCAPipeline:
         seq2:        str | None = None,
         flat2:       list | None = None,
     ) -> None:
-        """Write text reports and (in comparative mode) the codon-usage CSV."""
+        """Write GFF3 annotation files and text reports."""
         calculate_orf_stats(flat1, seq1)
         repeats1 = find_repeated_orfs(flat1)
         if repeats1:
             print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
+
+        write_gff3(flat1, acc1, len(seq1), outdir=self.outdir)
 
         if comparative:
             calculate_orf_stats(flat2, seq2)
             repeats2 = find_repeated_orfs(flat2)
             if repeats2:
                 print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
+
+            write_gff3(flat2, acc2, len(seq2), outdir=self.outdir)
 
             write_orf_comparison_report(
                 flat1=flat1, flat2=flat2,
@@ -294,7 +284,6 @@ class ORCAPipeline:
                 print("[ERROR] Pipeline failed for sequence 2.")
                 sys.exit(1)
 
-        self.write_csv(acc1, seq1, flat1, acc2, seq2, flat2)
         self.plot(acc1, seq1, flat1, comparative, acc2, seq2, flat2)
         self.write_reports(acc1, seq1, flat1, comparative, acc2, seq2, flat2)
 
