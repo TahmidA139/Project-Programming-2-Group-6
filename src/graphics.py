@@ -452,13 +452,10 @@ def plot_codon_usage_comparison(
     # Draw thick black amino-acid dividers AFTER imshow so they sit on top.
     # We use ax.transData for the x position and ax.transAxes for y so the
     # lines can extend from the bottom of the heatmap up through ax_top labels.
-    _, aa_boundaries_local = build_codon_order()
-    for col_start, _, _ in aa_boundaries_local:
+    for col_start, _, _ in aa_boundaries:
         if col_start > 0:
             x = col_start - 0.5
-            # Line through the heatmap (data coords x, axes-fraction y)
-            from matplotlib.transforms import blended_transform_factory as btf
-            trans = btf(ax.transData, ax.transAxes)
+            trans = blended_transform_factory(ax.transData, ax.transAxes)
             ax.plot(
                 [x, x], [-0.20, 1.35],   # extend slightly below and above the heatmap
                 color="black", linewidth=1.5, zorder=20,
