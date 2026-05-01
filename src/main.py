@@ -13,7 +13,7 @@ Role in Project:
     Calls other modules to handle sequence loading, ORF detection,
     statistics, and CSV/text reporting.  When --accession2 / --fasta2 is
     supplied the pipeline runs on both sequences and produces comparative
-    output.
+    output including an RSCU codon-usage heatmap.
 
 Input:
     DNA sequence(s) fetched from NCBI via accession number(s),
@@ -21,12 +21,15 @@ Input:
 
 Output (single-sequence mode):
     output/cleaned_sequence_1.fasta          : cleaned sequence
-    output/orf_stats.csv                     : per-ORF statistics
-    output/stats_summary.txt                 : human-readable summary report
+    output/orfs.csv                          : per-ORF statistics
+    output/orf_summary.txt                   : human-readable summary report
+    output/orf_map.png                       : six-frame ORF map
 
 Output (comparative mode, additional files):
     output/comp_cleaned_sequence_1.fasta     : cleaned sequence 1
     output/comp_cleaned_sequence_2.fasta     : cleaned sequence 2
+    output/orf_comparison_report.txt         : side-by-side ORF report with codon usage
+    output/codon_usage_comparison.png        : RSCU heatmap
 """
 
 import argparse
@@ -34,10 +37,20 @@ import os
 import sys
 
 from src.input_validate import run as validate_run, validate_start_codons
-from src.graphics import plot_orf_map, plot_comparative_orf_map
+from src.graphics import (
+    plot_orf_map,
+    plot_comparative_orf_map,
+    plot_codon_usage_comparison,
+)
 from src.orf_finder_lib.orf_finder import find_orfs
 from src.analysis_lib.orf_analysis import calculate_orf_stats, find_repeated_orfs
-from src.analysis_lib.statistics_summary import (write_stats_to_file, write_orf_comparison_report,write_combined_csv,print_summary,)
+from src.analysis_lib.statistics_summary import (
+    write_stats_to_file,
+    write_orf_comparison_report,
+    write_combined_csv,
+    print_summary,
+)
+
 
 class ORCAPipeline:
     """
@@ -166,12 +179,18 @@ class ORCAPipeline:
         seq2:        str | None = None,
         flat2:       list | None = None,
     ) -> None:
-        """Generate the ORF map (single or comparative)."""
+        """Generate the ORF map (single or comparative) and, in comparative
+        mode, the RSCU codon-usage heatmap."""
         if comparative:
             plot_comparative_orf_map(
                 flat1=flat1, seq_len1=len(seq1), acc1=acc1,
                 flat2=flat2, seq_len2=len(seq2), acc2=acc2,
                 output_path=os.path.join(self.outdir, "orf_map.png"),
+            )
+            plot_codon_usage_comparison(
+                seq1=seq1, acc1=acc1,
+                seq2=seq2, acc2=acc2,
+                output_path=os.path.join(self.outdir, "codon_usage_comparison.png"),
             )
         else:
             plot_orf_map(
@@ -180,22 +199,31 @@ class ORCAPipeline:
                 output_path=os.path.join(self.outdir, "orf_map.png"),
             )
 
-    def write_reports(self, acc1, seq1, flat1, comparative,
-                      acc2=None, seq2=None, flat2=None) -> None:
+    def write_reports(
+        self,
+        acc1:        str,
+        seq1:        str,
+        flat1:       list,
+        comparative: bool,
+        acc2:        str | None = None,
+        seq2:        str | None = None,
+        flat2:       list | None = None,
+    ) -> None:
+        """Write text reports and (in comparative mode) the codon-usage CSV."""
         calculate_orf_stats(flat1, seq1)
         repeats1 = find_repeated_orfs(flat1)
         if repeats1:
             print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
-    
+
         if comparative:
             calculate_orf_stats(flat2, seq2)
             repeats2 = find_repeated_orfs(flat2)
             if repeats2:
                 print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
+
             write_orf_comparison_report(
                 flat1=flat1, flat2=flat2,
                 acc1=acc1,   acc2=acc2,
-                seq1=seq1,   seq2=seq2,
                 filename=os.path.join(self.outdir, "orf_comparison_report.txt"),
                 start_codons=self.start_codons,
                 min_length=self.min_length,
@@ -209,7 +237,7 @@ class ORCAPipeline:
                 min_length=self.min_length,
             )
 
-    # Public entry point 
+    # Public entry point
     def run(
         self,
         accession:   str,
@@ -349,9 +377,6 @@ def main() -> None:
 
     email = args.email or input("Enter your email (required by NCBI): ").strip()
 
-    # validate_start_codons raises ValueError for unrecognised codons.
-    # Catch it here at the CLI boundary and convert to a clean exit — library
-    # code should never call sys.exit() directly.
     try:
         start_codons = validate_start_codons(args.start_codons)
     except ValueError as e:
