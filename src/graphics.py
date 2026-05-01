@@ -164,7 +164,7 @@ def configure_heatmap_axes(
             # Thick black line on the heatmap panel
             ax.axvline(x=col_start - 0.5, color="black", linewidth=9, zorder=6)
             # Thick black line extended into the amino-acid label panel above
-            ax_top.axvline(x=col_start - 0.5, color="black", linewidth=3.5, zorder=5)
+            ax_top.axvline(x=col_start - 0.5, color="black", linewidth=15, zorder=5)
 
     ax.set_yticks([0, 1])
     ax.set_yticklabels([acc1, acc2], fontsize=9, fontweight="bold")
@@ -252,7 +252,6 @@ def draw_single_orf(
             color="white", fontweight="bold", zorder=3,
         )
 
-# Public API
 def draw_orf_map(
     ax: Axes,
     flat_list: list[dict[str, Any]],
