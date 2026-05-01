@@ -288,7 +288,7 @@ def validate_start_codons(requested: list[str]) -> list[str]:
     return upper
 
 
-def _fetch_and_validate_one(
+def fetch_and_validate_one(
     accession:    str,
     output_fasta: str,
     fasta_file:   str | None = None,
@@ -399,7 +399,7 @@ def run(
 
     output_fasta = os.path.join(outdir, filename)
 
-    acc, seq = _fetch_and_validate_one(accession, output_fasta, fasta_file)
+    acc, seq = fetch_and_validate_one(accession, output_fasta, fasta_file)
     if acc is None:
         return None, None, None, None
 
