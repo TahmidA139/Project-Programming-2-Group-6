@@ -130,7 +130,7 @@ python -m src.main --accession NM_001838.4 --accession2 NM_012367.1 \
 Comparative mode — two local FASTA files:
 ```bash
 python -m src.main \
-    --fasta  example_input_files/sequence1.fasta \
+    --fasta  example_input_files/OR2B6_sequence.fasta \
     --fasta2 example_input_files/sequence2.fasta \
     --email  you@example.com
 ```
