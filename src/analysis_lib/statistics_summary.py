@@ -27,7 +27,7 @@ from src.analysis_lib.orf_analysis import codon_usage
 
 _W = 72   # report width
 
-# Internal formatting functions
+
 def rule(char: str = "─") -> str:
     return char * _W
 
@@ -166,7 +166,6 @@ def write_stats_to_file(
         for codon, count in sorted(total_codons.items()):
             fh.write(f"  {codon} : {count}\n")
 
-
 def avg_gc(orfs: List[Dict[str, Any]]) -> float:
     """Return average GC content across a list of ORFs."""
     return sum(o["gc_content"] for o in orfs) / len(orfs) if orfs else 0.0
@@ -249,6 +248,10 @@ def write_comparative_summary(
     fh.write(f"  {f'Unique to {acc1}':<28} {len(seqs1 - seqs2):>{col}}\n")
     fh.write(f"  {f'Unique to {acc2}':<28} {len(seqs2 - seqs1):>{col}}\n")
 
+
+# ---------------------------------------------------------------------------
+# Comparative report
+# ---------------------------------------------------------------------------
 
 def collect_codons(orfs: List[Dict[str, Any]]) -> Dict[str, int]:
     """Return aggregate codon counts across all ORFs in *orfs*."""
@@ -359,10 +362,12 @@ def _safe_filename(accession: str) -> str:
 
 
 def write_gff3(
-    flat_list:  List[Dict[str, Any]],
-    accession:  str,
-    seq_len:    int,
-    outdir:     str = "output",
+    flat_list:    List[Dict[str, Any]],
+    accession:    str,
+    seq_len:      int,
+    outdir:       str       = "output",
+    start_codons: List[str] = None,
+    min_length:   int       = 30,
 ) -> str:
     """
     Write a GFF3 annotation file for one sequence's ORF set.
@@ -389,18 +394,31 @@ def write_gff3(
     outdir : str, optional
         Output directory.  Created if it does not exist.  Defaults to
         ``'output'``.
+    start_codons : List[str], optional
+        Start codons used in this run; written as a ``##parameter`` pragma
+        for provenance.  Defaults to ``['ATG']``.
+    min_length : int, optional
+        Minimum ORF length used in this run; written as a ``##parameter``
+        pragma for provenance.  Defaults to ``30``.
 
     Returns
     -------
     str
         Absolute or relative path of the file written.
     """
+    if start_codons is None:
+        start_codons = ["ATG"]
+
     os.makedirs(outdir, exist_ok=True)
     filepath = os.path.join(outdir, f"{_safe_filename(accession)}.gff3")
 
     with open(filepath, "w") as fh:
         fh.write("##gff-version 3\n")
         fh.write(f"##sequence-region {accession} 1 {seq_len}\n")
+        fh.write(f"##source-version ORCA\n")
+        fh.write(f"##date {datetime.now().strftime('%Y-%m-%d')}\n")
+        fh.write(f"##parameter start_codons={','.join(start_codons)}\n")
+        fh.write(f"##parameter min_length={min_length}\n")
         for orf in flat_list:
             gff_start = orf["start"] + 1   # 0-based inclusive -> 1-based inclusive
             gff_end   = orf["end"]          # 0-based exclusive == 1-based inclusive
