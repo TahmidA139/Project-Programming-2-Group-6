@@ -440,8 +440,8 @@ def plot_codon_usage_comparison(
             from matplotlib.transforms import blended_transform_factory as btf
             trans = btf(ax.transData, ax.transAxes)
             ax.plot(
-                [x, x], [-0.15, 1.35],   # extend slightly below and above the heatmap
-                color="black", linewidth=2.5, zorder=20,
+                [x, x], [-0.20, 1.35],   # extend slightly below and above the heatmap
+                color="black", linewidth=1.5, zorder=20,
                 transform=trans, clip_on=False,
             )
 
