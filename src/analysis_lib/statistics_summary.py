@@ -21,7 +21,7 @@ from __future__ import annotations
 import os
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, IO, List, Optional, Tuple
 
 from src.analysis_lib.orf_analysis import codon_usage
 
@@ -29,20 +29,23 @@ _W = 72   # report width
 
 
 def rule(char: str = "─") -> str:
+    """Return a horizontal rule of width ``_W`` built from *char*."""
     return char * _W
 
 
 def header(title: str, char: str = "═") -> str:
+    """Return a centred section header of width ``_W`` using *char* as the border."""
     pad = (_W - len(title) - 2) // 2
     return f"{char * pad} {title} {char * (_W - pad - len(title) - 2)}"
 
 
 def subheader(title: str) -> str:
+    """Return a two-line subheading with a plain underline matching *title*'s length."""
     return f"  {title}\n  {'─' * len(title)}"
 
 
 def write_run_metadata(
-    fh,
+    fh:           IO[str],
     accessions:   List[str],
     start_codons: List[str],
     min_length:   int,
@@ -119,44 +122,10 @@ def write_stats_to_file(
     if start_codons is None:
         start_codons = ["ATG"]
 
-    total_orfs = len(flat_list)
-    avg_gc     = (
-        sum(o["gc_content"] for o in flat_list) / total_orfs
-        if total_orfs else 0.0
-    )
-    longest: Optional[Dict[str, Any]] = (
-        max(flat_list, key=lambda x: len(x.get("sequence", "")))
-        if flat_list else None
-    )
-
     with open(filename, "w") as fh:
         fh.write(header("ORF SUMMARY REPORT") + "\n")
         write_run_metadata(fh, [accession], start_codons, min_length)
-
-        fh.write(subheader("Dataset Statistics") + "\n")
-        fh.write(f"  Total ORFs         : {total_orfs}\n")
-        fh.write(f"  Average GC Content : {avg_gc:.2f}%\n\n")
-
-        if longest:
-            fh.write(subheader("Longest ORF") + "\n")
-            fh.write(f"  ID         : {longest.get('orf_id', 'N/A')}\n")
-            fh.write(f"  Length     : {len(longest['sequence'])} nt\n")
-            fh.write(f"  Strand     : {longest.get('strand', '?')}\n")
-            fh.write(f"  Frame      : {longest.get('frame', '?')}\n")
-            fh.write(f"  GC Content : {longest['gc_content']:.2f}%\n\n")
-
-        fh.write(subheader("Per-ORF Statistics") + "\n")
-        fh.write(f"  {'#':<5}{'ID':<14}{'Length':>8}{'GC%':>8}{'Prot_len':>10}{'Strand':>8}{'Frame':>7}\n")
-        fh.write(f"  {rule('─')}\n")
-        for i, orf in enumerate(flat_list):
-            fh.write(
-                f"  {i:<5}{orf.get('orf_id', ''):<14}"
-                f"{len(orf.get('sequence', ''))!s:>8}"
-                f"{orf['gc_content']:>8.2f}"
-                f"{orf['protein_length']:>10}"
-                f"{orf.get('strand', '?'):>8}"
-                f"{orf.get('frame', '?')!s:>7}\n"
-            )
+        write_sequence_section(fh, flat_list, accession)
 
         fh.write(f"\n{subheader('Aggregate Codon Usage')}\n")
         total_codons: Dict[str, int] = {}
@@ -179,7 +148,7 @@ def strand_counts(orfs: List[Dict[str, Any]]) -> Tuple[int, int]:
 
 
 def write_sequence_section(
-    fh,
+    fh:        IO[str],
     flat_list: List[Dict[str, Any]],
     label:     str,
 ) -> None:
@@ -223,7 +192,7 @@ def write_sequence_section(
 
 
 def write_comparative_summary(
-    fh,
+    fh:    IO[str],
     flat1: List[Dict[str, Any]],
     flat2: List[Dict[str, Any]],
     acc1:  str,
@@ -263,7 +232,7 @@ def collect_codons(orfs: List[Dict[str, Any]]) -> Dict[str, int]:
 
 
 def write_codon_section(
-    fh,
+    fh:    IO[str],
     flat1: List[Dict[str, Any]],
     flat2: List[Dict[str, Any]],
     acc1:  str,
