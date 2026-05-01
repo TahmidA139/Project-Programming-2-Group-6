@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/orca_banner.png" alt="ORCA Banner" width="350"/>
+  <img src="pseudocode/orca_banner.png" alt="ORCA Banner" width="350"/>
 </p>
 
 # ORCA — ORF Recognition and Comparative Annotator
