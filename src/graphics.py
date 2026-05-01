@@ -381,30 +381,39 @@ def plot_comparative_orf_map(
     log.info("Comparative ORF map saved to: %s", output_path)
 
 def plot_codon_usage_comparison(
-    seq1: str,
-    acc1: str,
-    seq2: str,
-    acc2: str,
+    flat1: list[dict[str, Any]],
+    acc1:  str,
+    seq1:  str,
+    flat2: list[dict[str, Any]],
+    acc2:  str,
+    seq2:  str,
     output_path: str | Path,
 ) -> None:
     """
-    Plot a comparative RSCU heatmap for two DNA sequences and save to file.
+    Plot a comparative RSCU heatmap using only ORF sequences and save to file.
 
     Parameters
     ----------
-    seq1 : str
-        First DNA sequence (any case).
+    flat1 : list[dict[str, Any]]
+        Flat ORF list for sequence 1, as returned by ``find_orfs()``.
+        Open ORFs (``end=None``) are excluded automatically.
     acc1 : str
         Accession or label for *seq1*; used as the row label and in the title.
-    seq2 : str
-        Second DNA sequence (any case).
+    seq1 : str
+        Full forward-strand DNA for sequence 1; used to extract ORF sequences.
+    flat2 : list[dict[str, Any]]
+        Flat ORF list for sequence 2.
     acc2 : str
         Accession or label for *seq2*.
+    seq2 : str
+        Full forward-strand DNA for sequence 2.
     output_path : str | Path
         Destination file path (PNG, PDF, SVG, …).
 
     Ensures
     -------
+    RSCU is computed from ORF nucleotides only — not the full background
+    sequence — so the heatmap reflects coding-region codon bias.
     Only the 59 sense codons with synonymous alternatives are included.
     Met (ATG), Trp (TGG), and stop codons are excluded.
     The colour scale runs 0–3 RSCU units; a dashed reference line marks 1.0.
@@ -413,9 +422,20 @@ def plot_codon_usage_comparison(
     -------
     None
     """
+    from src.orf_finder_lib.frame_scanner import extract_orf_sequence
+
+    orf_seq1 = "".join(
+        extract_orf_sequence(o, seq1)
+        for o in flat1 if o.get("end") is not None
+    )
+    orf_seq2 = "".join(
+        extract_orf_sequence(o, seq2)
+        for o in flat2 if o.get("end") is not None
+    )
+
     codon_list, aa_boundaries = build_codon_order()
-    rscu1 = compute_rscu(seq1)
-    rscu2 = compute_rscu(seq2)
+    rscu1 = compute_rscu(orf_seq1)
+    rscu2 = compute_rscu(orf_seq2)
     data = np.array([
         [rscu1.get(c, 0.0) for c in codon_list],
         [rscu2.get(c, 0.0) for c in codon_list],
