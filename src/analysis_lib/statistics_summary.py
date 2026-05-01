@@ -13,25 +13,21 @@ Exports:
     print_summary               -- Console summary of ORF counts.
     write_stats_to_file         -- Single-sequence orf_summary.txt.
     write_orf_comparison_report -- Combined report for comparative mode only.
-    write_combined_csv          -- ORF table CSV (single or comparative mode).
+    write_gff3                  -- GFF3 annotation file for one sequence.
 """
 
 from __future__ import annotations
 
-import csv
 import os
+import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.analysis_lib.orf_analysis import codon_usage
-from src.orf_finder_lib.frame_scanner import extract_orf_sequence
-from src.orf_finder_lib.orf_finder import CSV_FIELDNAMES
-
-OUTPUT_FIELDNAMES: List[str] = CSV_FIELDNAMES + ["sequence (5'->3')"]
 
 _W = 72   # report width
 
-
+# Internal formatting functions
 def rule(char: str = "─") -> str:
     return char * _W
 
@@ -70,7 +66,6 @@ def write_run_metadata(
         fh.write(f"  Sequence {i}   : {acc}\n")
     fh.write(f"  Start codons : {', '.join(start_codons)}\n")
     fh.write(f"  Min length   : {min_length} nt\n\n")
-
 
 
 def print_summary(nested: dict, flat_list: list, label: str = "") -> None:
@@ -172,7 +167,6 @@ def write_stats_to_file(
             fh.write(f"  {codon} : {count}\n")
 
 
-
 def avg_gc(orfs: List[Dict[str, Any]]) -> float:
     """Return average GC content across a list of ORFs."""
     return sum(o["gc_content"] for o in orfs) / len(orfs) if orfs else 0.0
@@ -257,12 +251,7 @@ def write_comparative_summary(
 
 
 def collect_codons(orfs: List[Dict[str, Any]]) -> Dict[str, int]:
-    """Return aggregate codon counts across all ORF sequences in *orfs*.
-
-    Requires ``calculate_orf_stats()`` to have been called first so that
-    each ORF dict contains a ``"sequence"`` key.  Only counts codons from
-    within detected ORFs, not the full background sequence.
-    """
+    """Return aggregate codon counts across all ORFs in *orfs*."""
     totals: Dict[str, int] = {}
     for orf in orfs:
         for codon, count in codon_usage(orf.get("sequence", "")).items():
@@ -277,30 +266,20 @@ def write_codon_section(
     acc1:  str,
     acc2:  str,
 ) -> None:
-    """Write a side-by-side relative-frequency codon table for two ORF sets.
-
-    Frequencies are expressed as a percentage of all valid (ACGT-only) codons
-    across each sequence's ORFs.  The Delta column is acc1 minus acc2 in
-    percentage points, making it easy to spot codons that are enriched or
-    depleted in one sequence relative to the other.
-    """
+    """Write a side-by-side aggregate codon-usage table for two ORF sets."""
     codons1    = collect_codons(flat1)
     codons2    = collect_codons(flat2)
-    total1     = sum(codons1.values()) or 1   # guard against empty ORF sets
-    total2     = sum(codons2.values()) or 1
     all_codons = sorted(set(codons1) | set(codons2))
 
-    fh.write(header("Aggregate Codon Usage (% of ORF codons)") + "\n\n")
+    fh.write(header("Aggregate Codon Usage") + "\n\n")
     col = 12
-    fh.write(f"  {'Codon':<8} {acc1:>{col}} {acc2:>{col}} {'Delta (pp)':>{col}}\n")
+    fh.write(f"  {'Codon':<8} {acc1:>{col}} {acc2:>{col}} {'Delta':>{col}}\n")
     fh.write(f"  {rule('─')}\n")
     for codon in all_codons:
-        f1    = codons1.get(codon, 0) / total1 * 100
-        f2    = codons2.get(codon, 0) / total2 * 100
-        delta = f1 - f2
-        fh.write(
-            f"  {codon:<8} {f1:>{col}.2f}% {f2:>{col}.2f}% {delta:>+{col}.2f}pp\n"
-        )
+        c1    = codons1.get(codon, 0)
+        c2    = codons2.get(codon, 0)
+        delta = c1 - c2
+        fh.write(f"  {codon:<8} {c1:>{col}} {c2:>{col}} {delta:>{col}}\n")
 
 
 def write_orf_comparison_report(
@@ -355,41 +334,87 @@ def write_orf_comparison_report(
         write_codon_section(fh, flat1, flat2, acc1, acc2)
 
 
-def write_sequence_block(
-    fh,
-    writer:       csv.DictWriter,
-    accession:    str,
-    flat_list:    list,
-    dna_sequence: str,
-) -> None:
-    """Write one accession header + ORF rows into an already-open CSV file."""
-    fh.write(f"{accession}\n")
-    writer.writeheader()
-    for orf in flat_list:
-        row = dict(orf)
-        row["sequence (5'->3')"] = extract_orf_sequence(orf, dna_sequence)
-        writer.writerow(row)
+_GFF3_SOURCE = "ORCA"
 
 
-def write_combined_csv(
-    acc1:        str,
-    flat1:       list,
-    seq1:        str,
-    output_path: str,
-    acc2:        Optional[str]  = None,
-    flat2:       Optional[list] = None,
-    seq2:        Optional[str]  = None,
-) -> None:
-    """Write one or two ORF tables into a single CSV file."""
-    if os.path.dirname(output_path):
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+def _safe_filename(accession: str) -> str:
+    """Replace characters that are unsafe in filenames with underscores.
 
-    with open(output_path, "w", newline="") as fh:
-        writer = csv.DictWriter(
-            fh, fieldnames=OUTPUT_FIELDNAMES, extrasaction="ignore"
-        )
-        write_sequence_block(fh, writer, acc1, flat1, seq1)
+    NCBI accession numbers (e.g. NM_001838.4) are preserved as-is.
+    Unusual record IDs from local FASTA headers (e.g. ``lcl|chromosome 1``)
+    have spaces, pipes, and slashes replaced so the resulting filename is
+    always valid on Linux, macOS, and Windows.
 
-        if acc2 is not None and flat2 is not None and seq2 is not None:
-            fh.write("\n\n")
-            write_sequence_block(fh, writer, acc2, flat2, seq2)
+    Parameters
+    ----------
+    accession : str
+        Raw accession string or FASTA record ID.
+
+    Returns
+    -------
+    str
+        Filename-safe version of *accession*.
+    """
+    return re.sub(r"[^\w.\-]", "_", accession)
+
+
+def write_gff3(
+    flat_list:  List[Dict[str, Any]],
+    accession:  str,
+    seq_len:    int,
+    outdir:     str = "output",
+) -> str:
+    """
+    Write a GFF3 annotation file for one sequence's ORF set.
+
+    The output filename is derived from *accession* (e.g. ``NM_001838.4.gff3``).
+    Coordinates are converted from the pipeline's internal 0-based half-open
+    representation to GFF3's 1-based fully-closed convention:
+    ``gff_start = orf["start"] + 1``, ``gff_end = orf["end"]`` (unchanged).
+
+    Requires ``calculate_orf_stats()`` to have been called on *flat_list*
+    beforehand so that ``gc_content`` and ``protein_length`` are present
+    in each ORF record.
+
+    Parameters
+    ----------
+    flat_list : List[Dict[str, Any]]
+        Enriched ORF list for one sequence.
+    accession : str
+        Accession number or record ID; used as both the ``seqid`` column
+        value and the output filename stem.
+    seq_len : int
+        Total sequence length in bp; written into the ``##sequence-region``
+        pragma.
+    outdir : str, optional
+        Output directory.  Created if it does not exist.  Defaults to
+        ``'output'``.
+
+    Returns
+    -------
+    str
+        Absolute or relative path of the file written.
+    """
+    os.makedirs(outdir, exist_ok=True)
+    filepath = os.path.join(outdir, f"{_safe_filename(accession)}.gff3")
+
+    with open(filepath, "w") as fh:
+        fh.write("##gff-version 3\n")
+        fh.write(f"##sequence-region {accession} 1 {seq_len}\n")
+        for orf in flat_list:
+            gff_start = orf["start"] + 1   # 0-based inclusive -> 1-based inclusive
+            gff_end   = orf["end"]          # 0-based exclusive == 1-based inclusive
+            attrs = (
+                f"ID={orf.get('orf_id', '.')};"
+                f"start_codon={orf.get('start_codon', '.')};"
+                f"length_nt={orf.get('length_nt', '.')};"
+                f"gc_content={orf.get('gc_content', 0.0):.2f};"
+                f"protein_length={orf.get('protein_length', '.')}"
+            )
+            fh.write(
+                f"{accession}\t{_GFF3_SOURCE}\tORF\t"
+                f"{gff_start}\t{gff_end}\t.\t"
+                f"{orf.get('strand', '.')}\t0\t{attrs}\n"
+            )
+
+    return filepath
