@@ -29,7 +29,7 @@ Constants:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from src.orf_finder_lib.frame_scanner import (
     _reverse_complement,
@@ -243,8 +243,8 @@ def _build_outputs(
 
 def find_orfs(
     dna_sequence: str,
-    start_codons: List[str] = None,
-    min_length:   int       = DEFAULT_MIN_LENGTH,
+    start_codons: Optional[List[str]] = None,
+    min_length:   int                 = DEFAULT_MIN_LENGTH,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Find all complete ORFs in all six reading frames of a DNA sequence.
