@@ -8,7 +8,7 @@ Nicole Decocker's part
 Purpose:
     Visual output for the ORCA pipeline.
     Generates an ORF map showing all ORFs across all six reading
-    frames for single and comparative sequence modes.
+    frames, and (in comparative mode) an RSCU codon-usage heatmap.
 
 Public API
 ----------
@@ -16,14 +16,17 @@ draw_orf_map                Draw one ORF panel onto existing Axes.
 make_legend                 Return legend Patch handles.
 plot_orf_map                Single-sequence ORF map → file.
 plot_comparative_orf_map    Two-sequence ORF map → file.
+plot_codon_usage_comparison RSCU heatmap comparison → file.
 """
 
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, TypedDict
 
+import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -65,6 +68,126 @@ FRAME_Y: dict[tuple[str, int], int] = {
 FRAME_LABELS: dict[tuple[str, int], str] = {
     ("+", 0): "+1", ("+", 1): "+2", ("+", 2): "+3",
     ("-", 0): "-1", ("-", 1): "-2", ("-", 2): "-3",}
+
+# Genetic code for RSCU 
+GENETIC_CODE: dict[str, str] = {
+    "TTT": "Phe", "TTC": "Phe",
+    "TTA": "Leu", "TTG": "Leu", "CTT": "Leu", "CTC": "Leu",
+    "CTA": "Leu", "CTG": "Leu",
+    "ATT": "Ile", "ATC": "Ile", "ATA": "Ile",
+    "ATG": "Met",
+    "GTT": "Val", "GTC": "Val", "GTA": "Val", "GTG": "Val",
+    "TCT": "Ser", "TCC": "Ser", "TCA": "Ser", "TCG": "Ser",
+    "AGT": "Ser", "AGC": "Ser",
+    "CCT": "Pro", "CCC": "Pro", "CCA": "Pro", "CCG": "Pro",
+    "ACT": "Thr", "ACC": "Thr", "ACA": "Thr", "ACG": "Thr",
+    "GCT": "Ala", "GCC": "Ala", "GCA": "Ala", "GCG": "Ala",
+    "TAT": "Tyr", "TAC": "Tyr",
+    "TAA": "Stop", "TAG": "Stop", "TGA": "Stop",
+    "CAT": "His", "CAC": "His",
+    "CAA": "Gln", "CAG": "Gln",
+    "AAT": "Asn", "AAC": "Asn",
+    "AAA": "Lys", "AAG": "Lys",
+    "GAT": "Asp", "GAC": "Asp",
+    "GAA": "Glu", "GAG": "Glu",
+    "TGT": "Cys", "TGC": "Cys",
+    "TGG": "Trp",
+    "CGT": "Arg", "CGC": "Arg", "CGA": "Arg", "CGG": "Arg",
+    "AGA": "Arg", "AGG": "Arg",
+    "GGT": "Gly", "GGC": "Gly", "GGA": "Gly", "GGG": "Gly",
+}
+
+# Amino acids with ≥2 synonymous codons — display order for RSCU heatmap
+AA_ORDER: list[str] = [
+    "Phe", "Leu", "Ile", "Val", "Ser", "Pro", "Thr", "Ala",
+    "Tyr", "His", "Gln", "Asn", "Lys", "Asp", "Glu", "Cys", "Arg", "Gly",
+]
+
+# RSCU helpers
+def compute_rscu(sequence: str) -> dict[str, float]:
+    """Return RSCU values for all sense codons in *sequence*; Met, Trp, and stops excluded."""
+    seq = sequence.upper()
+    counts: dict[str, int] = {}
+    for i in range(0, len(seq) - 2, 3):
+        codon = seq[i : i + 3]
+        if len(codon) == 3 and all(c in "ACGT" for c in codon):
+            counts[codon] = counts.get(codon, 0) + 1
+
+    aa_codons: dict[str, list[str]] = defaultdict(list)
+    for codon, aa in GENETIC_CODE.items():
+        if aa not in ("Stop", "Met", "Trp"):
+            aa_codons[aa].append(codon)
+
+    rscu: dict[str, float] = {}
+    for aa, codons in aa_codons.items():
+        total = sum(counts.get(c, 0) for c in codons)
+        n = len(codons)
+        for codon in codons:
+            rscu[codon] = counts.get(codon, 0) / (total / n) if total else 0.0
+    return rscu
+
+
+def build_codon_order() -> tuple[list[str], list[tuple[int, int, str]]]:
+    """Return (codon_list, aa_boundaries) in AA_ORDER for use in the RSCU heatmap."""
+    aa_codons: dict[str, list[str]] = defaultdict(list)
+    for codon, aa in GENETIC_CODE.items():
+        if aa not in ("Stop", "Met", "Trp"):
+            aa_codons[aa].append(codon)
+    for aa in aa_codons:
+        aa_codons[aa].sort()
+
+    codon_list: list[str] = []
+    aa_boundaries: list[tuple[int, int, str]] = []
+    pos = 0
+    for aa in AA_ORDER:
+        codons = aa_codons[aa]
+        aa_boundaries.append((pos, pos + len(codons), aa))
+        codon_list.extend(codons)
+        pos += len(codons)
+    return codon_list, aa_boundaries
+
+
+def configure_heatmap_axes(
+    ax: Axes,
+    ax_top: Axes,
+    codon_list: list[str],
+    aa_boundaries: list[tuple[int, int, str]],
+    acc1: str,
+    acc2: str,
+) -> None:
+    """Apply codon ticks, amino-acid group labels, and sequence divider to the RSCU heatmap axes."""
+    ax.axhline(y=0.5, color="black", linewidth=1.0, zorder=4)
+    for col_start, _, _ in aa_boundaries:
+        if col_start > 0:
+            ax.axvline(x=col_start - 0.5, color="white", linewidth=2.5, zorder=3)
+
+    ax.set_yticks([0, 1])
+    ax.set_yticklabels([acc1, acc2], fontsize=9, fontweight="bold")
+    ax.tick_params(axis="y", length=0)
+    ax.set_xticks(range(len(codon_list)))
+    ax.set_xticklabels(codon_list, rotation=90, fontsize=6.5, family="monospace")
+    ax.tick_params(axis="x", length=2, pad=1)
+
+    ax_top.set_xlim(ax.get_xlim())
+    aa_mid   = [(s + e - 1) / 2 for s, e, _ in aa_boundaries]
+    aa_names = [name              for _, _, name in aa_boundaries]
+    ax_top.set_xticks(aa_mid)
+    ax_top.set_xticklabels(aa_names, fontsize=8, fontweight="bold", rotation=45, ha="left")
+    ax_top.tick_params(top=False, pad=2)
+
+
+def add_rscu_colorbar(fig: Figure, im: Any) -> None:
+    """Attach a horizontal RSCU colorbar with a dashed reference line at 1.0."""
+    cbar_ax = fig.add_axes([0.15, 0.10, 0.70, 0.07])
+    cbar = fig.colorbar(im, cax=cbar_ax, orientation="horizontal")
+    cbar.set_label("RSCU  (1.0 = equal synonymous codon usage)", fontsize=8, labelpad=4)
+    cbar.ax.tick_params(labelsize=7)
+    cbar.ax.axvline(x=1.0, color="black", linewidth=1.5, linestyle="--", zorder=5)
+    cbar.ax.text(
+        1.0, 1.7, "1.0",
+        ha="center", va="bottom", fontsize=7, fontweight="bold",
+        color="black", transform=cbar.ax.get_xaxis_transform(),
+    )
 
 # ORF map helpers
 def setup_frame_axes(ax: Axes, seq_len: int, accession: str) -> None:
@@ -259,3 +382,60 @@ def plot_comparative_orf_map(
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
     log.info("Comparative ORF map saved to: %s", output_path)
+
+def plot_codon_usage_comparison(
+    seq1: str,
+    acc1: str,
+    seq2: str,
+    acc2: str,
+    output_path: str | Path,
+) -> None:
+    """
+    Plot a comparative RSCU heatmap for two DNA sequences and save to file.
+
+    Parameters
+    ----------
+    seq1 : str
+        First DNA sequence (any case).
+    acc1 : str
+        Accession or label for *seq1*; used as the row label and in the title.
+    seq2 : str
+        Second DNA sequence (any case).
+    acc2 : str
+        Accession or label for *seq2*.
+    output_path : str | Path
+        Destination file path (PNG, PDF, SVG, …).
+
+    Ensures
+    -------
+    Only the 59 sense codons with synonymous alternatives are included.
+    Met (ATG), Trp (TGG), and stop codons are excluded.
+    The colour scale runs 0–3 RSCU units; a dashed reference line marks 1.0.
+
+    Returns
+    -------
+    None
+    """
+    codon_list, aa_boundaries = build_codon_order()
+    rscu1 = compute_rscu(seq1)
+    rscu2 = compute_rscu(seq2)
+    data = np.array([
+        [rscu1.get(c, 0.0) for c in codon_list],
+        [rscu2.get(c, 0.0) for c in codon_list],
+    ])
+
+    fig, ax = plt.subplots(figsize=(22, 3.2))
+    fig.subplots_adjust(top=0.72, bottom=0.38, left=0.07, right=0.97)
+
+    im = ax.imshow(data, aspect="auto", cmap="RdYlBu_r", vmin=0.0, vmax=3.0)
+    ax_top = ax.twiny()
+    configure_heatmap_axes(ax, ax_top, codon_list, aa_boundaries, acc1, acc2)
+    add_rscu_colorbar(fig, im)
+
+    ax.set_title(
+        f"Codon Usage Bias  —  {acc1}  vs  {acc2}  (RSCU)",
+        fontsize=10, fontweight="bold", pad=30,
+    )
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    log.info("Codon usage comparison saved to: %s", output_path)
