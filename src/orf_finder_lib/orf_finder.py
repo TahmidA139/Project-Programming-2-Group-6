@@ -16,7 +16,6 @@ Purpose:
 
 Exports:
     find_orfs        -- Primary public interface; returns (nested_dict, flat_list).
-    CSV_FIELDNAMES   -- Ordered column names used when writing ORF CSV files.
 
 Constants:
     ALL_START_CODONS     -- All recognised start codons: ATG, GTG, TTG.
@@ -45,12 +44,6 @@ NONCANONICAL_STARTS: List[str] = ["GTG", "TTG"]
 
 DEFAULT_START_CODONS: List[str] = ["ATG"]
 DEFAULT_MIN_LENGTH:   int       = 30
-
-CSV_FIELDNAMES: List[str] = [
-    "orf_id", "strand", "start_codon",
-    "frame", "start", "end", "length_nt",
-]
-
 
 def _codon_category(codon: str) -> str:
     """
