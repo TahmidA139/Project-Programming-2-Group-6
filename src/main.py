@@ -188,8 +188,8 @@ class ORCAPipeline:
                 output_path=os.path.join(self.outdir, "orf_map.png"),
             )
             plot_codon_usage_comparison(
-                seq1=seq1, acc1=acc1,
-                seq2=seq2, acc2=acc2,
+                flat1=flat1, acc1=acc1, seq1=seq1,
+                flat2=flat2, acc2=acc2, seq2=seq2,
                 output_path=os.path.join(self.outdir, "codon_usage_comparison.png"),
             )
         else:
