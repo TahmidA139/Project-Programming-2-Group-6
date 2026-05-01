@@ -45,7 +45,7 @@ NONCANONICAL_STARTS: List[str] = ["GTG", "TTG"]
 DEFAULT_START_CODONS: List[str] = ["ATG"]
 DEFAULT_MIN_LENGTH:   int       = 30
 
-def _codon_category(codon: str) -> str:
+def codon_category(codon: str) -> str:
     """
     Return the classification key for a start codon.
 
@@ -78,7 +78,7 @@ def _codon_category(codon: str) -> str:
     )
 
 
-def _scan_all_frames(
+def scan_all_frames(
     dna_sequence: str,
     start_codons: List[str],
     min_length:   int,
@@ -109,7 +109,7 @@ def _scan_all_frames(
         (0-based) reference frame for both strands.
     """
     seq_len  = len(dna_sequence)
-    rev_comp = _reverse_complement(dna_sequence)
+    rev_comp = reverse_complement(dna_sequence)
     orfs: List[Dict[str, Any]] = []
     for frame in range(3):
         orfs.extend(scan_frame(dna_sequence, frame, start_codons, min_length, "+", seq_len))
@@ -117,7 +117,7 @@ def _scan_all_frames(
     return orfs
 
 
-def _make_nested_dict(start_codons: List[str]) -> Dict[str, Any]:
+def make_nested_dict(start_codons: List[str]) -> Dict[str, Any]:
     """
     Return an empty nested output dictionary with the correct structure.
 
@@ -150,7 +150,7 @@ def _make_nested_dict(start_codons: List[str]) -> Dict[str, Any]:
     }
 
 
-def _label_and_insert(
+def label_and_insert(
     orf:         Dict[str, Any],
     nested_dict: Dict[str, Any],
     counts:      Dict[str, int],
@@ -184,7 +184,7 @@ def _label_and_insert(
         The label assigned to this ORF (e.g. ``"ORF3"`` or ``"GTG_ORF1"``).
     """
     sc       = orf["start_codon"]
-    category = _codon_category(sc)
+    category = codon_category(sc)
 
     if category == "canonical":
         counts["canonical"] = counts.get("canonical", 0) + 1
@@ -198,7 +198,7 @@ def _label_and_insert(
     return label
 
 
-def _build_outputs(
+def build_outputs(
     all_orfs:     List[Dict[str, Any]],
     start_codons: List[str],
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
@@ -228,12 +228,12 @@ def _build_outputs(
         - **flat_list** (``List[Dict[str, Any]]``): One dict per ORF, each
           containing all fields from the raw record plus ``"orf_id"``.
     """
-    nested_dict = _make_nested_dict(start_codons)
+    nested_dict = make_nested_dict(start_codons)
     flat_list:  List[Dict[str, Any]] = []
     counts:     Dict[str, int]       = {}
 
     for orf in all_orfs:
-        label             = _label_and_insert(orf, nested_dict, counts)
+        label             = label_and_insert(orf, nested_dict, counts)
         flat_record       = dict(orf)
         flat_record["orf_id"] = label
         flat_list.append(flat_record)
@@ -301,5 +301,5 @@ def find_orfs(
         )
 
     dna_sequence = dna_sequence.upper().strip()
-    all_orfs     = _scan_all_frames(dna_sequence, start_codons, min_length)
-    return _build_outputs(all_orfs, start_codons)
+    all_orfs     = scan_all_frames(dna_sequence, start_codons, min_length)
+    return build_outputs(all_orfs, start_codons)
