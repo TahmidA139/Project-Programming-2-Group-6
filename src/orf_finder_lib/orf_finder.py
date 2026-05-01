@@ -31,11 +31,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.orf_finder_lib.frame_scanner import (
-    _reverse_complement,
-    scan_frame,
-    STOP_CODONS,
-)
+from src.orf_finder_lib.frame_scanner import (reverse_complement, scan_frame,STOP_CODONS,)
 
 ALL_START_CODONS:    List[str] = ["ATG", "GTG", "TTG"]
 # STOP_CODONS is the single source of truth in frame_scanner.py; imported above.
