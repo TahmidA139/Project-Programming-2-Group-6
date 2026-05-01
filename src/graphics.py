@@ -156,11 +156,11 @@ def configure_heatmap_axes(
     acc2: str,
 ) -> None:
     """Apply codon ticks, amino-acid group labels, and sequence divider to the RSCU heatmap axes."""
-    ax.axhline(y=0.5, color="black", linewidth=4.0, zorder=4)
+    ax.axhline(y=0.5, color="black", linewidth=6.0, zorder=4)
     for col_start, _, _ in aa_boundaries:
         if col_start > 0:
             # Wide white gap to visually separate amino acid groups
-            ax.axvline(x=col_start - 0.5, color="white", linewidth=8, zorder=3)
+            ax.axvline(x=col_start - 0.5, color="white", linewidth=9, zorder=3)
             # Thick black line on the heatmap panel
             ax.axvline(x=col_start - 0.5, color="black", linewidth=3.5, zorder=5)
             # Thick black line extended into the amino-acid label panel above
