@@ -20,6 +20,10 @@ def gc_content(sequence: str) -> float:
     Return the GC content of *sequence* as a percentage. Counts uppercase G and C only;
     call ``sequence.upper()`` beforehand if the input may contain lowercase bases.
 
+    When called from ``calculate_orf_stats``, *sequence* is the coding region
+    with the stop codon already stripped, so the percentage reflects only the
+    translated portion of the ORF.
+
     Parameters
     ----------
     sequence : str
@@ -38,19 +42,23 @@ def gc_content(sequence: str) -> float:
 
 def protein_length(sequence: str) -> int:
     """
-    Return the number of complete codons encoded by *sequence*.
-    Incomplete trailing nucleotides (``len(sequence) % 3 != 0``) are
-    silently discarded.
+    Return the number of translated codons (amino acids) in *sequence*.
+
+    Expects the *coding* region only — i.e. the stop codon must be stripped
+    by the caller before passing the sequence here (see ``calculate_orf_stats``).
+    Incomplete trailing nucleotides (``len(sequence) % 3 != 0``) are silently
+    discarded.
 
     Parameters
     ----------
     sequence : str
-        Nucleotide sequence.  May be empty.
+        Coding nucleotide sequence with the stop codon already removed.
+        May be empty.
 
     Returns
     -------
     int
-        Number of complete codons, or ``0`` for sequences shorter than 3 nt.
+        Number of translated codons, or ``0`` for sequences shorter than 3 nt.
     """
     return len(sequence) // 3
 
@@ -88,9 +96,14 @@ def calculate_orf_stats(
     Enrich each ORF dict in *flat_list* with sequence-derived statistics.
 
     Adds three keys to every record in-place:
-        ``sequence``       -- nucleotide sequence, 5'->3', strand-corrected.
-        ``gc_content``     -- GC percentage of that sequence.
-        ``protein_length`` -- number of complete codons.
+        ``sequence``       -- full nucleotide sequence, 5'->3', strand-corrected,
+                             including the stop codon (start codon to stop codon
+                             inclusive).  Retained in full so coordinate checks
+                             and repeated-ORF comparisons stay consistent.
+        ``gc_content``     -- GC percentage of the *coding* region only
+                             (stop codon excluded).
+        ``protein_length`` -- number of translated codons in the *coding* region
+                             (stop codon excluded).
 
     Parameters
     ----------
@@ -107,8 +120,9 @@ def calculate_orf_stats(
     for orf in flat_list:
         seq: str = extract_orf_sequence(orf, dna_sequence)
         orf["sequence"] = seq
-        orf["gc_content"] = gc_content(seq)
-        orf["protein_length"] = protein_length(seq)
+        coding_seq: str = seq[:-3]          # strip stop codon before computing stats
+        orf["gc_content"] = gc_content(coding_seq)
+        orf["protein_length"] = protein_length(coding_seq)
     return flat_list
 
 
