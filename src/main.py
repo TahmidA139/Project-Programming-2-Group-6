@@ -201,7 +201,8 @@ class ORCAPipeline:
         if repeats1:
             print(f"[INFO] Repeated ORF sequences in {acc1}: {len(repeats1)}")
 
-        write_gff3(flat1, acc1, len(seq1), outdir=self.outdir)
+        write_gff3(flat1, acc1, len(seq1), outdir=self.outdir,
+                   start_codons=self.start_codons, min_length=self.min_length)
 
         if comparative:
             calculate_orf_stats(flat2, seq2)
@@ -209,7 +210,8 @@ class ORCAPipeline:
             if repeats2:
                 print(f"[INFO] Repeated ORF sequences in {acc2}: {len(repeats2)}")
 
-            write_gff3(flat2, acc2, len(seq2), outdir=self.outdir)
+            write_gff3(flat2, acc2, len(seq2), outdir=self.outdir,
+                       start_codons=self.start_codons, min_length=self.min_length)
 
             write_orf_comparison_report(
                 flat1=flat1, flat2=flat2,
