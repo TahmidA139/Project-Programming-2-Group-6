@@ -131,7 +131,7 @@ Comparative mode — two local FASTA files:
 ```bash
 python -m src.main \
     --fasta  example_input_files/OR2B6_sequence.fasta \
-    --fasta2 example_input_files/sequence2.fasta \
+    --fasta2 example_input_files/NC_003098_2mb_sequence.fasta \
     --email  you@example.com
 ```
 
