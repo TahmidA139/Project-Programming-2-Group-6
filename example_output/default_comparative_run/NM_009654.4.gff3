@@ -1,0 +1,34 @@
+##gff-version 3
+##sequence-region NM_009654.4 1 2076
+##source-version ORCA
+##date 2026-05-01
+##parameter start_codons=ATG
+##parameter min_length=30
+NM_009654.4	ORCA	ORF	172	204	.	+	0	ID=ORF1;start_codon=ATG;length_nt=33;gc_content=40.00;protein_length=10
+NM_009654.4	ORCA	ORF	304	633	.	+	0	ID=ORF2;start_codon=ATG;length_nt=330;gc_content=45.87;protein_length=109
+NM_009654.4	ORCA	ORF	811	852	.	+	0	ID=ORF3;start_codon=ATG;length_nt=42;gc_content=43.59;protein_length=13
+NM_009654.4	ORCA	ORF	877	990	.	+	0	ID=ORF4;start_codon=ATG;length_nt=114;gc_content=51.35;protein_length=37
+NM_009654.4	ORCA	ORF	1021	1179	.	+	0	ID=ORF5;start_codon=ATG;length_nt=159;gc_content=48.08;protein_length=52
+NM_009654.4	ORCA	ORF	1195	1281	.	+	0	ID=ORF6;start_codon=ATG;length_nt=87;gc_content=53.57;protein_length=28
+NM_009654.4	ORCA	ORF	1552	1611	.	+	0	ID=ORF7;start_codon=ATG;length_nt=60;gc_content=54.39;protein_length=19
+NM_009654.4	ORCA	ORF	1618	1737	.	+	0	ID=ORF8;start_codon=ATG;length_nt=120;gc_content=44.44;protein_length=39
+NM_009654.4	ORCA	ORF	1783	1887	.	+	0	ID=ORF9;start_codon=ATG;length_nt=105;gc_content=50.00;protein_length=34
+NM_009654.4	ORCA	ORF	1777	1809	.	-	0	ID=ORF10;start_codon=ATG;length_nt=33;gc_content=43.33;protein_length=10
+NM_009654.4	ORCA	ORF	1555	1626	.	-	0	ID=ORF11;start_codon=ATG;length_nt=72;gc_content=52.17;protein_length=23
+NM_009654.4	ORCA	ORF	1186	1242	.	-	0	ID=ORF12;start_codon=ATG;length_nt=57;gc_content=50.00;protein_length=18
+NM_009654.4	ORCA	ORF	769	804	.	-	0	ID=ORF13;start_codon=ATG;length_nt=36;gc_content=54.55;protein_length=11
+NM_009654.4	ORCA	ORF	538	714	.	-	0	ID=ORF14;start_codon=ATG;length_nt=177;gc_content=46.55;protein_length=58
+NM_009654.4	ORCA	ORF	193	480	.	-	0	ID=ORF15;start_codon=ATG;length_nt=288;gc_content=46.67;protein_length=95
+NM_009654.4	ORCA	ORF	776	817	.	+	0	ID=ORF16;start_codon=ATG;length_nt=42;gc_content=56.41;protein_length=13
+NM_009654.4	ORCA	ORF	1871	1975	.	+	0	ID=ORF17;start_codon=ATG;length_nt=105;gc_content=44.12;protein_length=34
+NM_009654.4	ORCA	ORF	1920	1958	.	-	0	ID=ORF18;start_codon=ATG;length_nt=39;gc_content=41.67;protein_length=12
+NM_009654.4	ORCA	ORF	1425	1553	.	-	0	ID=ORF19;start_codon=ATG;length_nt=129;gc_content=50.79;protein_length=42
+NM_009654.4	ORCA	ORF	711	1022	.	-	0	ID=ORF20;start_codon=ATG;length_nt=312;gc_content=49.51;protein_length=103
+NM_009654.4	ORCA	ORF	261	575	.	-	0	ID=ORF21;start_codon=ATG;length_nt=315;gc_content=47.44;protein_length=104
+NM_009654.4	ORCA	ORF	51	191	.	-	0	ID=ORF22;start_codon=ATG;length_nt=141;gc_content=50.72;protein_length=46
+NM_009654.4	ORCA	ORF	66	1892	.	+	0	ID=ORF23;start_codon=ATG;length_nt=1827;gc_content=48.57;protein_length=608
+NM_009654.4	ORCA	ORF	1490	1780	.	-	0	ID=ORF24;start_codon=ATG;length_nt=291;gc_content=49.65;protein_length=96
+NM_009654.4	ORCA	ORF	1319	1357	.	-	0	ID=ORF25;start_codon=ATG;length_nt=39;gc_content=41.67;protein_length=12
+NM_009654.4	ORCA	ORF	722	1051	.	-	0	ID=ORF26;start_codon=ATG;length_nt=330;gc_content=50.15;protein_length=109
+NM_009654.4	ORCA	ORF	386	505	.	-	0	ID=ORF27;start_codon=ATG;length_nt=120;gc_content=50.43;protein_length=39
+NM_009654.4	ORCA	ORF	335	367	.	-	0	ID=ORF28;start_codon=ATG;length_nt=33;gc_content=40.00;protein_length=10
