@@ -36,26 +36,52 @@ With the environment activated, run the pipeline from the project's root directo
 
 ```bash
 python -m src.main \
-    --accession NM_012367.1 \
-    --email your@email.com
+    --accession <ACCESSION_NUMBER> \
+    --email     <YOUR_EMAIL>
 ```
 
 **Single-sequence mode** (local FASTA file):
 
 ```bash
 python -m src.main \
-    --fasta example_input_files/OR2B6_sequence.fasta \
-    --email your@email.com
+    --fasta <PATH_TO_FASTA> \
+    --email <YOUR_EMAIL>
 ```
 
 **Comparative mode** (two local FASTA files):
 
 ```bash
 python -m src.main \
-    --fasta  example_input_files/OR2B6_sequence.fasta \
-    --fasta2 example_input_files/IUPAC_ambiguity_test.fasta \
-    --email  your@email.com
+    --fasta  <PATH_TO_FASTA_1> \
+    --fasta2 <PATH_TO_FASTA_2> \
+    --email  <YOUR_EMAIL>
 ```
+
+**Comparative mode** (two NCBI accessions):
+```bash
+python -m src.main \
+    --accession  <ACCESSION_NUMBER_1> \
+    --accession2 <ACCESSION_NUMBER_2> \
+    --email      <YOUR_EMAIL>
+```
+
+**Comparative mode** (one NCBI accession + one local FASTA file):
+```bash
+python -m src.main \
+    --accession <ACCESSION_NUMBER> \
+    --fasta2    <PATH_TO_FASTA_2> \
+    --email     <YOUR_EMAIL>
+```
+Replace each placeholder with your own values:
+
+| Placeholder | Description |
+|-------------|-------------|
+| `<ACCESSION_NUMBER>` | NCBI nucleotide accession number, e.g. `NM_012367.1` |
+| `<PATH_TO_FASTA>` | Path to a single-sequence FASTA file on your machine, e.g. `example_input_files/OR2B6_sequence.fasta` |
+| `<PATH_TO_FASTA_1>` | Path to the first FASTA file (comparative mode) |
+| `<PATH_TO_FASTA_2>` | Path to the second FASTA file (comparative mode) |
+| `<YOUR_EMAIL>` | A valid email address, e.g. `you@example.com` (required by NCBI Entrez) |
+| <N> | A number that will vary depending on your sequence and settings |
 
 ### Arguments
 
@@ -97,16 +123,16 @@ All output files are written to the `output/` directory by default. A different 
 | `output/orf_comparison_report.txt` | Human-readable side-by-side ORF statistics and codon usage for both sequences. |
 | `output/codon_usage_comparison.png` | RSCU codon-usage heatmap comparing the two sequences. |
 
-When run on `OR2B6_sequence.fasta` with default settings, the terminal output should look like this:
+When run with a single FASTA file using default settings, the terminal output should look like this:
 
 ```
-[ORCA] Processing sequence 1: (local file) example_input_files/OR2B6_sequence.fasta
-[VALIDATION] Sequence is valid — 1143 bp ready for analysis.
+[ORCA] Processing sequence 1: (local file) <PATH_TO_FASTA>
+[VALIDATION] Sequence is valid — <N> bp ready for analysis.
 
 ════════════════════════ ORF Summary — Sequence 1 ════════════════════════
-  Total ORFs found  : 14
-  Forward strand (+): 8
-  Reverse strand (-): 6
-  Canonical (ATG)   : 14
+  Total ORFs found  : <N>
+  Forward strand (+): <N>
+  Reverse strand (-): <N>
+  Canonical (ATG)   : <N>
 ────────────────────────────────────────────────────────────────────────
 ```
