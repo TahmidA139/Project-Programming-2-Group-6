@@ -18,9 +18,6 @@
 #   - src/main.py is in the src/ directory under the project root.
 # ==============================================================================
 
-
-# ---- Configuration -----------------------------------------------------------
-
 # Directory where this script lives (also the project root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -38,9 +35,6 @@ DUMMY_EMAIL="test@example.com"
 # Counter for passed and failed checks
 PASSED=0
 FAILED=0
-
-
-# ---- Helper functions --------------------------------------------------------
 
 print_header() {
     # Print a section header to make the output easier to read.
@@ -116,8 +110,6 @@ check_exit_nonzero() {
 }
 
 
-# ---- Pre-flight checks -------------------------------------------------------
-
 preflight_checks() {
     # Make sure the input files and source module exist before we try to run
     # anything. Runs silently on success; prints errors and exits on failure.
@@ -158,8 +150,6 @@ preflight_checks() {
     fi
 }
 
-
-# ---- Run the program ---------------------------------------------------------
 
 run_tests() {
     # Execute src/main.py for each test case and preserve the outputs.
@@ -229,8 +219,6 @@ run_tests() {
 }
 
 
-# ---- Verify output files -----------------------------------------------------
-
 verify_output_files() {
     # Check that every expected output file was created and is non-empty.
     #
@@ -238,7 +226,7 @@ verify_output_files() {
     # preserves word characters, dots, and hyphens (re.sub(r"[^\w.\-]", "_", ...)).
     # NM_012367.1 -> NM_012367.1.gff3   NM_001838.4 -> NM_001838.4.gff3
 
-    # ---- Test 1: single-sequence outputs --------------------------------- #
+    # Test 1: single-sequence outputs
     # In single-sequence mode the cleaned FASTA is written as
     # cleaned_sequence_1.fasta (seq_num=1, comparative=False).
     check_file_exists "${TEST_OUTDIR}/test1/cleaned_sequence_1.fasta"  "Test 1 cleaned FASTA"
@@ -246,13 +234,13 @@ verify_output_files() {
     check_file_exists "${TEST_OUTDIR}/test1/orf_map.png"               "Test 1 ORF map image"
     check_file_exists "${TEST_OUTDIR}/test1/orf_summary.txt"           "Test 1 ORF summary"
 
-    # ---- Test 2: IUPAC ambiguity — same output set as single-sequence mode #
+    # Test 2: IUPAC ambiguity (same output set as single-sequence mode) #
     check_file_exists "${TEST_OUTDIR}/test2/cleaned_sequence_1.fasta"  "Test 2 cleaned FASTA"
     check_file_exists "${TEST_OUTDIR}/test2/NM_001838.4.gff3"          "Test 2 GFF3 annotation"
     check_file_exists "${TEST_OUTDIR}/test2/orf_map.png"               "Test 2 ORF map image"
     check_file_exists "${TEST_OUTDIR}/test2/orf_summary.txt"           "Test 2 ORF summary"
 
-    # ---- Test 3: comparative mode ---------------------------------------- #
+    # Test 3: comparative mode #
     # In comparative mode each sequence gets its own cleaned FASTA (comp_
     # prefix) and its own GFF3 file. Both sequences share a single orf_map.png.
     # The comparison report and codon usage heatmap are also produced.
@@ -266,13 +254,12 @@ verify_output_files() {
 }
 
 
-# ---- Verify output content ---------------------------------------------------
+# Verify output content
 
 verify_output_content() {
     # Perform basic sanity checks on the content of the text and GFF3 outputs.
 
-    # ---- Test 1: OR2B6 (accession NM_012367.1 is read from the FASTA header) #
-
+    # Test 1: OR2B6 (accession NM_012367.1 is read from the FASTA header) #
     # GFF3 header pragma written by write_gff3(): "##sequence-region NM_012367.1 1 <len>"
     check_string_in_file "${TEST_OUTDIR}/test1/NM_012367.1.gff3" \
         "##gff-version 3" \
@@ -294,7 +281,7 @@ verify_output_content() {
         "NM_012367" \
         "Test 1 ORF summary references the OR2B6 accession."
 
-    # ---- Test 2: CCR7 with IUPAC ambiguity codes (accession NM_001838.4) --- #
+    # Test 2: CCR7 with IUPAC ambiguity codes (accession NM_001838.4) #
 
     check_string_in_file "${TEST_OUTDIR}/test2/NM_001838.4.gff3" \
         "##gff-version 3" \
@@ -316,7 +303,7 @@ verify_output_content() {
         "NM_001838" \
         "Test 2 ORF summary references the CCR7 accession."
 
-    # ---- Test 3: comparative mode ---------------------------------------- #
+    # Test 3: comparative mode 
     # Each sequence has its own GFF3; both accessions appear in the shared
     # comparison report.
 
