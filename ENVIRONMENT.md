@@ -81,7 +81,7 @@ Replace each placeholder with your own values:
 | `<PATH_TO_FASTA_1>` | Path to the first FASTA file (comparative mode) |
 | `<PATH_TO_FASTA_2>` | Path to the second FASTA file (comparative mode) |
 | `<YOUR_EMAIL>` | A valid email address, e.g. `you@example.com` (required by NCBI Entrez) |
-| <N> | A number that will vary depending on your sequence and settings |
+| `<N>` | A number that will vary depending on your sequence and settings |
 
 ### Arguments
 
