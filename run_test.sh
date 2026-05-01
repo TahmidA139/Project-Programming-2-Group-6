@@ -82,21 +82,20 @@ check_string_in_file() {
     fi
 }
 
-check_csv_rows() {
-    # Verify that a CSV file has at least a given number of data rows
-    # (excluding the header).
+check_gff3_data_rows() {
+    # Verify that a GFF3 file has at least a given number of data rows
+    # (lines that are not comments, i.e. do not start with '#').
     # Arguments:
-    #   $1  Path to the CSV file.
+    #   $1  Path to the GFF3 file.
     #   $2  Minimum number of data rows expected.
     #   $3  A short description of the check.
     local row_count
-    # 'tail -n +2' skips the header; 'wc -l' counts remaining lines
-    row_count=$(tail -n +2 "$1" 2>/dev/null | wc -l | tr -d ' ')
+    row_count=$(grep -v "^#" "$1" 2>/dev/null | grep -c ".")
     if [[ "$row_count" -ge "$2" ]]; then
-        echo "  PASS: $3 (found ${row_count} rows)."
+        echo "  PASS: $3 (found ${row_count} data rows)."
         PASSED=$((PASSED + 1))
     else
-        echo "  FAIL: $3 (expected at least $2 rows, found ${row_count})."
+        echo "  FAIL: $3 (expected at least $2 data rows, found ${row_count})."
         FAILED=$((FAILED + 1))
     fi
 }
@@ -201,7 +200,8 @@ run_tests() {
     # Test 3: Comparative mode — OR2B6 vs CCR7
     # Runs the full comparative pipeline on two local FASTA files and checks
     # that all comparative output files are produced: two per-sequence cleaned
-    # FASTAs, a combined ORF CSV, the ORF map, and the comparison report.
+    # FASTAs, two per-sequence GFF3 files, the combined ORF map, the
+    # comparison report, and the codon usage comparison heatmap.
     # ---------------------------------------------------------------------- #
     # stdout and stderr from this run are saved as reference files so readers
     # can see what a correct comparative run looks like without running it.
@@ -233,48 +233,58 @@ run_tests() {
 
 verify_output_files() {
     # Check that every expected output file was created and is non-empty.
+    #
+    # GFF3 filenames are derived from the accession via safe_filename(), which
+    # preserves word characters, dots, and hyphens (re.sub(r"[^\w.\-]", "_", ...)).
+    # NM_012367.1 -> NM_012367.1.gff3   NM_001838.4 -> NM_001838.4.gff3
 
     # ---- Test 1: single-sequence outputs --------------------------------- #
     # In single-sequence mode the cleaned FASTA is written as
     # cleaned_sequence_1.fasta (seq_num=1, comparative=False).
-    check_file_exists "${TEST_OUTDIR}/test1/orfs.csv"                  "Test 1 ORF CSV"
     check_file_exists "${TEST_OUTDIR}/test1/cleaned_sequence_1.fasta"  "Test 1 cleaned FASTA"
+    check_file_exists "${TEST_OUTDIR}/test1/NM_012367.1.gff3"          "Test 1 GFF3 annotation"
     check_file_exists "${TEST_OUTDIR}/test1/orf_map.png"               "Test 1 ORF map image"
     check_file_exists "${TEST_OUTDIR}/test1/orf_summary.txt"           "Test 1 ORF summary"
 
     # ---- Test 2: IUPAC ambiguity — same output set as single-sequence mode #
-    check_file_exists "${TEST_OUTDIR}/test2/orfs.csv"                  "Test 2 ORF CSV"
     check_file_exists "${TEST_OUTDIR}/test2/cleaned_sequence_1.fasta"  "Test 2 cleaned FASTA"
+    check_file_exists "${TEST_OUTDIR}/test2/NM_001838.4.gff3"          "Test 2 GFF3 annotation"
     check_file_exists "${TEST_OUTDIR}/test2/orf_map.png"               "Test 2 ORF map image"
     check_file_exists "${TEST_OUTDIR}/test2/orf_summary.txt"           "Test 2 ORF summary"
 
     # ---- Test 3: comparative mode ---------------------------------------- #
-    # In comparative mode each sequence gets its own cleaned FASTA prefixed
-    # with "comp_" and numbered by position (seq_num 1 and 2).
-    # Both sequences share a single combined orfs.csv and a single orf_map.png.
-    # The comparison report is written as orf_comparison_report.txt.
-    check_file_exists "${TEST_OUTDIR}/test3/orfs.csv"                       "Test 3 combined ORF CSV"
+    # In comparative mode each sequence gets its own cleaned FASTA (comp_
+    # prefix) and its own GFF3 file. Both sequences share a single orf_map.png.
+    # The comparison report and codon usage heatmap are also produced.
     check_file_exists "${TEST_OUTDIR}/test3/comp_cleaned_sequence_1.fasta"  "Test 3 sequence-1 cleaned FASTA"
     check_file_exists "${TEST_OUTDIR}/test3/comp_cleaned_sequence_2.fasta"  "Test 3 sequence-2 cleaned FASTA"
+    check_file_exists "${TEST_OUTDIR}/test3/NM_012367.1.gff3"               "Test 3 sequence-1 GFF3 annotation"
+    check_file_exists "${TEST_OUTDIR}/test3/NM_001838.4.gff3"               "Test 3 sequence-2 GFF3 annotation"
     check_file_exists "${TEST_OUTDIR}/test3/orf_map.png"                    "Test 3 comparative ORF map"
     check_file_exists "${TEST_OUTDIR}/test3/orf_comparison_report.txt"      "Test 3 comparison report"
+    check_file_exists "${TEST_OUTDIR}/test3/codon_usage_comparison.png"     "Test 3 codon usage heatmap"
 }
 
 
 # ---- Verify output content ---------------------------------------------------
 
 verify_output_content() {
-    # Perform basic sanity checks on the content of the text and CSV outputs.
+    # Perform basic sanity checks on the content of the text and GFF3 outputs.
 
     # ---- Test 1: OR2B6 (accession NM_012367.1 is read from the FASTA header) #
 
-    check_string_in_file "${TEST_OUTDIR}/test1/orfs.csv" \
-        "NM_012367" \
-        "Test 1 ORF CSV references the OR2B6 accession (NM_012367.1)."
+    # GFF3 header pragma written by write_gff3(): "##sequence-region NM_012367.1 1 <len>"
+    check_string_in_file "${TEST_OUTDIR}/test1/NM_012367.1.gff3" \
+        "##gff-version 3" \
+        "Test 1 GFF3 contains a valid GFF3 version pragma."
 
-    check_csv_rows "${TEST_OUTDIR}/test1/orfs.csv" \
+    check_string_in_file "${TEST_OUTDIR}/test1/NM_012367.1.gff3" \
+        "NM_012367" \
+        "Test 1 GFF3 references the OR2B6 accession (NM_012367.1)."
+
+    check_gff3_data_rows "${TEST_OUTDIR}/test1/NM_012367.1.gff3" \
         1 \
-        "Test 1 ORF CSV contains at least 1 ORF."
+        "Test 1 GFF3 contains at least 1 ORF annotation."
 
     check_string_in_file "${TEST_OUTDIR}/test1/cleaned_sequence_1.fasta" \
         "NM_012367" \
@@ -286,13 +296,17 @@ verify_output_content() {
 
     # ---- Test 2: CCR7 with IUPAC ambiguity codes (accession NM_001838.4) --- #
 
-    check_string_in_file "${TEST_OUTDIR}/test2/orfs.csv" \
-        "NM_001838" \
-        "Test 2 ORF CSV references the CCR7 accession (NM_001838.4)."
+    check_string_in_file "${TEST_OUTDIR}/test2/NM_001838.4.gff3" \
+        "##gff-version 3" \
+        "Test 2 GFF3 contains a valid GFF3 version pragma."
 
-    check_csv_rows "${TEST_OUTDIR}/test2/orfs.csv" \
+    check_string_in_file "${TEST_OUTDIR}/test2/NM_001838.4.gff3" \
+        "NM_001838" \
+        "Test 2 GFF3 references the CCR7 accession (NM_001838.4)."
+
+    check_gff3_data_rows "${TEST_OUTDIR}/test2/NM_001838.4.gff3" \
         1 \
-        "Test 2 ORF CSV contains at least 1 ORF."
+        "Test 2 GFF3 contains at least 1 ORF annotation."
 
     check_string_in_file "${TEST_OUTDIR}/test2/cleaned_sequence_1.fasta" \
         "NM_001838" \
@@ -303,20 +317,24 @@ verify_output_content() {
         "Test 2 ORF summary references the CCR7 accession."
 
     # ---- Test 3: comparative mode ---------------------------------------- #
-    # Both accessions appear in the single combined orfs.csv and in their
-    # respective cleaned FASTA files.
+    # Each sequence has its own GFF3; both accessions appear in the shared
+    # comparison report.
 
-    check_string_in_file "${TEST_OUTDIR}/test3/orfs.csv" \
+    check_string_in_file "${TEST_OUTDIR}/test3/NM_012367.1.gff3" \
         "NM_012367" \
-        "Test 3 combined ORF CSV contains the OR2B6 accession (NM_012367.1)."
+        "Test 3 sequence-1 GFF3 contains the OR2B6 accession (NM_012367.1)."
 
-    check_string_in_file "${TEST_OUTDIR}/test3/orfs.csv" \
+    check_gff3_data_rows "${TEST_OUTDIR}/test3/NM_012367.1.gff3" \
+        1 \
+        "Test 3 sequence-1 GFF3 contains at least 1 ORF annotation."
+
+    check_string_in_file "${TEST_OUTDIR}/test3/NM_001838.4.gff3" \
         "NM_001838" \
-        "Test 3 combined ORF CSV contains the CCR7 accession (NM_001838.4)."
+        "Test 3 sequence-2 GFF3 contains the CCR7 accession (NM_001838.4)."
 
-    check_csv_rows "${TEST_OUTDIR}/test3/orfs.csv" \
-        2 \
-        "Test 3 combined ORF CSV contains ORFs from both sequences."
+    check_gff3_data_rows "${TEST_OUTDIR}/test3/NM_001838.4.gff3" \
+        1 \
+        "Test 3 sequence-2 GFF3 contains at least 1 ORF annotation."
 
     check_string_in_file "${TEST_OUTDIR}/test3/comp_cleaned_sequence_1.fasta" \
         "NM_012367" \
@@ -336,8 +354,6 @@ verify_output_content() {
 }
 
 
-# ---- Summary -----------------------------------------------------------------
-
 print_summary() {
     # Print a final tally of passed and failed checks.
 
@@ -355,8 +371,6 @@ print_summary() {
     fi
 }
 
-
-# ---- Main entry point --------------------------------------------------------
 
 main() {
     # Orchestrate all test steps in order.
