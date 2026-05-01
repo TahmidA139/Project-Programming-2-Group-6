@@ -156,10 +156,7 @@ def configure_heatmap_axes(
     acc2: str,
 ) -> None:
     """Apply codon ticks, amino-acid group labels, and sequence divider to the RSCU heatmap axes."""
-    ax.axhline(y=0.5, color="black", linewidth=1.0, zorder=4)
-    for col_start, _, _ in aa_boundaries:
-        if col_start > 0:
-            ax.axvline(x=col_start - 0.5, color="black", linewidth=2.0, zorder=5)
+    ax.axhline(y=0.5, color="black", linewidth=1.0, zorder=10)
 
     ax.set_yticks([0, 1])
     ax.set_yticklabels([acc1, acc2], fontsize=9, fontweight="bold")
@@ -174,16 +171,6 @@ def configure_heatmap_axes(
     ax_top.set_xticks(aa_mid)
     ax_top.set_xticklabels(aa_names, fontsize=8, fontweight="bold", rotation=45, ha="left")
     ax_top.tick_params(top=False, pad=2)
-
-    # Extend thick black dividers into ax_top, acting as barriers between AA labels.
-    # clip_on=False lets the lines draw outside the ax_top data area.
-    for col_start, _, _ in aa_boundaries:
-        if col_start > 0:
-            ax_top.axvline(
-                x=col_start - 0.5,
-                color="black", linewidth=2.0, zorder=5,
-                clip_on=False,
-            )
 
 
 def add_rscu_colorbar(fig: Figure, im: Any) -> None:
@@ -442,6 +429,22 @@ def plot_codon_usage_comparison(
     configure_heatmap_axes(ax, ax_top, codon_list, aa_boundaries, acc1, acc2)
     add_rscu_colorbar(fig, im)
 
+    # Draw thick black amino-acid dividers AFTER imshow so they sit on top.
+    # We use ax.transData for the x position and ax.transAxes for y so the
+    # lines can extend from the bottom of the heatmap up through ax_top labels.
+    _, aa_boundaries_local = build_codon_order()
+    for col_start, _, _ in aa_boundaries_local:
+        if col_start > 0:
+            x = col_start - 0.5
+            # Line through the heatmap (data coords x, axes-fraction y)
+            from matplotlib.transforms import blended_transform_factory as btf
+            trans = btf(ax.transData, ax.transAxes)
+            ax.plot(
+                [x, x], [-0.15, 1.35],   # extend slightly below and above the heatmap
+                color="black", linewidth=2.5, zorder=20,
+                transform=trans, clip_on=False,
+            )
+
     ax.set_title(
         f"Codon Usage Bias  —  {acc1}  vs  {acc2}  (RSCU)",
         fontsize=10, fontweight="bold", pad=30,
@@ -449,4 +452,3 @@ def plot_codon_usage_comparison(
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
     log.info("Codon usage comparison saved to: %s", output_path)
-
