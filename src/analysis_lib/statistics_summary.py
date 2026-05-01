@@ -218,9 +218,6 @@ def write_comparative_summary(
     fh.write(f"  {f'Unique to {acc2}':<28} {len(seqs2 - seqs1):>{col}}\n")
 
 
-# ---------------------------------------------------------------------------
-# Comparative report
-# ---------------------------------------------------------------------------
 
 def collect_codons(orfs: List[Dict[str, Any]]) -> Dict[str, int]:
     """Return aggregate codon counts across all ORFs in *orfs*."""
@@ -309,7 +306,7 @@ def write_orf_comparison_report(
 _GFF3_SOURCE = "ORCA"
 
 
-def _safe_filename(accession: str) -> str:
+def safe_filename(accession: str) -> str:
     """Replace characters that are unsafe in filenames with underscores.
 
     NCBI accession numbers (e.g. NM_001838.4) are preserved as-is.
@@ -379,7 +376,7 @@ def write_gff3(
         start_codons = ["ATG"]
 
     os.makedirs(outdir, exist_ok=True)
-    filepath = os.path.join(outdir, f"{_safe_filename(accession)}.gff3")
+    filepath = os.path.join(outdir, f"{safe_filename(accession)}.gff3")
 
     with open(filepath, "w") as fh:
         fh.write("##gff-version 3\n")
