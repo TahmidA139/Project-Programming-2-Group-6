@@ -75,7 +75,8 @@ def codon_usage(sequence: str) -> Dict[str, int]:
     counts: Dict[str, int] = {}
     for i in range(0, len(sequence) - 2, 3):
         codon: str = sequence[i : i + 3]
-        counts[codon] = counts.get(codon, 0) + 1
+        if all(base in "ACGT" for base in codon):   # skip codons with N
+            counts[codon] = counts.get(codon, 0) + 1
     return counts
 
 
