@@ -1,0 +1,124 @@
+══════════════════════════ ORF SUMMARY REPORT ══════════════════════════
+  Run Parameters
+  ──────────────
+  Generated    : 2026-05-01 16:40:20
+  Sequence 1   : NM_000477.7
+  Start codons : ATG
+  Min length   : 30 nt
+
+═════════════════════════════ NM_000477.7 ══════════════════════════════
+
+  Dataset Statistics
+  ──────────────────
+  Total ORFs         : 30
+  Average GC Content : 41.50%
+
+  Longest ORF
+  ───────────
+  ID         : ORF25
+  Length     : 1830 nt
+  Strand     : +
+  Frame      : 2
+  GC Content : 43.02%
+
+  Per-ORF Statistics
+  ──────────────────
+  #    ID              Length     GC%  Prot_len  Strand  Frame
+  ────────────────────────────────────────────────────────────────────────
+  0    ORF1                72   40.58        23       +      0
+  1    ORF2               183   42.22        60       +      0
+  2    ORF3               231   45.18        76       +      0
+  3    ORF4                87   44.05        28       +      0
+  4    ORF5                33   46.67        10       +      0
+  5    ORF6               102   43.43        33       +      0
+  6    ORF7                63   38.33        20       +      0
+  7    ORF8               120   39.32        39       +      0
+  8    ORF9                48   31.11        15       +      0
+  9    ORF10              117   36.84        38       -      0
+  10   ORF11               48   28.89        15       -      0
+  11   ORF12               66   41.27        21       -      0
+  12   ORF13               33   40.00        10       -      0
+  13   ORF14               33   56.67        10       -      0
+  14   ORF15              102   39.39        33       -      0
+  15   ORF16               42   48.72        13       -      0
+  16   ORF17              165   45.68        54       -      0
+  17   ORF18              213   43.81        70       -      0
+  18   ORF19               42   56.41        13       +      1
+  19   ORF20               60   50.88        19       +      1
+  20   ORF21               33   23.33        10       -      1
+  21   ORF22               54   35.29        17       -      1
+  22   ORF23               33   53.33        10       -      1
+  23   ORF24               69   40.91        22       -      1
+  24   ORF25             1830   43.02       609       +      2
+  25   ORF26               72   42.03        23       +      2
+  26   ORF27               30   14.81         9       -      2
+  27   ORF28               72   47.83        23       -      2
+  28   ORF29              345   44.44       114       -      2
+  29   ORF30              345   40.64       114       -      2
+
+  Aggregate Codon Usage
+  ─────────────────────
+  AAA : 74
+  AAC : 25
+  AAG : 47
+  AAT : 30
+  ACA : 30
+  ACC : 16
+  ACG : 6
+  ACT : 19
+  AGA : 33
+  AGC : 28
+  AGG : 18
+  AGT : 20
+  ATA : 15
+  ATC : 27
+  ATG : 58
+  ATT : 31
+  CAA : 39
+  CAC : 26
+  CAG : 34
+  CAT : 41
+  CCA : 28
+  CCC : 11
+  CCG : 5
+  CCT : 24
+  CGA : 8
+  CGC : 1
+  CGG : 6
+  CGT : 5
+  CTA : 8
+  CTC : 20
+  CTG : 39
+  CTT : 45
+  GAA : 58
+  GAC : 18
+  GAG : 39
+  GAT : 32
+  GCA : 38
+  GCC : 22
+  GCG : 3
+  GCT : 36
+  GGA : 13
+  GGC : 11
+  GGG : 9
+  GGT : 17
+  GTA : 11
+  GTC : 13
+  GTG : 32
+  GTT : 23
+  TAA : 9
+  TAC : 10
+  TAG : 7
+  TAT : 22
+  TCA : 22
+  TCC : 18
+  TCG : 12
+  TCT : 21
+  TGA : 14
+  TGC : 41
+  TGG : 21
+  TGT : 36
+  TTA : 22
+  TTC : 38
+  TTG : 33
+  TTT : 63
