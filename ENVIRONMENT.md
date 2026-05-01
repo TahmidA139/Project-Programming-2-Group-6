@@ -66,22 +66,22 @@ python -m src.main \
 | `--accession2` | No | NCBI accession number for sequence 2. Enables comparative mode. |
 | `--fasta2` | No | Path to a local FASTA file for sequence 2. Enables comparative mode. Cannot be used with `--accession2`. |
 | `--email` | Yes | Email address required by NCBI Entrez. Not used when loading from local files, but must still be supplied to avoid an interactive prompt. |
-| `--min-length` | No | Minimum ORF length in nucleotides (default: 30). |
+| `--min-length` | No | Minimum ORF length in nucleotides (default: 30). Must be at least 3. |
 | `--start-codons` | No | One or more start codons to search for (default: `ATG`). Non-canonical alternatives: `GTG`, `TTG`. |
-| `--output` | No | Path for the primary ORF output CSV (default: `output/orfs.csv`). |
+| `--outdir` | No | Directory for all output files (default: `output/`). Created automatically if it does not exist. |
 
 **Note:** exactly one of `--accession` or `--fasta` must be provided for sequence 1.
 
 ## Expected output
 
-All output files are written to the `output/` directory in the project root.
+All output files are written to the `output/` directory by default. A different directory can be specified with `--outdir`.
 
 ### Single-sequence mode
 
 | File | Description |
 |------|-------------|
-| `output/orfs.csv` | One row per ORF: strand, frame, start, end, length, start codon, and GC content. |
-| `output/cleaned_sequence.fasta` | The input sequence after validation and cleaning. |
+| `output/cleaned_sequence_1.fasta` | The input sequence after validation and cleaning. |
+| `output/<accession>.gff3` | ORF annotations in GFF3 format (filename derived from the accession, e.g. `NM_012367.1.gff3`). |
 | `output/orf_map.png` | ORF map showing all ORFs across all six reading frames. |
 | `output/orf_summary.txt` | Human-readable summary of ORF statistics. |
 
@@ -89,18 +89,24 @@ All output files are written to the `output/` directory in the project root.
 
 | File | Description |
 |------|-------------|
-| `output/orfs_seq2.csv` | ORF table for sequence 2. |
-| `output/cleaned_sequences.fasta` | Both cleaned sequences combined in a single FASTA file. |
+| `output/comp_cleaned_sequence_1.fasta` | Cleaned sequence 1. |
+| `output/comp_cleaned_sequence_2.fasta` | Cleaned sequence 2. |
+| `output/<accession1>.gff3` | ORF annotations for sequence 1 in GFF3 format. |
+| `output/<accession2>.gff3` | ORF annotations for sequence 2 in GFF3 format. |
 | `output/orf_map.png` | Side-by-side comparative ORF map for both sequences. |
+| `output/orf_comparison_report.txt` | Human-readable side-by-side ORF statistics and codon usage for both sequences. |
 | `output/codon_usage_comparison.png` | RSCU codon-usage heatmap comparing the two sequences. |
-| `output/orf_summary_seq2.txt` | ORF statistics summary for sequence 2. |
 
 When run on `OR2B6_sequence.fasta` with default settings, the terminal output should look like this:
 
 ```
 [ORCA] Processing sequence 1: (local file) example_input_files/OR2B6_sequence.fasta
+[VALIDATION] Sequence is valid — 1143 bp ready for analysis.
 
---- ORF Summary: NM_012367.1 ---
-Total ORFs found: ...
-  [INFO] ORF map saved to: output/orf_map.png
+════════════════════════ ORF Summary — Sequence 1 ════════════════════════
+  Total ORFs found  : 14
+  Forward strand (+): 8
+  Reverse strand (-): 6
+  Canonical (ATG)   : 14
+────────────────────────────────────────────────────────────────────────
 ```
