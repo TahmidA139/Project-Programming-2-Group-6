@@ -226,23 +226,42 @@ The report is divided into three sections:
 ```
 ORCA/
 ├── README.md
+├── ENVIRONMENT.md
 ├── LICENSE
 ├── environment.yml
+├── run_test.sh
+│
+├── example_input_files/
+│   ├── homo_sapiens_albumin.fasta
+│   ├── IUPAC_ambiguity_test.fasta
+│   ├── multiple_sequence_file.fasta
+│   ├── mus_musculus_albumin.fasta
+│   └── OR2B6_sequence.fasta
+│
+├── example_output/
+│   ├── default_comparative_run/      # Example outputs for comparative mode
+│   └── default_single_sequence_run/  # Example outputs for single-sequence mode
+│
+├── pseudocode/
+│   ├── flowcharts.txt
+│   ├── pseudocode.txt
+│   └── *.png                         # Multiple pipeline flowchart diagrams
+│
 └── src/
     ├── __init__.py
-    ├── main.py                        # Pipeline orchestration and CLI
-    ├── graphics.py                    # ORF map and RSCU heatmap figures
-    ├── input_validate.py              # Sequence fetching, validation, and cleaning
+    ├── main.py                       
+    ├── graphics.py                    
+    ├── input_validate.py          
     │
-    ├── analysis_lib/                  # Per-ORF statistics and report writing
+    ├── analysis_lib/                  
     │   ├── __init__.py
-    │   ├── orf_analysis.py            # GC content, protein length, codon usage
-    │   └── statistics_summary.txt     # All file-writing and reporting functions
+    │   ├── orf_analysis.py           
+    │   └── statistics_summary.py     
     │
-    └── orf_finder_lib/                # ORF detection engine
+    └── orf_finder_lib/          
         ├── __init__.py
-        ├── frame_scanner.py           # NumPy codon array scanning (single frame)
-        └── orf_finder.py              # Six-frame orchestration and ORF labelling
+        ├── frame_scanner.py          
+        └── orf_finder.py              
 ```
 
 Each subdirectory is a proper Python package (`__init__.py` present) so the pipeline is invoked as a module: `python -m src.main`.
