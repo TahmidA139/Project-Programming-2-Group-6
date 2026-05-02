@@ -1,3 +1,6 @@
+# ORCA conda environment
+# Tahmid Anwar's Part
+
 name: ORCA
 
 channels:
