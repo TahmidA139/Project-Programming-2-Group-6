@@ -268,7 +268,8 @@ ORCA/
 Each subdirectory is a proper Python package (`__init__.py` present) so the pipeline is invoked as a module: `python -m src.main`.
 <p align="center"><strong>Main Pipeline Flowchart</strong></p>
  <p align="center">
-  <img src="pseudocode/orca_main_pipeline_flowchart.png" alt="ORCA Main Pipeline Flowchart" width="350"/>
+  <img src="pseudocode/orca_main_pipeline_flowchart.png" alt="ORCA Main Pipeline Flowchart" width="400"/>
+</p>
 The diagram above illustrates the main ORCA pipeline flow, from input processing and validation through ORF detection across all six reading frames. Depending on whether comparative mode is enabled, the pipeline branches at the end to generate the appropriate set of output files, and exits early with a report at any stage where validation or sequence loading fails.
 
 ---
