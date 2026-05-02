@@ -3,6 +3,8 @@ ORCA — ORF Recognition and Comparative Annotator
 =================================================
 Main package initialisation file for the src/ folder.
 
+Tahmid Anwar's Part
+
 What this file does:
     Tells Python that the src/ folder is a package, and exposes
     the most commonly used functions so main.py can import them
@@ -14,7 +16,7 @@ With this file:
     from src import run                             # works
 """
 
-# ── Input validation ──────────────────────────────────────────────────────────
+# Input validation 
 # Import the three main functions from input_lib/input_validate.py
 # run()                  — fetches and validates sequences from NCBI
 # validate_start_codons()— checks that start codons are valid (ATG/GTG/TTG)
@@ -25,7 +27,7 @@ from src.input_validate import (
     validate_email,
 )
 
-# ── Graphics ──────────────────────────────────────────────────────────────────
+# Graphics 
 # Import the plot functions from graphics_lib/graphics.py
 # plot_orf_map()            — generates the ORF map for a single sequence
 # plot_comparative_orf_map()— generates a side-by-side ORF map for two sequences
@@ -34,7 +36,7 @@ from src.graphics import (
     plot_comparative_orf_map,
 )
 
-# ── Package metadata ──────────────────────────────────────────────────────────
+# Package metadata
 __version__ = "1.0.0"
 __author__  = "Tahmid Anwar, Nicole Decocker, Amanda Yaworsky"
 
