@@ -346,6 +346,7 @@ In ORCA, RSCU values are computed across all ORF sequences for each sequence in 
 - Python argparse documentation: https://docs.python.org/3/library/argparse.html
 - Python typing module documentation: https://docs.python.org/3/library/typing.html
 - PEP 8 — Style Guide for Python Code: https://peps.python.org/pep-0008/
+
 ---
 
 ## Known Limitations
@@ -355,42 +356,48 @@ In ORCA, RSCU values are computed across all ORF sequences for each sequence in 
 **Only the longest ORF per stop codon is reported.** When multiple start codons share the same downstream stop codon in a given reading frame, ORCA reports only the longest one (i.e. the one with the earliest start codon). Shorter nested ORFs that begin downstream of that first start codon but terminate at the same stop are not included. This follows the standard longest-ORF convention used by most prokaryotic ORF finders, but may result in missed internal start sites in eukaryotic sequences where alternative translation initiation is biologically relevant.
 
 ---
-**AI Usage Statement**
-Tahmid Anwar, Amanda Yaworsky, and Nicole Decocker acknowledge the use of AI (Claude) as a tool to support development of the ORCA pipeline. Below is a description of how it was used and representative example prompts.
-**1. Code review and duplicate detection**
-We used Claude to identify duplicate or redundant functions spread across multiple files in the project, helping us consolidate logic and avoid inconsistencies between modules.
-Example prompts:
 
-"Here are two Python files from our project. Are there any functions that are duplicated or doing the same thing across both files?"
-"We have a helper function in input_validate.py and a similar one in orf_analysis.py — are these redundant and can they be merged?"
+## AI Usage Statement
+
+**Tahmid Anwar, Amanda Yaworsky, and Nicole Decocker** acknowledge the use of **AI (Claude, Anthropic)** as a supporting tool during development of the ORCA pipeline. Below is a description of how it was used along with representative example prompts. All AI-generated suggestions were reviewed, tested, and edited by the team before being accepted into the codebase.
+
+**1. Code review and duplicate detection**
+
+We used Claude to identify duplicate or redundant functions spread across multiple files in the project, helping us consolidate logic and avoid inconsistencies between modules.
+
+Example prompts:
+- *"Here are two Python files from our project. Are there any functions that are duplicated or doing the same thing across both files?"*
+- *"We have a helper function in `input_validate.py` and a similar one in `orf_analysis.py` — are these redundant and can they be merged?"*
 
 **2. Type hints and documentation**
-We used Claude to add and improve type hints across our functions and to clean up docstrings so they were consistent in style and complete.
-Example prompts:
 
-"Add proper Python type hints to all the functions in this file."
-"Rewrite the docstrings in this module to follow a consistent format with Input, Output, and How it works sections."
+We used Claude to add and improve type hints across our functions and to clean up docstrings so they were consistent in style and complete.
+
+Example prompts:
+- *"Add proper Python type hints to all the functions in this file."*
+- *"Rewrite the docstrings in this module to follow a consistent format with Input, Output, and How it works sections."*
 
 **3. Debugging and troubleshooting**
-We used Claude to diagnose errors and unexpected behavior encountered when running the pipeline, sharing terminal output and code to identify the root cause.
-Example prompts:
 
-"Here is the error message and the function producing it. What is going wrong and how do I fix it?"
-"Our pipeline runs without crashing but the output CSV is empty. Here is the relevant code — what could cause this?"
+We used Claude to diagnose errors and unexpected behavior encountered when running the pipeline, sharing terminal output and code to identify the root cause.
+
+Example prompts:
+- *"Here is the error message and the function producing it. What is going wrong and how do I fix it?"*
+- *"Our pipeline runs without crashing but the output CSV is empty. Here is the relevant code — what could cause this?"*
 
 **4. Visualization development**
+
 We used Claude to help design and debug the codon usage comparison plot, including fixing layout issues and ensuring the output PNG rendered correctly.
+
 Example prompts:
+- *"Here is our codon usage comparison function and the plot it produces. The bars are overlapping and the legend is cut off — how do we fix this?"*
+- *"Write a matplotlib function that takes two DNA sequences and plots a side-by-side codon usage bar chart, saving it as a PNG."*
 
-"Here is our codon usage comparison function and the plot it produces. The bars are overlapping and the legend is cut off — how do we fix this?"
-"Write a matplotlib function that takes two DNA sequences and plots a side-by-side codon usage bar chart, saving it as a PNG."
-
-All code was reviewed, tested, and edited by the team. AI-generated suggestions were not accepted without verification.
 ---
 
 ## License
 
-This project is licensed under the **GNU Lesser General Public License v2.1 (LGPL-2.1)** — chosen for open collaboration, ease of contribution, and public use. See the `LICENSE` file in the repository root for the full license text.
+This project is licensed under the **GNU Lesser General Public License v2.1 (LGPL-2.1)** which was chosen for open collaboration, ease of contribution, and public use. See the `LICENSE` file in the repository root for the full license text.
 
 ---
 
