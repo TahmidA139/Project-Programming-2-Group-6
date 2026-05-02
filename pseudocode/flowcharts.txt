@@ -3,6 +3,9 @@ FLOWCHARTS: ORCA – ORF Recognition and Comparative Annotator
 
 These flowcharts describe the program's logic using text-based diagrams.
 
+###### Tahmid Anwar's Part ############
+
+
 
 ────────────────────────────────────────────────────────────────────────
 FLOWCHART 1: Main Pipeline (Overall Orchestration)
@@ -11,67 +14,56 @@ FLOWCHART 1: Main Pipeline (Overall Orchestration)
     [Start]
        |
        v
-    [Parse CLI arguments]
-    [Set email, start codons, min length, output directory]
+    [Process sequence(s) as input]
        |
        v
-    [Validate start codons]
+    [Validate email, start codons, and minimum ORF length]
        |
        v
-    [Valid?]
+    [Inputs valid?]
        /       \
      Yes        No
       |          |
       |          v
-      |    [Print error and exit]
+      |      [Report]
+      |          |
+      |          v
+      |        [END]
       |
       v
-    [Create output directory]
+    [Load and validate sequence(s)]
        |
        v
-    [Process sequence 1]
-    [→ See Flowchart 3: Input Validation & Sequence Loading]
-    [→ See Flowchart 4: Six-Frame ORF Scanner]
-       |
-       v
-    [Sequence 1 loaded successfully?]
+    [Load successful?]
        /          \
      Yes           No
       |             |
       |             v
-      |       [Print error and exit]
-      |
-      v
-    [Comparative mode?]
-    [i.e. --accession2 or --fasta2 supplied?]
-       /          \
-     Yes           No
+      |          [Report]
       |             |
-      v             v
-    [Process     [Write CSV]
-     sequence 2] [Generate single ORF map]
-       |         [Write summary report]
-       v             |
-    [Seq 2           v
-     loaded?]     [Done]
-       /    \
-     Yes     No
-      |       |
-      |       v
-      |  [Print error and exit]
+      |             v
+      |           [END]
       |
       v
-    [Write combined CSV]
+    [Find ORFs across all six reading frames]
        |
        v
-    [Generate comparative ORF map]
+    [Print ORF summary to terminal]
        |
        v
-    [Run analysis and write comparative report]
-    [→ See Flowchart 6: Analysis & Reporting]
-       |
-       v
-    [Done]
+    [Comparative mode?]
+       /                        \
+     Yes                         No
+      |                           |
+      v                           v
+    [Write summary report]    [Write summary report]
+    [Generate .png, FASTA,]   [Generate .png, FASTA,]
+    [and .GFF3 files]         [and .GFF3 files]
+      |                           |
+      +-------------+-------------+
+                    |
+                    v
+                  [END]
 
 
 ────────────────────────────────────────────────────────────────────────
@@ -81,45 +73,37 @@ FLOWCHART 2: Single-Sequence Pipeline
     [Start]
        |
        v
-    [Parse CLI arguments]
+    [Process sequences as input]
        |
        v
-    [Validate email format]
+    [Validate email, start codons, and minimum ORF length]
        |
        v
-    [Email valid?]
+    [Inputs valid?]
        /       \
      Yes        No
       |          |
       |          v
       |    [Print error and exit]
+      |          |
+      |          v
+      |        [End]
       |
       v
-    [Fetch sequence from NCBI or load local FASTA file]
+    [Fetch or load, validate, clean, and write FASTA to disk]
        |
        v
-    [Fetch successful?]
+    [Load successful?]
        /          \
      Yes           No
       |             |
       |             v
       |       [Print error and exit]
-      |
-      v
-    [Validate and clean sequence]
-       |
-       v
-    [Sequence valid?]
-       /          \
-     Yes           No
       |             |
       |             v
-      |       [Print error and exit]
+      |           [End]
       |
       v
-    [Write cleaned FASTA to disk]
-       |
-       v
     [Scan all six reading frames]
     [Find all ORFs above minimum length]
        |
@@ -129,28 +113,17 @@ FLOWCHART 2: Single-Sequence Pipeline
      Yes           No
       |             |
       |             v
-      |       [Print warning — no output written]
+      |       [Print warning]
       |             |
-      +------+------+
-             |
-             v
-    [Print ORF summary to terminal]
-             |
-             v
-    [Write ORF results to CSV]
-             |
-             v
-    [Generate ORF map (PNG)]
-             |
-             v
-    [Calculate per-ORF statistics]
-    [Detect repeated ORF sequences]
-             |
-             v
-    [Write summary report to text file]
-             |
-             v
-          [Done]
+      |             v
+      |           [End]
+      |
+      v
+    [Write summary report]
+    [Generate .png, FASTA, and .GFF3 files]
+       |
+       v
+    [End]
 
 
 ────────────────────────────────────────────────────────────────────────
@@ -160,27 +133,25 @@ FLOWCHART 3: Two-Sequence Comparative Pipeline
     [Start]
        |
        v
-    [Parse CLI arguments]
+    [Process sequences as input]
        |
        v
-    [Validate email format]
+    [Validate email, start codons, and minimum ORF length]
        |
        v
-    [Email valid?]
+    [Inputs valid?]
        /       \
      Yes        No
       |          |
       |          v
-      |    [Print error and exit]
+      |      [Report]
+      |          |
+      |          v
+      |        [END]
       |
       v
     [Fetch or load sequence 1]       [Fetch or load sequence 2]
-       |                                       |
-       v                                       v
-    [Validate and clean seq 1]     [Validate and clean seq 2]
-       |                                       |
-       v                                       v
-    [Write cleaned FASTA 1]        [Write cleaned FASTA 2]
+    [Validate and clean]             [Validate and clean]
        |                                       |
        +------------------+--------------------+
                           |
@@ -190,40 +161,26 @@ FLOWCHART 3: Two-Sequence Comparative Pipeline
               Yes                   No
                |                    |
                v                    v
-         [Print error          [Scan six reading frames
-          and exit]             for sequence 1]
-                               [Scan six reading frames
-                                for sequence 2]
+           [Report]     [Scan all six reading frames
+               |          for each sequence]
+               v                    |
+             [END]                  v
+                       [Calculate statistics, detect repeats,
+                        and detect codon usage]
                                     |
                                     v
-                       [Print ORF summary for each sequence]
+                       [Write summary report]
+                       [Generate .png, FASTA, and .GFF3 files]
                                     |
                                     v
-                       [Write combined ORF results to CSV]
-                                    |
-                                    v
-                       [Generate comparative ORF map (PNG)]
-                                    |
-                                    v
-                       [Calculate per-ORF statistics — seq 1]
-                       [Calculate per-ORF statistics — seq 2]
-                       [Detect repeated ORFs in each sequence]
-                                    |
-                                    v
-                       [Run global pairwise alignment (seq 1 vs seq 2)]
-                       [Run local pairwise alignment (seq 1 vs seq 2)]
-                                    |
-                                    v
-                       [Write comparative report to text file]
-                                    |
-                                    v
-                                 [Done]
+                                  [END]
+
 
 ────────────────────────────────────────────────────────────────────────
 FLOWCHART 4: Input Validation & Sequence Loading
 ────────────────────────────────────────────────────────────────────────
 
-    [Start: receive accession or file path, email]
+    [Start]
        |
        v
     [Validate email format]
@@ -234,210 +191,143 @@ FLOWCHART 4: Input Validation & Sequence Loading
      Yes        No
       |          |
       |          v
-      |    [Print error — RETURN failure]
+      |      [Report]
+      |          |
+      |          v
+      |        [END]
       |
       v
-    [Input source: NCBI accession or local FASTA file?]
-       /                        \
-    NCBI                      Local file
-      |                            |
-      v                            v
-    [Fetch FASTA from NCBI]   [Check file exists]
-      |                            |
-      v                            v
-    [Fetch successful?]       [File found?]
-       /      \                  /      \
-     Yes       No              Yes       No
-      |         |               |         |
-      |         v               |         v
-      |   [Print error     [File contains  [Print error
-      |    RETURN failure]  exactly 1 seq?]  RETURN failure]
-      |                      /       \
-      |                    Yes        No
-      |                     |         |
-      |                     |         v
-      |                     |   [Print error — multi-sequence
-      |                     |    files not supported]
-      |                     |   [RETURN failure]
-      |                     |
-      +----------+----------+
-                 |
-                 v
-    [Raw sequence received]
-                 |
-                 v
-    [Remove whitespace and digits]
-    [Remove non-IUPAC characters]
-    [Replace ambiguity codes with N]
-    [to preserve reading frame]
-                 |
-                 v
-    [Sequence empty after cleaning?]
+    [Fetch FASTA from NCBI or load local FASTA file]
+       |
+       v
+    [Load successful?]
        /          \
      Yes           No
       |             |
-      v             v
-    [Print error] [Length >= 6 bp?]
-    [RETURN failure]  /        \
-                    Yes         No
-                     |           |
-                     |           v
-                     |     [Print error — too short]
-                     |     [RETURN failure]
-                     |
-                     v
-    [Print confirmation — sequence valid]
-                     |
-                     v
+      |             v
+      |          [Report]
+      |             |
+      |             v
+      |           [END]
+      |
+      v
+    [Remove whitespace, digits, and non-IUPAC characters]
+       |
+       v
+    [Sequence valid?]
+       /          \
+     Yes           No
+      |             |
+      |             v
+      |          [Report]
+      |             |
+      |             v
+      |           [END]
+      |
+      v
     [Write cleaned FASTA to disk]
-                     |
-                     v
-    [RETURN accession and cleaned sequence]
+    [Return accession and sequence]
+       |
+       v
+    [END]
 
 
 ────────────────────────────────────────────────────────────────────────
 FLOWCHART 5: Six-Frame ORF Scanner
 ────────────────────────────────────────────────────────────────────────
 
-    [Start: receive sequence, start codons, minimum length]
+    [Start]
        |
        v
     [Compute reverse complement of sequence]
        |
        v
-    [For each frame in [0, 1, 2]:]
-       |
-       +---> [Scan forward strand at this frame offset]
-       |
-       +---> [Scan reverse complement at this frame offset]
+    [For each frame offset [0, 1, 2] scan forward and reverse strand]
        |
        v
-    [Split sequence into codons at frame offset]
-       |
-       v
-    [Any codons?]
-       /      \
-     Yes        No
-      |          |
-      |          v
-      |    [Skip this frame]
-      |
-      v
-    [Find all positions matching a start codon]
-       |
-       v
-    [For each start codon position (earliest first):]
-       |
-       v
+    [Find all start codon positions]
     [Find next in-frame stop codon]
        |
        v
-    [Stop codon found?]
+    [ORF complete?]
        /          \
      Yes           No
       |             |
       |             v
-      |       [Skip — ORF is incomplete]
+      |       [Skip — incomplete]
       |
       v
-    [Calculate ORF length in nucleotides]
+    [Meets minimum length?]
+       /          \
+     Yes           No
+      |             |
+      |             v
+      |       [Skip — too short]
+      |
+      v
+    [Longest ORF at this stop position?]
+       /          \
+     Yes           No
+      |             |
+      |             v
+      |       [Skip — shorter]
+      |
+      v
+    [Record ORF: strand, frame, start, end, length, start codon]
        |
        v
-    [Length >= minimum length?]
-       /          \
-     Yes           No
-      |             |
-      |             v
-      |       [Skip — ORF too short]
-      |
-      v
-    [Has a longer ORF already been recorded for this stop position?]
-       /          \
-     Yes           No
-      |             |
-      v             v
-    [Skip —    [Convert coordinates to forward-strand positions]
-     shorter]  [Record ORF: strand, frame, start, end,
-                length, start codon]
-       |             |
-       +------+------+
-              |
-              v
-    [Move to next start codon position]
-              |
-              v
-    [All six frames scanned?]
-       /          \
-     Yes           No
-      |             |
-      |             v
-      |       [Continue to next frame]
-      |
-      v
+    [Repeat for all frames]
     [Return flat list of all ORF records]
+       |
+       v
+    [Done]
 
 
 ────────────────────────────────────────────────────────────────────────
 FLOWCHART 6: Analysis & Reporting
 ────────────────────────────────────────────────────────────────────────
 
-    [Start: receive ORF list(s) and cleaned sequence(s)]
+    [Start]
        |
        v
-    [For each ORF in the list:]
+    [Receive ORF list and DNA sequence]
        |
        v
-    [Extract nucleotide sequence in 5' to 3' direction]
-    [Correct for strand — reverse complement if minus strand]
+    [For each ORF: extract full nucleotide sequence (5'→3', strand-corrected)]
        |
        v
-    [Calculate GC content]
-    [Calculate protein length (number of complete codons)]
-    [Attach results to ORF record]
+    [Strip stop codon (last 3 nt) to isolate the coding region]
        |
        v
-    [All ORFs processed?]
-       /          \
-     Yes           No
-      |             |
-      |             v
-      |       [Continue to next ORF]
-      |
-      v
-    [Scan for repeated ORF sequences]
-    [Flag any sequence appearing more than once]
+    [Calculate GC content of coding region]
+    [Calculate protein length]
+       |
+       v
+    [Count codon frequencies per ORF]
+    [Detect repeated ORF sequences]
+       |
+       v
+    [Write GFF3 annotation file]
        |
        v
     [Comparative mode?]
-       /          \
-     Yes           No
-      |             |
-      v             v
-    [Run global    [Write dataset statistics]
-     alignment]    [Write longest ORF details]
-      |            [Write per-ORF table]
-      v            [Save as orf_summary.txt]
-    [Run local          |
-     alignment]         v
-      |             [Done]
-      v
-    [Write dataset statistics for each sequence]
-    [Write longest ORF details for each sequence]
-    [Write per-ORF table for each sequence]
-       |
-       v
-    [Write comparative summary]
-    [Total ORFs, strand counts,]
-    [shared sequences, unique sequences]
-       |
-       v
-    [Write global alignment results]
-    [Write local alignment results]
-    [Add interpretation label]
-    [(low / distantly related / similar / highly similar)]
-       |
-       v
-    [Save as orf_comparison_report.txt]
-       |
-       v
-    [Done]
+       /                              \
+     Yes                               No
+      |                                 |
+      v                                 v
+    [Aggregate codon usage for      [Aggregate codon usage
+     both sequences (RSCU heatmap)]  across all ORFs in sequence]
+      |                                 |
+      v                                 v
+    [Write side-by-side codon       [Write dataset stats and
+     usage table (count + delta)]    longest ORF details]
+      |                                 |
+      v                                 v
+    [Write orf_comparison_report.txt [Write orf_summary.txt
+     (stats, per-ORF table,           (per-ORF table +
+      shared ORFs)]                    codon usage)]
+      |                                 |
+      +----------------+----------------+
+                       |
+                       v
+                     [End]
