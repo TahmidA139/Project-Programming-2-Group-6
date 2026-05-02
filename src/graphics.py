@@ -1,22 +1,46 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-graphics.py
-
-Nicole Decocker's part
-
-Purpose:
-    Visual output for the ORCA pipeline.
-    Generates an ORF map showing all ORFs across all six reading
-    frames, and (in comparative mode) an RSCU codon-usage heatmap.
-
-Public API
+graphics.py — Visual output layer for the ORCA bioinformatics pipeline.
+ 
+Author: Nicole Decocker
+ 
+Overview
+--------
+This module is responsible for all figure generation in the ORCA pipeline.
+It produces two categories of output:
+ 
+1. **ORF Maps** — A six-track plot showing every detected Open Reading Frame
+   across all three forward (+1/+2/+3) and three reverse (-1/-2/-3) reading
+   frames of a DNA sequence.  ORFs are drawn as coloured rectangles whose
+   x-position reflects true nucleotide coordinates; rectangle colour encodes
+   the start codon (ATG / GTG / TTG).  Both single-sequence and side-by-side
+   comparative layouts are supported.
+ 
+2. **RSCU Codon-Usage Heatmap** — A Relative Synonymous Codon Usage (RSCU)
+   heatmap that compares coding-region codon bias between two sequences.
+   RSCU > 1.0 indicates over-representation; < 1.0 indicates under-use
+   relative to equal synonymous usage.  Only the 59 sense codons with at
+   least one synonymous alternative are shown (Met, Trp, and stops excluded).
+ 
+API
 ----------
-draw_orf_map                Draw one ORF panel onto existing Axes.
-make_legend                 Return legend Patch handles.
-plot_orf_map                Single-sequence ORF map → file.
-plot_comparative_orf_map    Two-sequence ORF map → file.
-plot_codon_usage_comparison RSCU heatmap comparison → file.
+draw_orf_map
+    Render all ORFs from a flat ORF list onto a pre-existing Axes object.
+make_legend
+    Return a list of Matplotlib Patch handles for the start-codon colour legend.
+plot_orf_map
+    Create a single-sequence ORF map figure and write it to disk.
+plot_comparative_orf_map
+    Create a stacked two-sequence ORF map figure and write it to disk.
+plot_codon_usage_comparison
+    Compute per-sequence RSCU values and save a comparative heatmap to disk.
+ 
+Dependencies
+------------
+numpy, matplotlib (Agg backend).
+``extract_orf_sequence`` is imported lazily from ``src.orf_finder_lib.frame_scanner``
+inside :func:`plot_codon_usage_comparison` to avoid a circular import at module load.
 """
 
 from __future__ import annotations
@@ -105,7 +129,12 @@ AA_ORDER: list[str] = [
 
 # RSCU helpers
 def compute_rscu(sequence: str) -> dict[str, float]:
-    """Return RSCU values for all sense codons in *sequence*; Met, Trp, and stops excluded."""
+    """
+    Compute Relative Synonymous Codon Usage (RSCU) for every sense codon in *sequence*.
+    RSCU of 1.0 means equal synonymous usage; values above or below indicate over- or
+    under-representation relative to expectation. Met, Trp, and stop codons are excluded
+    because they have no synonymous alternatives.
+    """
     seq = sequence.upper()
     counts: dict[str, int] = {}
     for i in range(0, len(seq) - 2, 3):
@@ -128,7 +157,12 @@ def compute_rscu(sequence: str) -> dict[str, float]:
 
 
 def build_codon_order() -> tuple[list[str], list[tuple[int, int, str]]]:
-    """Return (codon_list, aa_boundaries) in AA_ORDER for use in the RSCU heatmap."""
+    """
+    Build the canonical codon ordering used as the x-axis of the RSCU heatmap.
+    Codons are grouped by amino acid following ``AA_ORDER`` and sorted alphabetically
+    within each group so synonymous codons appear together. Met, Trp, and stops are
+    excluded because they lack synonymous alternatives and are not plotted.
+    """
     aa_codons: dict[str, list[str]] = defaultdict(list)
     for codon, aa in GENETIC_CODE.items():
         if aa not in ("Stop", "Met", "Trp"):
@@ -155,7 +189,12 @@ def configure_heatmap_axes(
     acc1: str,
     acc2: str,
 ) -> None:
-    """Apply codon ticks, amino-acid group labels, and sequence divider to the RSCU heatmap axes."""
+    """
+    Apply all tick and label decoration to the main and secondary axes of the RSCU heatmap.
+    The bottom x-axis receives one monospace tick per codon, the y-axis is labelled with the
+    two accession names separated by a horizontal divider, and the top x-axis shows
+    amino-acid group names centred over their respective codon columns.
+    """
     ax.axhline(y=0.5, color="black", linewidth=1.0, zorder=10)
 
     ax.set_yticks([0, 1])
@@ -174,7 +213,11 @@ def configure_heatmap_axes(
 
 
 def add_rscu_colorbar(fig: Figure, im: Any) -> None:
-    """Attach a horizontal RSCU colorbar with a dashed reference line at 1.0."""
+    """
+    Attach a horizontal RSCU colorbar beneath the heatmap using absolute figure coordinates.
+    A dashed vertical line and bold label are drawn at x = 1.0 to mark the neutral reference
+    point where all synonymous codons are used equally.
+    """
     cbar_ax = fig.add_axes([0.15, 0.10, 0.70, 0.07])
     cbar = fig.colorbar(im, cax=cbar_ax, orientation="horizontal")
     cbar.set_label("RSCU  (1.0 = equal synonymous codon usage)", fontsize=8, labelpad=4)
@@ -188,7 +231,12 @@ def add_rscu_colorbar(fig: Figure, im: Any) -> None:
 
 # ORF map helpers
 def setup_frame_axes(ax: Axes, seq_len: int, accession: str) -> None:
-    """Configure axis limits, row backgrounds, strand divider, and tick labels for one ORF panel."""
+    """
+    Configure axis limits, alternating row backgrounds, and tick labels for one ORF map panel.
+    A dashed horizontal line at y = 2.5 separates the three forward-strand rows from the three
+    reverse-strand rows, and blended-transform text labels identify each strand group to the
+    left of the axes regardless of figure width.
+    """
     ax.set_xlim(0, seq_len)
     ax.set_ylim(-0.6, 6.4)
 
@@ -220,7 +268,12 @@ def draw_single_orf(
     orf_num: int,
     seq_len: int,
 ) -> None:
-    """Draw one ORF rectangle onto *ax*, with an ordinal label if the rectangle is wide enough."""
+    """
+    Draw one ORF as a coloured rectangle on *ax* at the row corresponding to its strand and frame.
+    Rectangle colour is looked up from ``CODON_COLORS`` by start codon, falling back to grey for
+    unrecognised codons. A white ordinal label is rendered inside the rectangle only when it is
+    wide enough relative to the total sequence length to avoid visual clutter.
+    """
     start  = orf["start"]
     end    = orf["end"]
     strand = orf["strand"]
@@ -244,7 +297,7 @@ def draw_single_orf(
             color="white", fontweight="bold", zorder=3,
         )
 
-# Public API
+# API
 def draw_orf_map(
     ax: Axes,
     flat_list: list[dict[str, Any]],
