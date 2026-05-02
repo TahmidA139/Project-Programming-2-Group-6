@@ -1,0 +1,51 @@
+## **ORCA – ORF Recognition and Comparative Annotator**
+
+Design a program that analyzes one or two nucleotide sequences to identify and annotate open reading frames (ORFs) across all six reading frames. 
+Core functionality: 
+- accept sequences via NCBI accession number or local FASTA file
+- validate and clean the input
+- scan all six reading frames to detect ORFs above a user-defined minimum length
+- compute per-ORF statistics including GC content, protein length, and codon usage. 
+
+
+## **File Structure and Task Distribution**
+
+ORCA/
+├── README.md                        # Tahmid Anwar
+├── ENVIRONMENT.md                   # Nicole Decocker                         
+├── LICENSE                          # Tahmid Anwar
+├── idea_and_task_distribution.txt   # Amanda Yaworsky
+├── environment.yml                  # Tahmid Anwar
+├── run_test.sh                      # Nicole Decocker 
+│
+├── example_input_files/             # Amanda Yaworsky
+│   ├── homo_sapiens_albumin.fasta    
+│   ├── IUPAC_ambiguity_test.fasta      
+│   ├── multiple_sequence_file.fasta   
+│   ├── mus_musculus_albumin.fasta      
+│   └── OR2B6_sequence.fasta          
+│
+├── example_output/                   # Amanda Yaworsky
+│   ├── default_comparative_run/      
+│   └── default_single_sequence_run/  
+│
+├── pseudocode/                       # Tahmid Anwar
+│   ├── flowcharts.txt                
+│   ├── pseudocode.txt               
+│   └── *.png                         # Multiple pipeline flowchart diagrams
+│
+└── src/
+    ├── __init__.py                    # Tahmid Anwar
+    ├── main.py                        # Everyone contributed 
+    ├── graphics.py                    # Nicole Decocker 
+    ├── input_validate.py              # Tahmid Anwar
+    │
+    ├── analysis_lib/                  
+    │   ├── __init__.py                # Amanda Yaworsky
+    │   ├── orf_analysis.py            # Amanda Yaworsky 
+    │   └── statistics_summary.py      # Amanda Yaworsky 
+    │
+    └── orf_finder_lib/          
+        ├── __init__.py                # Nicole Decocker 
+        ├── frame_scanner.py           # Nicole Decocker 
+        └── orf_finder.py              # Nicole Decocker 
