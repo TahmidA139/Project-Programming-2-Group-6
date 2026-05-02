@@ -100,9 +100,9 @@ Searches for ATG start codon and requires ORFs to be at least 150 nt:
 ```bash
 python -m src.main \
     --fasta        example_input_files/homo_sapiens_albumin.fasta \
-    --email        <YOUR_EMAIL> \
     --start-codons ATG \
-    --min-length   150
+    --min-length   150 \
+    --email        <YOUR_EMAIL> 
 ```
 
 ### Example 3 — Comparative mode with two NCBI accession numbers
