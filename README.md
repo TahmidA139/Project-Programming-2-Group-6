@@ -89,46 +89,35 @@ Uses the default start codon (ATG only) and minimum ORF length (30 nt):
 
 ```bash
 python -m src.main \
-    --accession <ACCESSION_NUMBER> \
+    --accession NM_009654.4 \
     --email     <YOUR_EMAIL>
 ```
 
 ### Example 2 — Single sequence from a local FASTA file with custom settings
 
-Searches for all three start codons and requires ORFs to be at least 150 nt:
+Searches for ATG start codon and requires ORFs to be at least 150 nt:
 
 ```bash
 python -m src.main \
-    --fasta        <PATH_TO_FASTA> \
+    --fasta        example_input_files/homo_sapiens_albumin.fasta \
     --email        <YOUR_EMAIL> \
-    --start-codons ATG GTG TTG \
+    --start-codons ATG \
     --min-length   150
 ```
 
 ### Example 3 — Comparative mode with two NCBI accession numbers
 
-Runs the full comparative pipeline including shared ORF detection and RSCU heatmap:
+Runs the full comparative pipeline including shared ORF detection and RSCU heatmap between Homo sapiens and Mus musculus albumin (ALB) mRNA:
 
 ```bash
 python -m src.main \
-    --accession  <ACCESSION_NUMBER_1> \
-    --accession2 <ACCESSION_NUMBER_2> \
+    --accession  NM_009654.4 \
+    --accession2 NM_000477.7 \
     --email      <YOUR_EMAIL>
 ```
 
 Please see ENVIRONMENT.md for more examples!
-
-Replace each placeholder with your own values:
-
-| Placeholder | Description |
-|-------------|-------------|
-| `<ACCESSION_NUMBER>` | NCBI nucleotide accession number, e.g. `NM_012367.1` |
-| `<ACCESSION_NUMBER_1>` | NCBI accession for sequence 1 (comparative mode) |
-| `<ACCESSION_NUMBER_2>` | NCBI accession for sequence 2 (comparative mode) |
-| `<PATH_TO_FASTA>` | Path to a single-sequence FASTA file, e.g. `example_input_files/OR2B6_sequence.fasta` |
-| `<PATH_TO_FASTA_1>` | Path to the first FASTA file (comparative mode) |
-| `<PATH_TO_FASTA_2>` | Path to the second FASTA file (comparative mode) |
-| `<YOUR_EMAIL>` | A valid email address, e.g. `you@example.com` (required by NCBI Entrez) |
+Replace each `<YOUR_EMAIL>` with a A valid email address, e.g. `you@example.com` (required by NCBI Entrez)
 
 ---
 
