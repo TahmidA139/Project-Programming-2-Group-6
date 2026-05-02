@@ -2,10 +2,14 @@
 
 Design a program that analyzes one or two nucleotide sequences to identify and annotate open reading frames (ORFs) across all six reading frames. 
 Core functionality: 
-- accept sequences via NCBI accession number or local FASTA file
-- validate and clean the input
-- scan all six reading frames to detect ORFs above a user-defined minimum length
-- compute per-ORF statistics including GC content, protein length, and codon usage. 
+- accept one or two sequences via NCBI accession number or local FASTA file
+- validate and clean input sequences, including IUPAC ambiguity code handling
+- scan all six reading frames (+1, +2, +3, −1, −2, −3) to detect ORFs above a user-defined minimum length, with support for canonical (ATG) and non-canonical (GTG, TTG) start codons
+- compute per-ORF statistics including GC content, protein length, strand/frame, and codon usage
+- export results as GFF3 annotation files, plain-text summary reports, and a visual ORF map across all six reading frames
+
+comparative mode: 
+- when two sequences are provided, perform side-by-side analysis including shared ORF detection, per-sequence statistics, and an RSCU codon usage heatmap comparing codon preferences between the two sequences
 
 
 ## **File Structure and Task Distribution**
