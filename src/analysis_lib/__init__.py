@@ -1,4 +1,6 @@
 """
+Amanda Yaworsky part 
+
 analysis_lib — ORF analysis and statistics package.
 
 What this folder contains:
