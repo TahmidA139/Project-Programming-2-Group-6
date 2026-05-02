@@ -265,9 +265,10 @@ ORCA/
         ├── frame_scanner.py          
         └── orf_finder.py              
 ```
-
 Each subdirectory is a proper Python package (`__init__.py` present) so the pipeline is invoked as a module: `python -m src.main`.
-
+ <p align="center">
+  <img src="pseudocode/orca_main_pipeline_flowchart.png" alt="ORCA Main Pipeline Flowchart" width="350"/>
+</p>
 ---
 
 ## Algorithm Description
