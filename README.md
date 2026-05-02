@@ -387,7 +387,7 @@ Example prompts:
 
 **4. Visualization development**
 
-We used Claude to help design and debug the codon usage comparison plot, including fixing layout issues and ensuring the output PNG rendered correctly.
+We used Claude to help design and debug the codon usage comparison plot, and to help create an outline of the flowcharts including fixing layout issues and ensuring the output PNG rendered correctly.
 
 Example prompts:
 - *"Here is our codon usage comparison function and the plot it produces. The bars are overlapping and the legend is cut off — how do we fix this?"*
