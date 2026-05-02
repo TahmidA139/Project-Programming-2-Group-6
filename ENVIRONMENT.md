@@ -77,7 +77,7 @@ Replace each placeholder with your own values:
 
 | Placeholder | Description |
 |-------------|-------------|
-| `<ACCESSION_NUMBER>` | NCBI nucleotide accession number, e.g. `NM_012367.1` |
+| `<ACCESSION_NUMBER>` | NCBI nucleotide accession number, e.g. for mRNA:`NM_012367.1` or for DNA: `NC_001416` |
 | `<PATH_TO_FASTA>` | Path to a single-sequence FASTA file on your machine, e.g. `example_input_files/OR2B6_sequence.fasta` |
 | `<PATH_TO_FASTA_1>` | Path to the first FASTA file (comparative mode) |
 | `<PATH_TO_FASTA_2>` | Path to the second FASTA file (comparative mode) |
