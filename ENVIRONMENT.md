@@ -1,4 +1,5 @@
 # Setting up the environment
+Nicole Decocker's part
 
 ## About `environment.yml`
 
