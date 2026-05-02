@@ -37,7 +37,7 @@ With the environment activated, run the pipeline from the project's root directo
 
 ```bash
 python -m src.main \
-    --accession <ACCESSION_NUMBER> \
+    --accession NC_001422 \
     --email     <YOUR_EMAIL>
 ```
 
@@ -45,7 +45,7 @@ python -m src.main \
 
 ```bash
 python -m src.main \
-    --fasta <PATH_TO_FASTA> \
+    --fasta example_input_files/OR2B6_sequence.fasta \
     --email <YOUR_EMAIL>
 ```
 
@@ -53,36 +53,27 @@ python -m src.main \
 
 ```bash
 python -m src.main \
-    --fasta  <PATH_TO_FASTA_1> \
-    --fasta2 <PATH_TO_FASTA_2> \
+    --fasta  example_input_files/homo_sapiens_albumin.fasta \
+    --fasta2 example_input_files/mus_musculus_albumin.fasta \
     --email  <YOUR_EMAIL>
 ```
 
 **Comparative mode** (two NCBI accessions):
 ```bash
 python -m src.main \
-    --accession  <ACCESSION_NUMBER_1> \
-    --accession2 <ACCESSION_NUMBER_2> \
+    --accession  NC_001416 \
+    --accession2 NC_001604 \
     --email      <YOUR_EMAIL>
 ```
 
 **Comparative mode** (one NCBI accession + one local FASTA file):
 ```bash
 python -m src.main \
-    --accession <ACCESSION_NUMBER> \
-    --fasta2    <PATH_TO_FASTA_2> \
+    --accession NM_000477.7 \
+    --fasta2    example_input_files/mus_musculus_albumin.fasta \
     --email     <YOUR_EMAIL>
 ```
-Replace each placeholder with your own values:
-
-| Placeholder | Description |
-|-------------|-------------|
-| `<ACCESSION_NUMBER>` | NCBI nucleotide accession number, e.g. for mRNA:`NM_012367.1` or for DNA: `NC_001416` |
-| `<PATH_TO_FASTA>` | Path to a single-sequence FASTA file on your machine, e.g. `example_input_files/OR2B6_sequence.fasta` |
-| `<PATH_TO_FASTA_1>` | Path to the first FASTA file (comparative mode) |
-| `<PATH_TO_FASTA_2>` | Path to the second FASTA file (comparative mode) |
-| `<YOUR_EMAIL>` | A valid email address, e.g. `you@example.com` (required by NCBI Entrez) |
-| `<N>` | A number that will vary depending on your sequence and settings |
+Replace each placeholder `<YOUR_EMAIL>` with a valid email address, e.g. `you@example.com` (required by NCBI Entrez) 
 
 ### Arguments
 
@@ -137,3 +128,4 @@ When run with a single FASTA file using default settings, the terminal output sh
   Canonical (ATG)   : <N>
 ────────────────────────────────────────────────────────────────────────
 ```
+This `<N>` is a placeholder for the number that will vary depending on your sequence and settings
