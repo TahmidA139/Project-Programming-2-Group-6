@@ -1,4 +1,5 @@
 """
+Nicole Decocker part 
 orf_finder_lib — ORF detection package.
 
 What this folder contains:
