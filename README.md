@@ -85,7 +85,7 @@ Run all commands from the **project root directory** with the `ORCA` environment
 
 ### Example 1 — Single sequence from NCBI (all defaults)
 
-Uses the default start codon (ATG only) and minimum ORF length (30 nt):
+Uses the default start codon (ATG only) and minimum ORF length (30 nt) on the Mus musculus albumin (ALB) mRNA transcript:
 
 ```bash
 python -m src.main \
@@ -95,7 +95,7 @@ python -m src.main \
 
 ### Example 2 — Single sequence from a local FASTA file with custom settings
 
-Searches for ATG start codon and requires ORFs to be at least 150 nt:
+Searches for ATG start codon and requires ORFs to be at least 150 nt on the Homo sapiens albumin (ALB) mRNA transcript:
 
 ```bash
 python -m src.main \
@@ -107,7 +107,7 @@ python -m src.main \
 
 ### Example 3 — Comparative mode with two NCBI accession numbers
 
-Runs the full comparative pipeline including shared ORF detection and RSCU heatmap between Homo sapiens and Mus musculus albumin (ALB) mRNA:
+Runs the full comparative pipeline including shared ORF detection and RSCU heatmap between Homo sapiens and Mus musculus albumin (ALB) mRNA transcripts:
 
 ```bash
 python -m src.main \
