@@ -38,7 +38,7 @@ import argparse
 import os
 import sys
 
-from src.input_validate import run as validate_run, validate_start_codons
+from src.input_validate import run as validate_run, validate_start_codons, validate_email
 from src.graphics import (
     plot_orf_map,
     plot_comparative_orf_map,
@@ -129,7 +129,7 @@ class ORCAPipeline:
         tuple[None, None, None, None]
             On failure.
         """
-        acc, clean_seq, _, _ = validate_run(
+        acc, clean_seq = validate_run(
             accession,
             self.email,
             outdir=self.outdir,
@@ -270,6 +270,11 @@ class ORCAPipeline:
             print("[ERROR] Pipeline failed: could not retrieve a valid sequence.")
             sys.exit(1)
 
+        if not flat1:
+            print("[ERROR] No ORFs found for sequence 1. Cannot produce output. "
+                  "Try lowering --min-length or adding non-canonical start codons.")
+            sys.exit(1)
+
         acc2 = seq2 = flat2 = None
         if comparative:
             src2_label = f"(local file) {fasta_file2}" if fasta_file2 else accession2
@@ -284,6 +289,11 @@ class ORCAPipeline:
             )
             if acc2 is None:
                 print("[ERROR] Pipeline failed for sequence 2.")
+                sys.exit(1)
+
+            if not flat2:
+                print("[ERROR] No ORFs found for sequence 2. Cannot produce comparative output. "
+                      "Try lowering --min-length or adding non-canonical start codons.")
                 sys.exit(1)
 
         self.plot(acc1, seq1, flat1, comparative, acc2, seq2, flat2)
@@ -367,6 +377,9 @@ def main() -> None:
             accession = input("Enter NCBI accession number: ").strip()
 
     email = args.email or input("Enter your email (required by NCBI): ").strip()
+
+    if not validate_email(email):
+        sys.exit(1)
 
     try:
         start_codons = validate_start_codons(args.start_codons)
