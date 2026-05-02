@@ -350,24 +350,27 @@ def run(
     fasta_file:  str | None = None,
     comparative: bool = False,
     seq_num:     int  = 1,
-) -> tuple[str | None, str | None, str | None, str | None]:
+) -> tuple[str, str] | tuple[None, None]:
     """
     Main pipeline entry point called by ``main.py``.
 
-    Validates the email, fetches or loads a single DNA sequence, cleans
-    it, and writes the cleaned FASTA file to *outdir*.  The output
-    filename reflects both the run mode and the sequence number:
+    Fetches or loads a single DNA sequence, cleans it, and writes the
+    cleaned FASTA file to *outdir*.  The output filename reflects both
+    the run mode and the sequence number:
 
     - Single mode  → ``cleaned_sequence_1.fasta``
     - Comparative  → ``comp_cleaned_sequence_1.fasta`` / ``comp_cleaned_sequence_2.fasta``
+
+    Email validation is the caller's responsibility and should be done
+    once before the pipeline starts, not per-sequence inside this function.
 
     Parameters
     ----------
     accession : str
         NCBI accession number.  Ignored when *fasta_file* is provided.
     email : str
-        User email address required by NCBI Entrez.  Validated even in
-        local-file mode so the user catches format errors early.
+        User email address passed directly to NCBI Entrez.  Must already
+        be validated by the caller before this function is invoked.
     outdir : str, optional
         Directory for all output files.  Defaults to ``'output/'``.
     fasta_file : str or None, optional
@@ -382,14 +385,11 @@ def run(
 
     Returns
     -------
-    tuple[str | None, str | None, str | None, str | None]
-        ``(acc, seq, None, None)`` on success (the third and fourth
-        slots are kept for compatibility with ``main.py``'s unpacking).
-        ``(None, None, None, None)`` on failure.
+    tuple[str, str]
+        ``(accession, clean_seq)`` on success.
+    tuple[None, None]
+        On failure.
     """
-    if not validate_email(email):
-        return None, None, None, None
-
     Entrez.email = email.strip()
 
     if comparative:
@@ -401,6 +401,6 @@ def run(
 
     acc, seq = fetch_and_validate_one(accession, output_fasta, fasta_file)
     if acc is None:
-        return None, None, None, None
+        return None, None
 
-    return acc, seq, None, None
+    return acc, seq
