@@ -90,7 +90,7 @@ Replace each placeholder `<YOUR_EMAIL>` with a valid email address, e.g. `you@ex
 
 **Note:** exactly one of `--accession` or `--fasta` must be provided for sequence 1.
 
-#### A note on `--min-length` and `--start-codons`
+#### Notes on `--min-length` and `--start-codons` and RSCU (Relative Synonymous Codon Usage)
 
 The default minimum ORF length of **30 nt** (10 amino acids) is a common threshold in prokaryotic and eukaryotic ORF annotation. ORFs shorter than this are statistically likely to appear by chance in any random sequence and are usually not biologically meaningful. Raise this value if you want to focus only on longer, more likely functional coding sequences; lower it (minimum 3, one codon) if you are working with very short sequences or want to capture all possible reading frames.
 
