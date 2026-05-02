@@ -1,3 +1,4 @@
+# Amanda Yaworsky
 ## **ORCA – ORF Recognition and Comparative Annotator**
 
 Design a program that analyzes one or two nucleotide sequences to identify and annotate open reading frames (ORFs) across all six reading frames. 
