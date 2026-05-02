@@ -8,6 +8,8 @@
 
 ## Description
 
+Tahmid Anwar's Part
+
 ORCA is a Python-based bioinformatics pipeline that automates Open Reading Frame (ORF) detection and annotation across DNA sequences. It accepts an NCBI accession number or a local FASTA file, fetches or loads the DNA sequence, detects all ORFs across all six reading frames, and computes per-ORF statistics including GC content and protein length. When two sequences are provided, ORCA performs side-by-side comparative analysis including shared ORF detection and codon usage comparison (RSCU).
 
 ---
