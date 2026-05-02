@@ -11,8 +11,7 @@ channels:
 
 dependencies:
   - python=3.10
-  - biopython=1.83        
-  - regex=2023.12.25             
+  - biopython=1.83                  
   - matplotlib=3.8.3   
 
   
