@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-
 # ==============================================================================
 # run_test.sh
 # Test script for ORCA: ORF Recognition and Comparative Analysis
+#  ######################### Nicole Decocker's part   #########################
 #
 # This script verifies that the project runs correctly by executing src/main.py
 # with the provided example FASTA files and checking that all expected output
