@@ -269,6 +269,7 @@ Each subdirectory is a proper Python package (`__init__.py` present) so the pipe
  <p align="center">
   <img src="pseudocode/orca_main_pipeline_flowchart.png" alt="ORCA Main Pipeline Flowchart" width="350"/>
 </p>
+The diagram above illustrates the main ORCA pipeline flow, from input processing and validation through ORF detection across all six reading frames. Depending on whether comparative mode is enabled, the pipeline branches at the end to generate the appropriate set of output files, and exits early with a report at any stage where validation or sequence loading fails.
 ---
 
 ## Algorithm Description
