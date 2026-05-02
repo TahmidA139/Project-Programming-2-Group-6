@@ -336,11 +336,15 @@ In ORCA, RSCU values are computed across all ORF sequences for each sequence in 
 - Harris, C. R., et al. (2020). Array programming with NumPy. *Nature*, 585, 357–362. https://numpy.org/
 - Sayers, E. W., et al. (2022). Database resources of the National Center for Biotechnology Information. *Nucleic Acids Research*, 50(D1), D20–D26. https://www.ncbi.nlm.nih.gov/books/NBK25499/
 - Brent, M. R., & Shi, L. (2024). ORF annotation and the challenge of small proteins. *BMC Genomics*, 25, 1016. https://pmc.ncbi.nlm.nih.gov/articles/PMC11521203/
+- Sharp, P. M., & Li, W.-H. (1987). The codon adaptation index — a measure of directional synonymous codon usage bias, and its potential applications. *Nucleic Acids Research*, 15(3), 1281–1295. (RSCU concept)
 - NCBI ORF Finder: https://www.ncbi.nlm.nih.gov/orffinder/
 - IUPAC nucleotide code reference: https://www.bioinformatics.org/sms/iupac.html
 - GFF3 specification: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
-- Sharp, P. M., & Li, W.-H. (1987). The codon adaptation index — a measure of directional synonymous codon usage bias, and its potential applications. *Nucleic Acids Research*, 15(3), 1281–1295. (RSCU concept)
-
+- FASTA format reference: https://en.wikipedia.org/wiki/FASTA_format
+- Open Reading Frame overview: https://en.wikipedia.org/wiki/Open_reading_frame
+- Python argparse documentation: https://docs.python.org/3/library/argparse.html
+- Python typing module documentation: https://docs.python.org/3/library/typing.html
+- PEP 8 — Style Guide for Python Code: https://peps.python.org/pep-0008/
 ---
 
 ## Known Limitations
